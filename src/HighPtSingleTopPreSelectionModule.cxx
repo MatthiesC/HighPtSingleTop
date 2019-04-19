@@ -49,14 +49,10 @@ namespace uhh2 {
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
 
-    MuonId muonID, muonID_veto;
-    double muonPt_min, muonEta_max, muonIso_max, muonPt_min_veto, muonEta_max_veto;
-    ElectronId elecID, elecID_veto;
-    double elecPt_min, elecEta_max, elecPt_min_veto, elecEta_max_veto;
-    JetId jetID;
-    double jetPt_min, jetEta_max;
-    TopJetId hotvrID;
-    double hotvrPt_min, hotvrEta_max;
+    MuonId muonID;
+    double muonPt_min, muonEta_max, muonIso_max;
+    ElectronId elecID;
+    double elecPt_min, elecEta_max;
     double met_min;
   };
 
