@@ -210,7 +210,6 @@ namespace uhh2 {
       SingleTopGen_tWchProd->process(event);
       if(dataset_version.find("ST_tW_signal") == 0 && !slct_tWgenSignal->passes(event)) return false;
       else if(dataset_version.find("ST_tW_other") == 0 && slct_tWgenSignal->passes(event)) return false;
-      else throw runtime_error("HighPtSingleTopPreSelectionModule: Cannot classify tW event as signal/other. Something's wrong.");
     }
 
     // Place additional selections into a new Module!!!
