@@ -157,10 +157,19 @@ namespace uhh2 {
     
     // Luminosity selection
     if(event.isRealData && !slct_lumi->passes(event)) return false;
-    hist_nocuts->fill(event);
+
+    // Split up tW samples into SIGNAL and OTHER depending on MC truth info
+    if(dataset_version.find("ST_tW") == 0) {
+      SingleTopGen_tWchProd->process(event);
+      if(dataset_version.find("ST_tW_signal") == 0 && !slct_tWgenSignal->passes(event)) return false;
+      else if(dataset_version.find("ST_tW_other") == 0 && slct_tWgenSignal->passes(event)) return false;
+    }
 
     // Mttbar gencut
     if(dataset_version == "TTbarM0to700" && !slct_mttbarGenCut->passes(event)) return false;
+
+    // Fill first histograms without any cuts on reco level
+    hist_nocuts->fill(event);
 
     // Trigger paths
     if(is_muon) {
@@ -200,13 +209,6 @@ namespace uhh2 {
     // At least one HOTVR jet
     if(!slct_1hotvr->passes(event)) return false;
     hist_1hotvr->fill(event);
-
-    // Split up tW samples into SIGNAL and OTHER depending on MC truth info
-    if(dataset_version.find("ST_tW") == 0) {
-      SingleTopGen_tWchProd->process(event);
-      if(dataset_version.find("ST_tW_signal") == 0 && !slct_tWgenSignal->passes(event)) return false;
-      else if(dataset_version.find("ST_tW_other") == 0 && slct_tWgenSignal->passes(event)) return false;
-    }
 
     // Place additional selections into a new Module!!!
     // End of preselection
