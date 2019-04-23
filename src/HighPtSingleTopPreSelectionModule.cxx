@@ -155,6 +155,12 @@ namespace uhh2 {
 
   bool HighPtSingleTopPreSelectionModule::process(Event & event) {
     
+    /* No event weights will be applied in this Module!!! In particular:
+       - no MC lumi weight
+       - no MC pileup reweight
+       I.e. the histograms filled here have little to no physical meaning! Be aware of that!
+     */
+
     // Luminosity selection
     if(event.isRealData && !slct_lumi->passes(event)) return false;
 
