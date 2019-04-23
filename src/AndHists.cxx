@@ -6,6 +6,7 @@
 #include "UHH2/HighPtSingleTop/include/MyEventHists.h"
 #include "UHH2/HighPtSingleTop/include/MyElectronHists.h"
 #include "UHH2/HighPtSingleTop/include/MyMuonHists.h"
+#include "UHH2/HOTVR/include/HOTVRHists.h"
 
 
 using namespace std;
@@ -20,9 +21,10 @@ AndHists::AndHists(Context & ctx, const string & dirname):
   // Add common histogram classes
   hists_vector.push_back(new LuminosityHists(ctx, dirname + "_Lumi"));
   hists_vector.push_back(new MyEventHists(ctx, dirname + "_Event"));
-  if(ctx.get("analysis_channel") == "ELECTRON") hists_vector.push_back(new MyElectronHists(ctx, dirname + "_Electron"));
-  else if(ctx.get("analysis_channel") == "MUON") hists_vector.push_back(new MyMuonHists(ctx, dirname + "_Muon"));
+  hists_vector.push_back(new MyElectronHists(ctx, dirname + "_Electron"));
+  hists_vector.push_back(new MyMuonHists(ctx, dirname + "_Muon"));
   hists_vector.push_back(new JetHists(ctx, dirname + "_Jet"));
+  hists_vector.push_back(new HOTVRHists(ctx, dirname +"_Hotvr"));
 }
 
 void AndHists::fill(const Event & event) {
