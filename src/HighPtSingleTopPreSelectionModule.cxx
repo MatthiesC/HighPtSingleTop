@@ -40,7 +40,7 @@ namespace uhh2 {
     std::unique_ptr<AnalysisModule> SingleTopGen_tWchProd;
 
     std::unique_ptr<Selection> slct_lumi, slct_mttbarGenCut;
-    std::unique_ptr<Selection> trig_IsoMu24, trig_IsoTkMu24, trig_Ele27, trig_Ele115, trig_Pho175;
+    std::unique_ptr<Selection> trig_IsoMu24, trig_IsoTkMu24, trig_Ele27, trig_Pho175;
     std::unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
     std::unique_ptr<Selection> slct_met, slct_1jet, slct_1hotvr, slct_tWgenSignal;
     
@@ -111,12 +111,19 @@ namespace uhh2 {
 
     slct_lumi.reset(new LumiSelection(ctx));
     slct_mttbarGenCut.reset(new MttbarGenSelection(0, 700));
+    slct_tWgenSignal.reset(new tWgenSignalSelection(ctx, is_muon));
+
     // For recommendations, see https://twiki.cern.ch/twiki/bin/view/CMS/SingleTopTWRun2
+
+    // https://twiki.cern.ch/twiki/bin/view/CMS/MuonHLT2016
     trig_IsoMu24.reset(new TriggerSelection("HLT_IsoMu24_v*"));
     trig_IsoTkMu24.reset(new TriggerSelection("HLT_IsoTkMu24_v*"));
+
+    // https://twiki.cern.ch/twiki/bin/view/CMS/EgHLTRunIISummary
+    // https://indico.cern.ch/event/662745/   Approval of SFs for this trigger combination
     trig_Ele27.reset(new TriggerSelection("HLT_Ele27_WPTight_Gsf_v*"));
-    trig_Ele115.reset(new TriggerSelection("HLT_Ele115_CaloIdVT_GsfTrkIdT_v*"));
     trig_Pho175.reset(new TriggerSelection("HLT_Photon175_v*"));
+
     slct_1muon.reset(new NMuonSelection(1, 1));
     slct_0muon.reset(new NMuonSelection(0, 0));
     slct_1elec.reset(new NElectronSelection(1, 1));
@@ -124,7 +131,6 @@ namespace uhh2 {
     slct_met.reset(new METSelection(met_min));
     slct_1jet.reset(new NJetSelection(1, -1));
     slct_1hotvr.reset(new NTopJetSelection(1, -1));
-    slct_tWgenSignal.reset(new tWgenSignalSelection(ctx, is_muon));
 
 
     //------------//
@@ -179,7 +185,7 @@ namespace uhh2 {
 
     // Trigger paths
     if(is_muon) {
-      if(!(trig_IsoMu24->passes(event))) return false;
+      if(!(trig_IsoMu24->passes(event) || trig_IsoTkMu24->passes(event))) return false;
     }
     else if(is_elec) {
       if(!(trig_Ele27->passes(event) || trig_Pho175->passes(event))) return false;
