@@ -50,7 +50,7 @@ namespace uhh2 {
 
     dataset_version = ctx.get("dataset_version");
 
-    bTopPtReweighting = ctx.get("TopPtReweighting") == true;
+    bTopPtReweighting = ctx.get("bTopPtReweighting") == true;
 
     syst_pileup = ctx.get("SystDirection_Pileup", "nominal");
     syst_muon_trigger = ctx.get("SystDirection_MuonTrig", "nominal");
