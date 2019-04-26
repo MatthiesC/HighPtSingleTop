@@ -20,7 +20,7 @@ namespace uhh2 {
   protected:
     std::vector<uhh2::Hists*> hists_vector;
 
-    TH1F *nevt;
+    TH1F *nevt, *wevt;
   };
 
 }

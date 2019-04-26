@@ -16,7 +16,9 @@ AndHists::AndHists(Context & ctx, const string & dirname):
   Hists(ctx, dirname+"_Counter")
 {
   // Single histogram for event counting
-  nevt = book<TH1F>("NEvt", "", 0.5, 0, 1);
+  nevt = book<TH1F>("NEvt", "Number of weighted events", 0.5, 0, 1);
+  // Single histogram for event weights
+  wevt = book<TH1F>("WEvt", "Event weights (entries are unweighted)", 400, -2, 2);
 
   // Add common histogram classes
   hists_vector.push_back(new LuminosityHists(ctx, dirname + "_Lumi"));
@@ -29,6 +31,7 @@ AndHists::AndHists(Context & ctx, const string & dirname):
 
 void AndHists::fill(const Event & event) {
   nevt->Fill(0., event.weight);
+  wevt->Fill(event.weight, 1.);
   for (Hists *hist : hists_vector)
     {
       hist->fill(event);

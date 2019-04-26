@@ -26,7 +26,7 @@ namespace uhh2 {
     std::unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toppt;
     std::unique_ptr<AnalysisModule> scale_variation;
     
-    std::unique_ptr<AndHists> hist_sf, hist_topptreweighting;
+    std::unique_ptr<AndHists> hist_noweights, hist_sf, hist_topptreweighting;
 
     bool is_data, is_mc, is_muon, is_elec, bTopPtReweighting;
     string dataset_version;
@@ -97,8 +97,9 @@ namespace uhh2 {
     // HISTOGRAMS //
     //------------//
 
-    hist_sf.reset(new AndHists(ctx, "0_ScaleFactors"));
-    hist_topptreweighting.reset(new AndHists(ctx, "1_TopPtReweighting"));
+    hist_noweights.reset(new AndHists(ctx, "0_NoWeights")); // no weights except initial MC weights
+    hist_sf.reset(new AndHists(ctx, "1_ScaleFactors"));
+    hist_topptreweighting.reset(new AndHists(ctx, "2_TopPtReweighting"));
 
 
     //---------------//
@@ -113,6 +114,9 @@ namespace uhh2 {
   //------------//
 
   bool HighPtSingleTopMainSelectionModule::process(Event & event) {
+
+    // Histograms without weights
+    hist_noweights->fill(event);
 
     // Apply scale factors
     if(is_mc) {
