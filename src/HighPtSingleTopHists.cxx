@@ -17,34 +17,110 @@ HighPtSingleTopHists::HighPtSingleTopHists(Context & ctx, const string & dirname
 
   h_primlep = ctx.get_handle<FlavorParticle>("PrimaryLepton");
 
-  jets_number = book<TH1F>("N_jets", "number of AK4 jets", 21, -0.5, 20.5);  
-  jet1_eta = book<TH1F>("eta_jet1", "#eta^{jet 1}", 50, -2.5, 2.5);
-  jet2_eta = book<TH1F>("eta_jet2", "#eta^{jet 2}", 50, -2.5, 2.5);
-  jet3_eta = book<TH1F>("eta_jet3", "#eta^{jet 3}", 50, -2.5, 2.5);
-  jet4_eta = book<TH1F>("eta_jet4", "#eta^{jet 4}", 50, -2.5, 2.5);
-  jet1_pt = book<TH1F>("pt_jet1", "p_{T}^{jet 1} [GeV]", 100, 0, 1000);
-  jet2_pt = book<TH1F>("pt_jet2", "p_{T}^{jet 2} [GeV]", 100, 0, 1000);
-  jet3_pt = book<TH1F>("pt_jet3", "p_{T}^{jet 3} [GeV]", 100, 0, 1000);
-  jet4_pt = book<TH1F>("pt_jet4", "p_{T}^{jet 4} [GeV]", 100, 0, 1000);
+  deltaR_lepton_nextjet = book<TH1F>("deltaR_lepton_nextjet", "#DeltaR(lepton, next AK4 jet)", 100, 0, 5);
+  deltaR_lepton_leadhotvr = book<TH1F>("deltaR_lepton_leadhotvr", "#DeltaR(lepton, leading HOTVR jet)", 100, 0, 5);
+  deltaPhi_lepton_nextjet = book<TH1F>("deltaPhi_lepton_nextjet", "#Delta#phi(lepton, next AK4 jet)", 100, 0, M_PI);
+  deltaPhi_lepton_leadhotvr = book<TH1F>("deltaPhi_lepton_leadhotvr", "#Delta#phi(lepton, leading HOTVR jet)", 100, 0, M_PI);
+  deltaPhiCos_lepton_nextjet = book<TH1F>("deltaPhiCos_lepton_nextjet", "cos(#Delta#phi)(lepton, next AK4 jet)", 100, -1, 1);
+  deltaPhiCos_lepton_leadhotvr = book<TH1F>("deltaPhiCos_lepton_leadhotvr", "cos(#Delta#phi)(lepton, leading HOTVR jet)", 100, -1, 1);
 
-  mtw = book<TH1F>("mtw", "M_{T}(W) [GeV]", 50, 0, 500);
-  met = book<TH1F>("met", "p_{T}^{miss} [GeV]", 50, 0, 1000);
+  mtw = book<TH1F>("mtw", "m_{T}(lepton, missing p_{T}) [GeV]", 100, 0, 500);
+  met = book<TH1F>("met", "missing p_{T} [GeV]", 100, 0, 1000);
 
-  met_vs_mtw = book<TH2F>("met_vs_mtw", "p_{T}^{miss} [GeV] vs. M_{T}(W) [GeV]", 50, 0, 200, 50, 0, 1000);
+  met_VS_mtw = book<TH2F>("met_vs_mtw", "missing p_{T} [GeV] vs. m_{T}(lepton, missing p_{T}) [GeV]", 100, 0, 500, 100, 0, 1000); // 2D
+
+  deltaPhi_lepton_met = book<TH1F>("deltaPhi_lepton_met", "#Delta#phi(lepton, missing p_{T})", 100, 0, M_PI);
+  deltaPhiCos_lepton_met = book<TH1F>("deltaPhiCos_lepton_met", "cos(#Delta#phi)(lepton, missing p_{T})", 100, -1, 1);
+  deltaPhi_leadhotvr_met = book<TH1F>("deltaPhi_leadhotvr_met", "#Delta#phi(leading HOTVR jet, missing p_{T})", 100, 0, M_PI);
+  deltaPhiCos_leadhotvr_met = book<TH1F>("deltaPhiCos_leadhotvr_met", "cos(#Delta#phi)(leading HOTVR jet, missing p_{T})", 100, -1, 1);
+  deltaPhi_nextjet_met = book<TH1F>("deltaPhi_nextjet_met", "#Delta#phi(missing p_{T}, next AK4 jet)", 100, 0, M_PI);
+  deltaPhiCos_nextjet_met = book<TH1F>("deltaPhiCos_nextjet_met", "cos(#Delta#phi)(missing p_{T}, next AK4 jet)", 100, -1, 1);
+
+  deltaPhi_lepton_met_VS_met = book<TH2F>("deltaPhi_lepton_met_VS_met", "missing p_{T} [GeV] vs. #Delta#phi(lepton, missing p_{T})", 100, 0, 1000, 100, 0, M_PI); // 2D
+  deltaPhi_leadhotvr_met_VS_met = book<TH2F>("deltaPhi_leadhotvr_met_VS_met", "missing p_{T} [GeV] vs. #Delta#phi(leading HOTVR jet, missing p_{T})", 100, 0, 1000, 100, 0, M_PI); // 2D
+  deltaPhi_nextjet_met_VS_met = book<TH2F>("deltaPhi_nextjet_met_VS_met", "missing p_{T} [GeV] vs. #Delta#phi(missing p_{T}, next AK4 jet)", 100, 0, 1000, 100, 0, M_PI); // 2D
+
+  jets_number = book<TH1F>("N_jets", "number of AK4 jets", 11, -0.5, 10.5);
+  jet1_eta = book<TH1F>("eta_jet1", "#eta(leading AK4 jet)", 60, -3, 3);
+  jet2_eta = book<TH1F>("eta_jet2", "#eta(2nd leading AK4 jet)", 60, -3, 3);
+  jet3_eta = book<TH1F>("eta_jet3", "#eta(3rd leading AK4 jet)", 60, -3, 3);
+  jet4_eta = book<TH1F>("eta_jet4", "#eta(n-th leading AK4 jet, n #geq 4)", 60, -3, 3);
+  jet1_pt = book<TH1F>("pt_jet1", "p_{T}(leading AK4 jet) [GeV]", 100, 0, 500);
+  jet2_pt = book<TH1F>("pt_jet2", "p_{T}(2nd leading AK4 jet) [GeV]", 100, 0, 500);
+  jet3_pt = book<TH1F>("pt_jet3", "p_{T}(3rd leading AK4 jet) [GeV]", 100, 0, 250);
+  jet4_pt = book<TH1F>("pt_jet4", "p_{T}(n-th leading AK4 jet, n #geq 4) [GeV]", 100, 0, 250);
+
+  hotvr_number = book<TH1F>("N_hotvr", "number of HOTVR jets", 11, -0.5, 10.5);
+  hotvr1_eta = book<TH1F>("eta_hotvr1", "#eta(leading HOTVR jet)", 60, -3, 3);
+  hotvr2_eta = book<TH1F>("eta_hotvr2", "#eta(2nd leading HOTVR jet)", 60, -3, 3);
+  hotvr3_eta = book<TH1F>("eta_hotvr3", "#eta(3rd leading HOTVR jet)", 60, -3, 3);
+  hotvr4_eta = book<TH1F>("eta_hotvr4", "#eta(n-th leading HOTVR jet, n #geq 4)", 60, -3, 3);
+  hotvr1_pt = book<TH1F>("pt_hotvr1", "p_{T}(leading HOTVR jet) [GeV]", 100, 0, 1000);
+  hotvr2_pt = book<TH1F>("pt_hotvr2", "p_{T}(2nd leading HOTVR jet) [GeV]", 100, 0, 1000);
+  hotvr1_pt_lowpt = book<TH1F>("pt_hotvr1_lowpt", "p_{T}(leading HOTVR jet) [GeV]", 100, 0, 500);
+  hotvr2_pt_lowpt = book<TH1F>("pt_hotvr2_lowpt", "p_{T}(2nd leading HOTVR jet) [GeV]", 100, 0, 500);
+  hotvr1_pt_highpt = book<TH1F>("pt_hotvr1_highpt", "p_{T}(leading HOTVR jet) [GeV]", 100, 500, 1500);
+  hotvr2_pt_highpt = book<TH1F>("pt_hotvr2_highpt", "p_{T}(2nd leading HOTVR jet) [GeV]", 100, 500, 1500);
+  hotvr3_pt = book<TH1F>("pt_hotvr3", "p_{T}(3rd leading HOTVR jet) [GeV]", 100, 0, 500);
+  hotvr4_pt = book<TH1F>("pt_hotvr4", "p_{T}(n-th leading HOTVR jet, n #geq 4) [GeV]", 100, 0, 500);
+  hotvr1_mass = book<TH1F>("mass_hotvr1", "m_{jet}(leading HOTVR jet) [GeV]", 100, 0, 500);
+  hotvr1_mass_ca173 = book<TH1F>("mass_hotvr1_ca173", "m_{jet}(leading HOTVR jet) [GeV]", 100, 140, 240);
+  hotvr2_mass = book<TH1F>("mass_hotvr2", "m_{jet}(2nd leading HOTVR jet) [GeV]", 100, 0, 500);
+  hotvr3_mass = book<TH1F>("mass_hotvr3", "m_{jet}(3rd leading HOTVR jet) [GeV]", 100, 0, 500);
+  hotvr4_mass = book<TH1F>("mass_hotvr4", "m_{jet}(n-th leading HOTVR jet, n #geq 4) [GeV]", 100, 0, 500);
+
 }
 
 
 void HighPtSingleTopHists::fill(const Event & event) {
 
   double weight = event.weight;
-  
-  const FlavorParticle &lepton = event.get(h_primlep);
+
+  const FlavorParticle & lepton = event.get(h_primlep);
 
   vector<Jet> jets = *event.jets;
   unsigned int Njets = jets.size();
+  sort_by_pt<Jet>(jets);
+  vector<TopJet> hotvrjets = *event.topjets;
+  unsigned int Nhotvr = hotvrjets.size();
+  sort_by_pt<TopJet>(hotvrjets);
+
+
+  //------------------------------//
+  // Some DeltaR's and DeltaPhi's //
+  //------------------------------//
+
+  deltaR_lepton_nextjet->Fill(uhh2::deltaR(lepton.v4(), (nextJet(lepton, jets))->v4()), weight);
+  deltaR_lepton_leadhotvr->Fill(uhh2::deltaR(lepton.v4(), hotvrjets.at(0).v4()), weight);
+  deltaPhi_lepton_nextjet->Fill(uhh2::deltaPhi(lepton.v4(), (nextJet(lepton, jets))->v4()), weight);
+  deltaPhi_lepton_leadhotvr->Fill(uhh2::deltaPhi(lepton.v4(), hotvrjets.at(0).v4()), weight);
+  deltaPhiCos_lepton_nextjet->Fill(TMath::Cos(uhh2::deltaPhi(lepton.v4(), (nextJet(lepton, jets))->v4())), weight);
+  deltaPhiCos_lepton_leadhotvr->Fill(TMath::Cos(uhh2::deltaPhi(lepton.v4(), hotvrjets.at(0).v4())), weight);
+
+  auto MTW = calcMTW(lepton, event);
+  auto MET = *event.met;
+
+  mtw->Fill(MTW, weight);
+  met->Fill(MET.pt(), weight);
+  met_VS_mtw->Fill(MTW, MET.pt(), weight); // 2D
+
+  deltaPhi_lepton_met->Fill(uhh2::deltaPhi(lepton.v4(), MET.v4()), weight);
+  deltaPhiCos_lepton_met->Fill(TMath::Cos(uhh2::deltaPhi(lepton.v4(), MET.v4())), weight);
+  deltaPhi_leadhotvr_met->Fill(uhh2::deltaPhi(hotvrjets.at(0).v4(), MET.v4()), weight);
+  deltaPhiCos_leadhotvr_met->Fill(TMath::Cos(uhh2::deltaPhi(hotvrjets.at(0).v4(), MET.v4())), weight);
+  deltaPhi_nextjet_met->Fill(uhh2::deltaPhi(MET.v4(), (nextJetToMET(event, jets))->v4()), weight);
+  deltaPhiCos_nextjet_met->Fill(TMath::Cos(uhh2::deltaPhi(MET.v4(), (nextJetToMET(event, jets))->v4())), weight);
+
+  deltaPhi_lepton_met_VS_met->Fill(MET.pt(), uhh2::deltaPhi(lepton.v4(), MET.v4()), weight); // 2D
+  deltaPhi_leadhotvr_met_VS_met->Fill(MET.pt(), uhh2::deltaPhi(hotvrjets.at(0).v4(), MET.v4()), weight); // 2D
+  deltaPhi_nextjet_met_VS_met->Fill(MET.pt(), uhh2::deltaPhi(MET.v4(), (nextJetToMET(event, jets))->v4()), weight); // 2D
+
+
+  //----------//
+  // AK4 jets //
+  //----------//
 
   jets_number->Fill(Njets, weight);
-  sort_by_pt<Jet>(jets);
   if(Njets >= 1) {
     jet1_eta->Fill(jets.at(0).eta(), weight);
     jet1_pt->Fill(jets.at(0).pt(), weight);
@@ -58,16 +134,49 @@ void HighPtSingleTopHists::fill(const Event & event) {
     jet3_pt->Fill(jets.at(2).pt(), weight);
   }
   if(Njets >= 4) {
-    jet4_eta->Fill(jets.at(3).eta(), weight);
-    jet4_pt->Fill(jets.at(3).pt(), weight);
+    for(unsigned int i = 3; i < Njets; i++) {
+      jet4_eta->Fill(jets.at(i).eta(), weight);
+      jet4_pt->Fill(jets.at(i).pt(), weight);
+    }
   }
 
-  auto MTW = calcMTW(lepton, event);
-  auto MET = event.met->pt();
 
-  mtw->Fill(MTW, weight);
-  met->Fill(MET, weight);
-  met_vs_mtw->Fill(MTW, MET, weight);
+  //------------//
+  // HOTVR jets //
+  //------------//
+
+  hotvr_number->Fill(Nhotvr, weight);
+  if(Nhotvr >= 1) {
+    hotvr1_eta->Fill(hotvrjets.at(0).eta(), weight);
+    hotvr1_phi->Fill(hotvrjets.at(0).phi(), weight);
+    hotvr1_pt->Fill(hotvrjets.at(0).pt(), weight);
+    hotvr1_pt_lowpt->Fill(hotvrjets.at(0).pt(), weight);
+    hotvr1_pt_highpt->Fill(hotvrjets.at(0).pt(), weight);
+    hotvr1_mass->Fill(hotvrjets.at(0).v4().M(), weight);
+    hotvr1_mass_ca173->Fill(hotvrjets.at(0).v4().M(), weight);
+  }
+  if(Nhotvr >= 2) {
+    hotvr2_eta->Fill(hotvrjets.at(1).eta(), weight);
+    hotvr2_phi->Fill(hotvrjets.at(1).phi(), weight);
+    hotvr2_pt->Fill(hotvrjets.at(1).pt(), weight);
+    hotvr2_pt_lowpt->Fill(hotvrjets.at(1).pt(), weight);
+    hotvr2_pt_highpt->Fill(hotvrjets.at(1).pt(), weight);
+    hotvr2_mass->Fill(hotvrjets.at(1).v4().M(), weight);
+  }
+  if(Nhotvr >= 3) {
+    hotvr3_eta->Fill(hotvrjets.at(2).eta(), weight);
+    hotvr3_phi->Fill(hotvrjets.at(2).phi(), weight);
+    hotvr3_pt->Fill(hotvrjets.at(2).pt(), weight);
+    hotvr3_mass->Fill(hotvrjets.at(2).v4().M(), weight);
+  }
+  if(Nhotvr >= 4) {
+    for(unsigned int i = 3; i < Nhotvr; i++) {
+      hotvr4_eta->Fill(hotvrjets.at(i).eta(), weight);
+      hotvr4_phi->Fill(hotvrjets.at(i).phi(), weight);
+      hotvr4_pt->Fill(hotvrjets.at(i).pt(), weight);
+      hotvr4_mass->Fill(hotvrjets.at(i).v4().M(), weight);
+    }
+  }
 
 }
 
