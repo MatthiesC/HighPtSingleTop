@@ -26,7 +26,7 @@ ObjectSetup::ObjectSetup(Context & ctx) {
   jetPt_min = 30.0;
   jetEta_max = 2.4;
 
-  hotvrPt_min = 200.0;
+  hotvrPt_min = 0.0; // needs to be zero so that migrations from < 200 GeV bins into the boosted sector can still be calculated once the unfolding happens (although these migrations are probably tiny)
   hotvrEta_max = 2.5;
 
 
