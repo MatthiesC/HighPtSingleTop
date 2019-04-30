@@ -44,3 +44,5 @@ class TopJetGroomer : public uhh2::AnalysisModule {
 
 // returns the transverse W boson mass, using a given lepton and the MET in the event
 double calcMTW(const FlavorParticle&, const uhh2::Event&);
+
+const Jet * nextJetToMET(const uhh2::Event&, const std::vector<Jet>&);

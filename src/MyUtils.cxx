@@ -1,6 +1,8 @@
 #include "UHH2/HighPtSingleTop/include/MyUtils.h"
 #include "UHH2/core/include/LorentzVector.h"
+#include "UHH2/core/include/Event.h"
 
+#include <limits>
 
 // credits to Torben
 bool TopJetGroomer::process(uhh2::Event & event) { 
@@ -25,4 +27,23 @@ double calcMTW(const FlavorParticle & l, const uhh2::Event & event) {
   assert(event.met);
   
   return sqrt(2*l.pt()*event.met->pt()*(1-cos(uhh2::deltaPhi(l, *event.met))));
+}
+
+// based on uhh2::closestParticle
+const Jet * nextJetToMET(const uhh2::Event & event, const std::vector<Jet> & jets) {
+
+  assert(event.met);
+
+  double deltarmin = std::numeric_limits<double>::infinity();
+  const Jet *next = 0;
+  for(unsigned int i = 0; i < jets.size(); i++) {
+    const Jet & ji = jets[i];
+    double dr = uhh2::deltaR(ji.v4(), event.met->v4());
+    if(dr < deltarmin) {
+      deltarmin = dr;
+      next = &ji;
+    }
+  }
+
+  return next;
 }
