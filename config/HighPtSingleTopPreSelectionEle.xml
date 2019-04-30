@@ -2,70 +2,69 @@
 <!DOCTYPE JobConfiguration PUBLIC "" "JobConfig.dtd"[
 
 	  <!ENTITY TargetLumi      "35867">
-	  <!ENTITY DATASETdir      "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/">
 	  <!ENTITY PRESELdir       "/nfs/dust/cms/user/matthies/HighPtSingleTop/80X_v5/PreSelection/Electron/">
 	  <!ENTITY b_Cacheable     "False">
 	  <!ENTITY NEVT            "-1">
 	  <!ENTITY PROOFdir        "/nfs/dust/cms/user/matthies/.proof2">
 
 	  <!-- TTbar done // apply TTbarGenGut! for first sample so that m>700 gets rejected -->
-	  <!ENTITY TTbarM0to700 SYSTEM    "&DATASETdir;MC_TT_TuneCUETP8M2T4.xml">
-	  <!ENTITY TTbarM700to1000 SYSTEM "&DATASETdir;MC_TT_Mtt-700to1000.xml">
-	  <!ENTITY TTbarM1000toInf SYSTEM "&DATASETdir;MC_TT_Mtt-1000toInf.xml">
+	  <!ENTITY TTbarM0to700 SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_TT_TuneCUETP8M2T4.xml">
+	  <!ENTITY TTbarM700to1000 SYSTEM "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_TT_Mtt-700to1000.xml">
+	  <!ENTITY TTbarM1000toInf SYSTEM "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_TT_Mtt-1000toInf.xml">
 
 	  <!-- W+jets done -->
-	  <!ENTITY WJetsPT100to250 SYSTEM "&DATASETdir;MC_WJetsToLNu_Pt-100To250.xml">
-	  <!ENTITY WJetsPT250to400 SYSTEM "&DATASETdir;MC_WJetsToLNu_Pt-250To400.xml">
-	  <!ENTITY WJetsPT400to600 SYSTEM "&DATASETdir;MC_WJetsToLNu_Pt-400To600.xml">
-	  <!ENTITY WJetsPT600toInf SYSTEM "&DATASETdir;MC_WJetsToLNu_Pt-600ToInf.xml">
+	  <!ENTITY WJetsPT100to250 SYSTEM "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_WJetsToLNu_Pt-100To250.xml">
+	  <!ENTITY WJetsPT250to400 SYSTEM "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_WJetsToLNu_Pt-250To400.xml">
+	  <!ENTITY WJetsPT400to600 SYSTEM "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_WJetsToLNu_Pt-400To600.xml">
+	  <!ENTITY WJetsPT600toInf SYSTEM "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_WJetsToLNu_Pt-600ToInf.xml">
 
 	  <!-- DY+jets done -->
-	  <!ENTITY DYJetsM50_HT70to100 SYSTEM    "&DATASETdir;MC_DYJetsToLL_M-50_HT-70to100.xml">
-	  <!ENTITY DYJetsM50_HT100to200 SYSTEM   "&DATASETdir;MC_DYJetsToLL_M-50_HT-100to200.xml">
-	  <!ENTITY DYJetsM50_HT200to400 SYSTEM   "&DATASETdir;MC_DYJetsToLL_M-50_HT-200to400.xml">
-	  <!ENTITY DYJetsM50_HT400to600 SYSTEM   "&DATASETdir;MC_DYJetsToLL_M-50_HT-400to600.xml">
-	  <!ENTITY DYJetsM50_HT600to800 SYSTEM   "&DATASETdir;MC_DYJetsToLL_M-50_HT-600to800.xml">
-	  <!ENTITY DYJetsM50_HT800to1200 SYSTEM  "&DATASETdir;MC_DYJetsToLL_M-50_HT-800to1200.xml">
-	  <!ENTITY DYJetsM50_HT1200to2500 SYSTEM "&DATASETdir;MC_DYJetsToLL_M-50_HT-1200to2500.xml">
-	  <!ENTITY DYJetsM50_HT2500toInf SYSTEM  "&DATASETdir;MC_DYJetsToLL_M-50_HT-2500toInf.xml">
+	  <!ENTITY DYJetsM50_HT70to100 SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_DYJetsToLL_M-50_HT-70to100.xml">
+	  <!ENTITY DYJetsM50_HT100to200 SYSTEM   "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_DYJetsToLL_M-50_HT-100to200.xml">
+	  <!ENTITY DYJetsM50_HT200to400 SYSTEM   "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_DYJetsToLL_M-50_HT-200to400.xml">
+	  <!ENTITY DYJetsM50_HT400to600 SYSTEM   "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_DYJetsToLL_M-50_HT-400to600.xml">
+	  <!ENTITY DYJetsM50_HT600to800 SYSTEM   "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_DYJetsToLL_M-50_HT-600to800.xml">
+	  <!ENTITY DYJetsM50_HT800to1200 SYSTEM  "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_DYJetsToLL_M-50_HT-800to1200.xml">
+	  <!ENTITY DYJetsM50_HT1200to2500 SYSTEM "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_DYJetsToLL_M-50_HT-1200to2500.xml">
+	  <!ENTITY DYJetsM50_HT2500toInf SYSTEM  "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_DYJetsToLL_M-50_HT-2500toInf.xml">
 
 	  <!-- Single top done -->
-	  <!ENTITY SingleTop_TTbar_sch SYSTEM "&DATASETdir;MC_ST_s-channel_4f_leptonDecays.xml">
-	  <!ENTITY SingleTop_T_tch SYSTEM     "&DATASETdir;MC_ST_t-channel_top_4f_inclusiveDecays.xml">
-	  <!ENTITY SingleTop_Tbar_tch SYSTEM  "&DATASETdir;MC_ST_t-channel_antitop_4f_inclusiveDecays.xml">
-	  <!ENTITY SingleTop_T_tWch SYSTEM    "&DATASETdir;MC_ST_tW_top_5f_NoFullyHadronicDecays.xml">
-	  <!ENTITY SingleTop_Tbar_tWch SYSTEM "&DATASETdir;MC_ST_tW_antitop_5f_NoFullyHadronicDecays.xml">
+	  <!ENTITY SingleTop_TTbar_sch SYSTEM "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_ST_s-channel_4f_leptonDecays.xml">
+	  <!ENTITY SingleTop_T_tch SYSTEM     "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_ST_t-channel_top_4f_inclusiveDecays.xml">
+	  <!ENTITY SingleTop_Tbar_tch SYSTEM  "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_ST_t-channel_antitop_4f_inclusiveDecays.xml">
+	  <!ENTITY SingleTop_T_tWch SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_ST_tW_top_5f_NoFullyHadronicDecays.xml">
+	  <!ENTITY SingleTop_Tbar_tWch SYSTEM "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_ST_tW_antitop_5f_NoFullyHadronicDecays.xml">
 
 	  <!-- Diboson done -->
-	  <!ENTITY WW SYSTEM "&DATASETdir;MC_WW.xml">
-	  <!ENTITY WZ SYSTEM "&DATASETdir;MC_WZ.xml">
-	  <!ENTITY ZZ SYSTEM "&DATASETdir;MC_ZZ.xml">
+	  <!ENTITY WW SYSTEM "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_WW.xml">
+	  <!ENTITY WZ SYSTEM "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_WZ.xml">
+	  <!ENTITY ZZ SYSTEM "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_ZZ.xml">
 
 	  <!-- QCD done -->
-	  <!ENTITY QCDPT20to30EM SYSTEM    "&DATASETdir;MC_QCD_Pt-20to30_EMEnriched.xml">
-	  <!ENTITY QCDPT30to50EM SYSTEM    "&DATASETdir;MC_QCD_Pt-30to50_EMEnriched.xml">
-	  <!ENTITY QCDPT50to80EM SYSTEM    "&DATASETdir;MC_QCD_Pt-50to80_EMEnriched.xml">
-	  <!ENTITY QCDPT80to120EM SYSTEM   "&DATASETdir;MC_QCD_Pt-80to120_EMEnriched.xml">
-	  <!ENTITY QCDPT120to170EM SYSTEM  "&DATASETdir;MC_QCD_Pt-120to170_EMEnriched.xml">
-	  <!ENTITY QCDPT170to300EM SYSTEM  "&DATASETdir;MC_QCD_Pt-170to300_EMEnriched.xml">
-	  <!ENTITY QCDPT300toInfEM SYSTEM  "&DATASETdir;MC_QCD_Pt-300toInf_EMEnriched.xml">
+	  <!ENTITY QCDPT20to30EM SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-20to30_EMEnriched.xml">
+	  <!ENTITY QCDPT30to50EM SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-30to50_EMEnriched.xml">
+	  <!ENTITY QCDPT50to80EM SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-50to80_EMEnriched.xml">
+	  <!ENTITY QCDPT80to120EM SYSTEM   "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-80to120_EMEnriched.xml">
+	  <!ENTITY QCDPT120to170EM SYSTEM  "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-120to170_EMEnriched.xml">
+	  <!ENTITY QCDPT170to300EM SYSTEM  "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-170to300_EMEnriched.xml">
+	  <!ENTITY QCDPT300toInfEM SYSTEM  "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-300toInf_EMEnriched.xml">
 
-	  <!ENTITY QCDPT15to20bcToE SYSTEM    "&DATASETdir;MC_QCD_Pt-15to20_bcToE.xml">
-	  <!ENTITY QCDPT20to30bcToE SYSTEM    "&DATASETdir;MC_QCD_Pt-20to30_bcToE.xml">
-	  <!ENTITY QCDPT30to80bcToE SYSTEM    "&DATASETdir;MC_QCD_Pt-30to80_bcToE.xml">
-	  <!ENTITY QCDPT80to170bcToE SYSTEM   "&DATASETdir;MC_QCD_Pt-80to170_bcToE.xml">
-	  <!ENTITY QCDPT170to250bcToE SYSTEM  "&DATASETdir;MC_QCD_Pt-170to250_bcToE.xml">
-	  <!ENTITY QCDPT250toInfbcToE SYSTEM  "&DATASETdir;MC_QCD_Pt-250toInf_bcToE.xml">
+	  <!ENTITY QCDPT15to20bcToE SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-15to20_bcToE.xml">
+	  <!ENTITY QCDPT20to30bcToE SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-20to30_bcToE.xml">
+	  <!ENTITY QCDPT30to80bcToE SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-30to80_bcToE.xml">
+	  <!ENTITY QCDPT80to170bcToE SYSTEM   "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-80to170_bcToE.xml">
+	  <!ENTITY QCDPT170to250bcToE SYSTEM  "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-170to250_bcToE.xml">
+	  <!ENTITY QCDPT250toInfbcToE SYSTEM  "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/MC_QCD_Pt-250toInf_bcToE.xml">
 
 	  <!-- DATA done -->
-	  <!ENTITY DATA_B SYSTEM    "&DATASETdir;DATA_SingleElectron_Run2016B_03Feb.xml">
-	  <!ENTITY DATA_C SYSTEM    "&DATASETdir;DATA_SingleElectron_Run2016C_03Feb.xml">
-	  <!ENTITY DATA_D SYSTEM    "&DATASETdir;DATA_SingleElectron_Run2016D_03Feb.xml">
-	  <!ENTITY DATA_E SYSTEM    "&DATASETdir;DATA_SingleElectron_Run2016E_03Feb.xml">
-	  <!ENTITY DATA_F SYSTEM    "&DATASETdir;DATA_SingleElectron_Run2016F_03Feb.xml">
-	  <!ENTITY DATA_G SYSTEM    "&DATASETdir;DATA_SingleElectron_Run2016G_03Feb.xml">
-	  <!ENTITY DATA_Hver2 SYSTEM    "&DATASETdir;DATA_SingleElectron_Run2016Hver2_03Feb.xml">
-          <!ENTITY DATA_Hver3 SYSTEM    "&DATASETdir;DATA_SingleElectron_Run2016Hver3_03Feb.xml">
+	  <!ENTITY DATA_B SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/DATA_SingleElectron_Run2016B_03Feb.xml">
+	  <!ENTITY DATA_C SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/DATA_SingleElectron_Run2016C_03Feb.xml">
+	  <!ENTITY DATA_D SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/DATA_SingleElectron_Run2016D_03Feb.xml">
+	  <!ENTITY DATA_E SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/DATA_SingleElectron_Run2016E_03Feb.xml">
+	  <!ENTITY DATA_F SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/DATA_SingleElectron_Run2016F_03Feb.xml">
+	  <!ENTITY DATA_G SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/DATA_SingleElectron_Run2016G_03Feb.xml">
+	  <!ENTITY DATA_Hver2 SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/DATA_SingleElectron_Run2016Hver2_03Feb.xml">
+          <!ENTITY DATA_Hver3 SYSTEM    "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/datasets/RunII_80X_v5/DATA_SingleElectron_Run2016Hver3_03Feb.xml">
 
 
 	  ]>
