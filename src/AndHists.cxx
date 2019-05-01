@@ -13,7 +13,7 @@ using namespace std;
 using namespace uhh2;
 
 AndHists::AndHists(Context & ctx, const string & dirname):
-  Hists(ctx, dirname+"_Counter")
+  m_dirname(dirname), Hists(ctx, dirname+"_Counter")
 {
   // Single histogram for event counting
   nevt = book<TH1F>("NEvt", "Number of weighted events", 0.5, 0, 1);
@@ -40,6 +40,10 @@ void AndHists::fill(const Event & event) {
 
 void AndHists::add_hist(Hists *hist) {
   hists_vector.push_back(hist);
+}
+
+string AndHists::get_dirname() {
+    return m_dirname;
 }
 
 AndHists::~AndHists() {
