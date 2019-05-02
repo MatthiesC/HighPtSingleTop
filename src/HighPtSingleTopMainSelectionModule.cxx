@@ -5,9 +5,15 @@
 #include "UHH2/core/include/Event.h"
 
 #include "UHH2/common/include/MCWeight.h"
+#include "UHH2/common/include/NSelections.h"
+#include "UHH2/common/include/TopJetIds.h"
 #include "UHH2/common/include/TopPtReweight.h"
 
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
+#include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
+
+#include "UHH2/HOTVR/include/HOTVRHists.h"
+#include "UHH2/HOTVR/include/HOTVRIds.h"
 
 
 using namespace std;
@@ -25,12 +31,18 @@ namespace uhh2 {
     
     std::unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk;//, sf_toppt;
     std::unique_ptr<AnalysisModule> scale_variation;
+
+    std::unique_ptr<Selection> slct_1toptag;
     
-    std::unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf;//, hist_topptreweighting;
+    std::unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_1toptag;//, hist_topptreweighting;
 
     bool is_data, is_mc, is_muon, is_elec, bTopPtReweighting;
     string dataset_version;
     string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk;
+
+    double hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min, hotvr_tau32_max;
+
+    TopJetId StandardHOTVRTopTagID;
   };
 
 
@@ -63,10 +75,19 @@ namespace uhh2 {
     // KINEMATIC VARIABLES //
     //---------------------//
 
+    // t-tagging criteria
+    hotvr_fpt_max     = 0.8;
+    hotvr_jetmass_min = 140;
+    hotvr_jetmass_max = 220;
+    hotvr_mpair_min   = 50;
+    hotvr_tau32_max   = 0.56;
+
 
     //-----------------//
     // IDENTIFICATIONS //
     //-----------------//
+
+    StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
 
 
     //----------------//
@@ -92,15 +113,23 @@ namespace uhh2 {
     // SELECTIONS //
     //------------//
 
+    slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
+
 
     //------------//
     // HISTOGRAMS //
     //------------//
 
     hist_noweights.reset(new AndHists(ctx, "0_NoWeights")); // no weights except initial MC weights
+    hist_noweights->add_hist(new HighPtSingleTopHists(ctx, "0_NoWeights_CustomHists"));
     hist_lumipuweights.reset(new AndHists(ctx, "1_LumiAndPileupWeights"));
+    hist_lumipuweights->add_hist(new HighPtSingleTopHists(ctx, "1_LumiAndPileupWeights_CustomHists"));
     hist_leptonsf.reset(new AndHists(ctx, "2_LeptonScaleFactors"));
+    hist_leptonsf->add_hist(new HighPtSingleTopHists(ctx, "2_LeptonScaleFactors_CustomHists"));
     //hist_topptreweighting.reset(new AndHists(ctx, "3_TopPtReweighting"));
+    hist_1toptag.reset(new AndHists(ctx, "3_OneTopTag"));
+    hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "3_OneTopTag_CustomHists"));
+    hist_1toptag->add_hist(new HOTVRHists(ctx, "3_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
 
 
     //---------------//
@@ -143,9 +172,12 @@ namespace uhh2 {
     //if(dataset_version.find("TTbar") == 0) sf_toppt->process(event);
     //hist_topptreweighting->fill(event);
 
+    // Require exactly one HOTVR t-tag
+    if(!slct_1toptag->passes(event)) hist_1toptag->fill(event);
+
     // Place analysis routines into a new Module!!!
     // End of main selection
-    return false;
+    return true;
   }
 
 
