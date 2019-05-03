@@ -2,6 +2,7 @@
 
 #include "UHH2/core/include/Event.h"
 #include "UHH2/core/include/AnalysisModule.h"
+#include "UHH2/core/include/FlavorParticle.h"
 #include "UHH2/common/include/JetCorrections.h"
 #include "UHH2/common/include/Utils.h"
 
@@ -44,5 +45,7 @@ class TopJetGroomer : public uhh2::AnalysisModule {
 
 // returns the transverse W boson mass, using a given lepton and the MET in the event
 double calcMTW(const FlavorParticle&, const uhh2::Event&);
+
+FlavorParticle returnPrimaryLepton(const uhh2::Event&);
 
 const Jet * nextJetToMET(const uhh2::Event&, const std::vector<Jet>&);

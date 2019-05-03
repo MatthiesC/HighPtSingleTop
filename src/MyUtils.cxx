@@ -21,6 +21,7 @@ bool TopJetGroomer::process(uhh2::Event & event) {
   return true;
 }
 
+
 // returns the transverse W boson mass, using a given lepton and the MET in the event
 double calcMTW(const FlavorParticle & l, const uhh2::Event & event) {
   
@@ -28,6 +29,38 @@ double calcMTW(const FlavorParticle & l, const uhh2::Event & event) {
   
   return sqrt(2*l.pt()*event.met->pt()*(1-cos(uhh2::deltaPhi(l, *event.met))));
 }
+
+
+// based on uhh2::PrimaryLepton
+FlavorParticle returnPrimaryLepton(const uhh2::Event & event) {
+
+  assert(event.muons || event.electrons);
+
+  double ptmax = -1;
+  FlavorParticle primlep;
+
+  if(event.electrons) {
+    for(const auto & ele : *event.electrons) {
+      float ele_pt = ele.pt();
+      if(ele_pt > ptmax) {
+	ptmax = ele_pt;
+	primlep = ele;
+      }
+    }
+  }
+  if(event.muons) {
+    for(const auto & mu : *event.muons) {
+      float mu_pt = mu.pt();
+      if(mu_pt > ptmax) {
+	ptmax = mu_pt;
+	primlep = mu;
+      }
+    }
+  }
+
+  return primlep;
+}
+
 
 // based on uhh2::closestParticle
 const Jet * nextJetToMET(const uhh2::Event & event, const std::vector<Jet> & jets) {

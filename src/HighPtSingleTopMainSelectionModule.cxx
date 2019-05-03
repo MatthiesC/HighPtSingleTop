@@ -130,15 +130,15 @@ namespace uhh2 {
     //------------//
 
     hist_noweights.reset(new AndHists(ctx, "0_NoWeights"));
-    //hist_noweights->add_hist(new HighPtSingleTopHists(ctx, "0_NoWeights_CustomHists"));
+    hist_noweights->add_hist(new HighPtSingleTopHists(ctx, "0_NoWeights_CustomHists"));
     hist_lumipuweights.reset(new AndHists(ctx, "1_LumiAndPileupWeights"));
-    //hist_lumipuweights->add_hist(new HighPtSingleTopHists(ctx, "1_LumiAndPileupWeights_CustomHists"));
+    hist_lumipuweights->add_hist(new HighPtSingleTopHists(ctx, "1_LumiAndPileupWeights_CustomHists"));
     hist_leptonsf.reset(new AndHists(ctx, "2_LeptonScaleFactors"));
-    //hist_leptonsf->add_hist(new HighPtSingleTopHists(ctx, "2_LeptonScaleFactors_CustomHists"));
+    hist_leptonsf->add_hist(new HighPtSingleTopHists(ctx, "2_LeptonScaleFactors_CustomHists"));
     hist_deltaRcut.reset(new AndHists(ctx, "3_DeltaRCut"));
-    //hist_deltaRcut->add_hist(new HighPtSingleTopHists(ctx, "3_DeltaRCut_CustomHists"));
+    hist_deltaRcut->add_hist(new HighPtSingleTopHists(ctx, "3_DeltaRCut_CustomHists"));
     hist_1toptag.reset(new AndHists(ctx, "4_OneTopTag"));
-    //hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "4_OneTopTag_CustomHists"));
+    hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "4_OneTopTag_CustomHists"));
     hist_1toptag->add_hist(new HOTVRHists(ctx, "4_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
   }
 

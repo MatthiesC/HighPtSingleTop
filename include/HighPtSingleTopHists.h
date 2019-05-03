@@ -12,8 +12,8 @@ namespace uhh2 {
     virtual void fill(const uhh2::Event & ev) override;
     virtual ~HighPtSingleTopHists();
 
-  private:
-    uhh2::Event::Handle<FlavorParticle> h_primlep;
+    // private:
+    //uhh2::Event::Handle<FlavorParticle> h_primlep;
 
   protected:
     TH1F *deltaR_lepton_nextjet, *deltaR_lepton_leadhotvr, *deltaPhi_lepton_nextjet, *deltaPhi_lepton_leadhotvr, *deltaPhiCos_lepton_nextjet, *deltaPhiCos_lepton_leadhotvr;

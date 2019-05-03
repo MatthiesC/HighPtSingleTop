@@ -15,8 +15,6 @@ using namespace uhh2;
 
 HighPtSingleTopHists::HighPtSingleTopHists(Context & ctx, const string & dirname): Hists(ctx, dirname) {
 
-  h_primlep = ctx.get_handle<FlavorParticle>("PrimaryLepton");
-
   deltaR_lepton_nextjet = book<TH1F>("deltaR_lepton_nextjet", "#DeltaR(lepton, next AK4 jet)", 100, 0, 5);
   deltaR_lepton_leadhotvr = book<TH1F>("deltaR_lepton_leadhotvr", "#DeltaR(lepton, leading HOTVR jet)", 100, 0, 5);
   deltaPhi_lepton_nextjet = book<TH1F>("deltaPhi_lepton_nextjet", "#Delta#phi(lepton, next AK4 jet)", 100, 0, M_PI);
@@ -55,6 +53,10 @@ HighPtSingleTopHists::HighPtSingleTopHists(Context & ctx, const string & dirname
   hotvr2_eta = book<TH1F>("eta_hotvr2", "#eta(2nd leading HOTVR jet)", 60, -3, 3);
   hotvr3_eta = book<TH1F>("eta_hotvr3", "#eta(3rd leading HOTVR jet)", 60, -3, 3);
   hotvr4_eta = book<TH1F>("eta_hotvr4", "#eta(n-th leading HOTVR jet, n #geq 4)", 60, -3, 3);
+  hotvr1_phi = book<TH1F>("phi_hotvr1", "#phi(leading HOTVR jet)", 100, -M_PI, M_PI);
+  hotvr2_phi = book<TH1F>("phi_hotvr2", "#phi(2nd leading HOTVR jet)", 100, -M_PI, M_PI);
+  hotvr3_phi = book<TH1F>("phi_hotvr3", "#phi(3rd leading HOTVR jet)", 100, -M_PI, M_PI);
+  hotvr4_phi = book<TH1F>("phi_hotvr4", "#phi(n-th leading HOTVR jet, n #geq 4)", 100, -M_PI, M_PI);
   hotvr1_pt = book<TH1F>("pt_hotvr1", "p_{T}(leading HOTVR jet) [GeV]", 100, 0, 1000);
   hotvr2_pt = book<TH1F>("pt_hotvr2", "p_{T}(2nd leading HOTVR jet) [GeV]", 100, 0, 1000);
   hotvr1_pt_lowpt = book<TH1F>("pt_hotvr1_lowpt", "p_{T}(leading HOTVR jet) [GeV]", 100, 0, 500);
@@ -76,7 +78,7 @@ void HighPtSingleTopHists::fill(const Event & event) {
 
   double weight = event.weight;
 
-  const FlavorParticle & lepton = event.get(h_primlep);
+  const auto lepton = returnPrimaryLepton(event);
 
   vector<Jet> jets = *event.jets;
   unsigned int Njets = jets.size();
