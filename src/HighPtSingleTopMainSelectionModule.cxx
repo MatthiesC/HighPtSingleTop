@@ -178,7 +178,7 @@ namespace uhh2 {
     hist_deltaRcut->fill(event);
 
     // Require exactly one HOTVR t-tag
-    if(!slct_1toptag->passes(event)) hist_1toptag->fill(event);
+    if(slct_1toptag->passes(event)) hist_1toptag->fill(event);
 
     // Place analysis routines into a new Module!!!
     // End of main selection
