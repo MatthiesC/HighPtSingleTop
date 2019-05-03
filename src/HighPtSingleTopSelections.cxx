@@ -5,6 +5,8 @@
 #include "UHH2/core/include/Event.h"
 #include "UHH2/core/include/FlavorParticle.h"
 
+#include "UHH2/common/include/Utils.h"
+
 #include <stdexcept>
 
 using namespace std;
@@ -41,6 +43,24 @@ bool MTWSelection::passes(const Event & event) {
   auto mtw = calcMTW(lepton, event);
 
   return (mtw > mtw_min);
+}
+
+
+//--------------------------------------//
+// DeltaR(primary lepton, next AK4 jet) //
+//--------------------------------------//
+
+DeltaRCut::DeltaRCut(Context & ctx, double deltaR_min_):
+  h_primlepton(ctx.get_handle<FlavorParticle>("PrimaryLepton")),
+  deltaR_min(deltaR_min_) {}
+
+bool DeltaRCut::passes(const Event & event) {
+
+  const auto lepton = event.get(h_primlepton);
+  const auto jets = *event.jets;
+  double dR = uhh2::deltaR(lepton.v4(), (nextJet(lepton, jets))->v4());
+
+  return (dR > deltaR_min);
 }
 
 

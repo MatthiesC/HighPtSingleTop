@@ -426,8 +426,6 @@
       <Item Name="SystDirection_MuonIso" Value="nominal" />
       <Item Name="SystDirection_MuonTrk" Value="nominal" />
 
-      <Item Name="bTopPtReweighting" Value="true" />
-
     </UserConfig>
   </Cycle>
 </JobConfiguration>

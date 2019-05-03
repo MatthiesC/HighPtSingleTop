@@ -28,6 +28,15 @@ namespace uhh2 {
     double mtw_min;
   };
 
+  class DeltaRCut: public uhh2::Selection {
+  public:
+    DeltaRCut(uhh2::Context & ctx, double deltaR_min_ = 0);
+    virtual bool passes(const uhh2::Event & event) override;
+  private:
+    uhh2::Event::Handle<FlavorParticle> h_primlepton;
+    double deltaR_min;
+  };
+
   class tWgenSignalSelection: public uhh2::Selection {
   public:
     tWgenSignalSelection(uhh2::Context & ctx, bool is_muon_);

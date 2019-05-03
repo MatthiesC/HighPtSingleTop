@@ -6,11 +6,12 @@
 
 #include "UHH2/common/include/MCWeight.h"
 #include "UHH2/common/include/NSelections.h"
+#include "UHH2/common/include/PrimaryLepton.h"
 #include "UHH2/common/include/TopJetIds.h"
-#include "UHH2/common/include/TopPtReweight.h"
 
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
+#include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
 
 #include "UHH2/HOTVR/include/HOTVRHists.h"
 #include "UHH2/HOTVR/include/HOTVRIds.h"
@@ -29,18 +30,19 @@ namespace uhh2 {
     
   private:
     
-    std::unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk;//, sf_toppt;
-    std::unique_ptr<AnalysisModule> scale_variation;
+    std::unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk;
+    std::unique_ptr<AnalysisModule> scale_variation, primarylep;
 
-    std::unique_ptr<Selection> slct_1toptag;
+    std::unique_ptr<Selection> slct_deltaRcut, slct_1toptag;
     
-    std::unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_1toptag;//, hist_topptreweighting;
+    std::unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag;
 
     bool is_data, is_mc, is_muon, is_elec, bTopPtReweighting;
     string dataset_version;
     string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk;
 
     double hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min, hotvr_tau32_max;
+    double deltaR_lepton_nextjet_min;
 
     TopJetId StandardHOTVRTopTagID;
   };
@@ -62,8 +64,6 @@ namespace uhh2 {
 
     dataset_version = ctx.get("dataset_version");
 
-    bTopPtReweighting = ctx.get("bTopPtReweighting") == true;
-
     syst_pileup = ctx.get("SystDirection_Pileup", "nominal");
     syst_muon_trigger = ctx.get("SystDirection_MuonTrig", "nominal");
     syst_muon_id = ctx.get("SystDirection_MuonId", "nominal");
@@ -81,6 +81,8 @@ namespace uhh2 {
     hotvr_jetmass_max = 220;
     hotvr_mpair_min   = 50;
     hotvr_tau32_max   = 0.56;
+
+    deltaR_lepton_nextjet_min = 0.4; // minimum R-distance between primary lepton and next AK4 jet
 
 
     //-----------------//
@@ -105,7 +107,6 @@ namespace uhh2 {
     sf_muon_id.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/data/MuonID_EfficienciesAndSF_average_RunBtoH.root", "MC_NUM_TightID_DEN_genTracks_PAR_pt_eta", 1, "tightID", true, syst_muon_id));
     sf_muon_iso.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/data/MuonIso_EfficienciesAndSF_average_RunBtoH.root", "TightISO_TightID_pt_eta", 1, "iso", true, syst_muon_iso));
     sf_muon_trk.reset(new MCMuonTrkScaleFactor(ctx, "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/data/Tracking_EfficienciesAndSF_BCDEFGH.root", 1, "track", syst_muon_trk));
-    //sf_toppt.reset(new TopPtReweight(ctx, 0.0615, -0.0005, "", "", true, 1.0)); // https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
     scale_variation.reset(new MCScaleVariation(ctx));
 
 
@@ -113,6 +114,7 @@ namespace uhh2 {
     // SELECTIONS //
     //------------//
 
+    slct_deltaRcut.reset(new DeltaRCut(ctx, deltaR_lepton_nextjet_min));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
 
 
@@ -120,22 +122,24 @@ namespace uhh2 {
     // HISTOGRAMS //
     //------------//
 
-    hist_noweights.reset(new AndHists(ctx, "0_NoWeights")); // no weights except initial MC weights
+    hist_noweights.reset(new AndHists(ctx, "0_NoWeights"));
     hist_noweights->add_hist(new HighPtSingleTopHists(ctx, "0_NoWeights_CustomHists"));
     hist_lumipuweights.reset(new AndHists(ctx, "1_LumiAndPileupWeights"));
     hist_lumipuweights->add_hist(new HighPtSingleTopHists(ctx, "1_LumiAndPileupWeights_CustomHists"));
     hist_leptonsf.reset(new AndHists(ctx, "2_LeptonScaleFactors"));
     hist_leptonsf->add_hist(new HighPtSingleTopHists(ctx, "2_LeptonScaleFactors_CustomHists"));
-    //hist_topptreweighting.reset(new AndHists(ctx, "3_TopPtReweighting"));
-    hist_1toptag.reset(new AndHists(ctx, "3_OneTopTag"));
-    hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "3_OneTopTag_CustomHists"));
-    hist_1toptag->add_hist(new HOTVRHists(ctx, "3_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
+    hist_deltaRcut.reset(new AndHists(ctx, "3_DeltaRCut"));
+    hist_deltaRcut->add_hist(new HighPtSingleTopHists(ctx, "3_DeltaRCut_CustomHists"));
+    hist_1toptag.reset(new AndHists(ctx, "4_OneTopTag"));
+    hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "4_OneTopTag_CustomHists"));
+    hist_1toptag->add_hist(new HOTVRHists(ctx, "4_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
 
 
     //---------------//
     // MISCELLANEOUS //
     //---------------//
 
+    primarylep.reset(new PrimaryLepton(ctx));
   }
 
 
@@ -144,6 +148,9 @@ namespace uhh2 {
   //------------//
 
   bool HighPtSingleTopMainSelectionModule::process(Event & event) {
+
+    // Scale variations
+    if(is_mc) scale_variation->process(event);
 
     // Apply scale factors
     hist_noweights->fill(event);
@@ -165,19 +172,17 @@ namespace uhh2 {
     }
     hist_leptonsf->fill(event);
 
-    // Scale variations
-    if(is_mc) scale_variation->process(event);
-
-    // Apply top pt reweighting
-    //if(dataset_version.find("TTbar") == 0) sf_toppt->process(event);
-    //hist_topptreweighting->fill(event);
+    // Apply cut on DeltaR(lepton, jet) to reject QCD
+    primarylep->process(event);
+    if(!slct_deltaRcut->passes(event)) return false;
+    hist_deltaRcut->fill(event);
 
     // Require exactly one HOTVR t-tag
     if(!slct_1toptag->passes(event)) hist_1toptag->fill(event);
 
     // Place analysis routines into a new Module!!!
     // End of main selection
-    return true;
+    return false;
   }
 
 
