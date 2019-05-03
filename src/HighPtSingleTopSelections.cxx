@@ -31,15 +31,15 @@ bool METSelection::passes(const Event & event) {
 // Transverse W boson mass //
 //-------------------------//
 
-MTWSelection::MTWSelection(Context & ctx, double mtw_min_):
-  h_primlepton(ctx.get_handle<FlavorParticle>("PrimaryLepton")),
+MTWSelection::MTWSelection(Context & ctx, double mtw_min_, string primlep_name_):
+  h_primlepton(ctx.get_handle<FlavorParticle>(primlep_name_)),
   mtw_min(mtw_min_) {}
 
 bool MTWSelection::passes(const Event & event) {
 
   assert(event.met);
 
-  const auto lepton = event.get(h_primlepton);
+  const FlavorParticle & lepton = event.get(h_primlepton);
   auto mtw = calcMTW(lepton, event);
 
   return (mtw > mtw_min);
@@ -50,17 +50,16 @@ bool MTWSelection::passes(const Event & event) {
 // DeltaR(primary lepton, next AK4 jet) //
 //--------------------------------------//
 
-DeltaRCut::DeltaRCut(Context & ctx, double deltaR_min_):
-  h_primlepton(ctx.get_handle<FlavorParticle>("PrimaryLepton")),
+DeltaRCut::DeltaRCut(Context & ctx, double deltaR_min_, string primlep_name_):
+  h_primlepton(ctx.get_handle<FlavorParticle>(primlep_name_)),
   deltaR_min(deltaR_min_) {}
 
 bool DeltaRCut::passes(const Event & event) {
 
-  const auto lepton = event.get(h_primlepton);
+  const FlavorParticle & lepton = event.get(h_primlepton);
   const auto jets = *event.jets;
-  double dR = uhh2::deltaR(lepton.v4(), (nextJet(lepton, jets))->v4());
 
-  return (dR > deltaR_min);
+  return deltaR_min < uhh2::deltaR(lepton.v4(), (nextJet(lepton, jets))->v4());
 }
 
 

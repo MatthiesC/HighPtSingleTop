@@ -21,7 +21,7 @@ namespace uhh2 {
 
   class MTWSelection: public uhh2::Selection {
   public:
-    MTWSelection(uhh2::Context & ctx, double mtw_min_ = 0);
+    MTWSelection(uhh2::Context & ctx, double mtw_min_ = 0, std::string primlep_name_ = "PrimaryLepton");
     virtual bool passes(const uhh2::Event & event) override;
   private:
     uhh2::Event::Handle<FlavorParticle> h_primlepton;
@@ -30,7 +30,7 @@ namespace uhh2 {
 
   class DeltaRCut: public uhh2::Selection {
   public:
-    DeltaRCut(uhh2::Context & ctx, double deltaR_min_ = 0);
+    DeltaRCut(uhh2::Context & ctx, double deltaR_min_ = 0, std::string primlep_name_ = "PrimaryLepton");
     virtual bool passes(const uhh2::Event & event) override;
   private:
     uhh2::Event::Handle<FlavorParticle> h_primlepton;
