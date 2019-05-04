@@ -34,7 +34,7 @@ namespace uhh2 {
     
   private:
     
-    std::unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag;
+    std::unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag, sf_btag;
     std::unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop;
 
     std::unique_ptr<Selection> slct_deltaRcut, slct_1toptag, slct_1btag;
@@ -44,7 +44,7 @@ namespace uhh2 {
 
     bool is_data, is_mc, is_muon, is_elec, bTopPtReweighting;
     string dataset_version;
-    string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag;
+    string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag, syst_btag;
 
     double hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min, hotvr_tau32_max;
     double deltaR_lepton_nextjet_min;
@@ -76,6 +76,7 @@ namespace uhh2 {
     syst_muon_iso = ctx.get("SystDirection_MuonIso", "nominal");
     syst_muon_trk = ctx.get("SystDirection_MuonTrk", "nominal");
     syst_hotvr_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
+    syst_btag = ctx.get("SystDirection_CSVv2BTagSF", "nominal");
 
 
     //---------------------//
@@ -118,6 +119,7 @@ namespace uhh2 {
     sf_muon_trk.reset(new MCMuonTrkScaleFactor(ctx, "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/data/Tracking_EfficienciesAndSF_BCDEFGH.root", 1, "track", syst_muon_trk));
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_hotvr_toptag));
+    sf_btag.reset(new MCBTagScaleFactor(ctx, btagWP, "jets", syst_btag));
 
 
     //---------------//
@@ -202,6 +204,7 @@ namespace uhh2 {
     // Require at least one AK4 b-tag (change to DeepCSV once using 10_2_X)
     hist_BTagMCEfficiency->fill(event);
     if(!slct_1btag->passes(event)) return false;
+    sf_btag->process(event);
     hist_1btag->fill(event);
 
     // Place analysis routines into a new Module!!!
