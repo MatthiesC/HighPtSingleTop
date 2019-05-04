@@ -417,6 +417,8 @@
       <Item Name="pileup_directory_data_up" Value="/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/data/MyDataPileupHistogram_72383.root" />
       <Item Name="pileup_directory_data_down" Value="/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/data/MyDataPileupHistogram_66017.root" />
 
+      <Item Name="HOTVRTopTagSFs" Value="/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/HOTVR/data/2016TopTaggingScaleFactors.root" />
+
       <!-- Keys for uncertainties -->
       <Item Name="ScaleVariationMuR" Value="none" />
       <Item Name="ScaleVariationMuF" Value="none" />
@@ -425,6 +427,7 @@
       <Item Name="SystDirection_MuonId" Value="nominal" />
       <Item Name="SystDirection_MuonIso" Value="nominal" />
       <Item Name="SystDirection_MuonTrk" Value="nominal" />
+      <Item Name="SystDirection_HOTVRTopTagSF" Value="nominal" />
 
     </UserConfig>
   </Cycle>

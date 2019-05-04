@@ -15,6 +15,8 @@
 
 #include "UHH2/HOTVR/include/HOTVRHists.h"
 #include "UHH2/HOTVR/include/HOTVRIds.h"
+#include "UHH2/HOTVR/include/HOTVRScaleFactor.h"
+#include "UHH2/HOTVR/include/HadronicTop.h"
 
 
 using namespace std;
@@ -30,8 +32,8 @@ namespace uhh2 {
     
   private:
     
-    std::unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk;
-    std::unique_ptr<AnalysisModule> scale_variation, primarylep;
+    std::unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag;
+    std::unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop;
 
     std::unique_ptr<Selection> slct_deltaRcut, slct_1toptag;
     
@@ -39,7 +41,7 @@ namespace uhh2 {
 
     bool is_data, is_mc, is_muon, is_elec, bTopPtReweighting;
     string dataset_version;
-    string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk;
+    string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag;
 
     double hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min, hotvr_tau32_max;
     double deltaR_lepton_nextjet_min;
@@ -69,6 +71,7 @@ namespace uhh2 {
     syst_muon_id = ctx.get("SystDirection_MuonId", "nominal");
     syst_muon_iso = ctx.get("SystDirection_MuonIso", "nominal");
     syst_muon_trk = ctx.get("SystDirection_MuonTrk", "nominal");
+    syst_hotvr_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
 
 
     //---------------------//
@@ -108,6 +111,7 @@ namespace uhh2 {
     sf_muon_iso.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/data/MuonIso_EfficienciesAndSF_average_RunBtoH.root", "TightISO_TightID_pt_eta", 1, "iso", true, syst_muon_iso));
     sf_muon_trk.reset(new MCMuonTrkScaleFactor(ctx, "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/data/Tracking_EfficienciesAndSF_BCDEFGH.root", 1, "track", syst_muon_trk));
     scale_variation.reset(new MCScaleVariation(ctx));
+    sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_hotvr_toptag));
 
 
     //---------------//
@@ -115,6 +119,7 @@ namespace uhh2 {
     //---------------//
 
     primarylep.reset(new PrimaryLepton(ctx));
+    hadronictop.reset(new HadronicTop(ctx));
 
 
     //------------//
@@ -178,7 +183,12 @@ namespace uhh2 {
     hist_deltaRcut->fill(event);
 
     // Require exactly one HOTVR t-tag
-    if(slct_1toptag->passes(event)) hist_1toptag->fill(event);
+    if(!slct_1toptag->passes(event)) return false;
+    hadronictop->process(event);
+    sf_toptag->process(event);
+    hist_1toptag->fill(event);
+
+    // Require at least one DeepCSV b-tag
 
     // Place analysis routines into a new Module!!!
     // End of main selection
