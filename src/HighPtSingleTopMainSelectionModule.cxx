@@ -4,6 +4,8 @@
 #include "UHH2/core/include/AnalysisModule.h"
 #include "UHH2/core/include/Event.h"
 
+#include "UHH2/common/include/JetHists.h"
+#include "UHH2/common/include/JetIds.h"
 #include "UHH2/common/include/MCWeight.h"
 #include "UHH2/common/include/NSelections.h"
 #include "UHH2/common/include/PrimaryLepton.h"
@@ -35,9 +37,10 @@ namespace uhh2 {
     std::unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag;
     std::unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop;
 
-    std::unique_ptr<Selection> slct_deltaRcut, slct_1toptag;
+    std::unique_ptr<Selection> slct_deltaRcut, slct_1toptag, slct_1btag;
     
-    std::unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag;
+    std::unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag, hist_1btag;
+    std::unique_ptr<Hists> hist_BTagMCEfficiency;
 
     bool is_data, is_mc, is_muon, is_elec, bTopPtReweighting;
     string dataset_version;
@@ -47,6 +50,7 @@ namespace uhh2 {
     double deltaR_lepton_nextjet_min;
 
     TopJetId StandardHOTVRTopTagID;
+    JetId bjetID;
   };
 
 
@@ -93,6 +97,8 @@ namespace uhh2 {
     //-----------------//
 
     StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
+    CSVBTag::wp btagWP = CSVBTag::WP_MEDIUM;
+    bjetID = CSVBTag(btagWP);
 
 
     //----------------//
@@ -128,6 +134,7 @@ namespace uhh2 {
 
     slct_deltaRcut.reset(new DeltaRCut(ctx, deltaR_lepton_nextjet_min));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
+    slct_1btag.reset(new NJetSelection(1, -1, bjetID));
 
 
     //------------//
@@ -145,6 +152,10 @@ namespace uhh2 {
     hist_1toptag.reset(new AndHists(ctx, "4_OneTopTag"));
     hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "4_OneTopTag_CustomHists"));
     hist_1toptag->add_hist(new HOTVRHists(ctx, "4_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
+    hist_BTagMCEfficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", btagWP));
+    hist_1btag.reset(new AndHists(ctx, "5_OneBTag"));
+    hist_1btag->add_hist(new HighPtSingleTopHists(ctx, "5_OneBTag_CustomHists"));
+    hist_1btag->add_hist(new HOTVRHists(ctx, "5_OneBTag_HOTVRTopTag", StandardHOTVRTopTagID));
   }
 
 
@@ -188,7 +199,10 @@ namespace uhh2 {
     sf_toptag->process(event);
     hist_1toptag->fill(event);
 
-    // Require at least one DeepCSV b-tag
+    // Require at least one AK4 b-tag (change to DeepCSV once using 10_2_X)
+    hist_BTagMCEfficiency->fill(event);
+    if(!slct_1btag->passes(event)) return false;
+    hist_1btag->fill(event);
 
     // Place analysis routines into a new Module!!!
     // End of main selection
