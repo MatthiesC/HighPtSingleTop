@@ -94,3 +94,91 @@ bool TMVASetup::process(Event & event) {
 
   return true;
 }
+
+
+TMVAApplication::TMVAApplication(Context & ctx, const string & tmva_weightfile, const string & handle_name) {
+
+  reader = new TMVA::Reader("Silent");
+
+  int i = 0;
+
+  reader->AddVariable("tmva_jet1_pt", &floatvars[i++]);
+  reader->AddVariable("tmva_jet2_pt", &floatvars[i++]);
+  reader->AddVariable("tmva_jet1_eta", &floatvars[i++]);
+  reader->AddVariable("tmva_jet2_eta", &floatvars[i++]);
+  reader->AddVariable("tmva_number_ak4", &floatvars[i++]);
+  reader->AddSpectator("tmva_hotvr1_pt", &floatvars[i++]);
+  reader->AddVariable("tmva_number_hotvr", &floatvars[i++]);
+  reader->AddVariable("tmva_jet1_area", &floatvars[i++]);
+  reader->AddVariable("tmva_jet2_area", &floatvars[i++]);
+  reader->AddVariable("tmva_met_pt", &floatvars[i++]);
+  reader->AddVariable("tmva_deltaPhi_met_lepton", &floatvars[i++]);
+  reader->AddVariable("tmva_deltaPhi_met_ak4", &floatvars[i++]);
+  reader->AddVariable("tmva_deltaPhi_met_hotvr1", &floatvars[i++]);
+  reader->AddVariable("tmva_deltaPhi_lepton_ak4", &floatvars[i++]);
+  reader->AddVariable("tmva_deltaPhi_lepton_hotvr1", &floatvars[i++]);
+  reader->AddVariable("tmva_mtw", &floatvars[i++]);
+  reader->AddVariable("tmva_deltaR_lepton_ak4", &floatvars[i++]);
+  reader->AddVariable("tmva_deltaR_lepton_hotvr1", &floatvars[i++]);
+  reader->AddVariable("tmva_lepton_eta", &floatvars[i++]);
+  reader->AddVariable("tmva_lepton_pt", &floatvars[i++]);
+  reader->AddVariable("tmva_deltaR_jet1_ak4", &floatvars[i++]);
+  reader->AddVariable("tmva_deltaPhi_jet1_ak4", &floatvars[i++]);
+  reader->AddVariable("tmva_deltaR_jet2_ak4", &floatvars[i++]);
+  reader->AddVariable("tmva_deltaPhi_jet2_ak4", &floatvars[i++]);
+  reader->AddSpectator("tmva_toptag_pt", &floatvars[i++]);
+
+  reader->BookMVA("BDT", tmva_weightfile);
+
+  h_BDTResponse = ctx.get_handle<float>(handle_name);
+}
+
+
+bool TMVAApplication::process(Event & event) {
+
+  int i = 0;
+
+  vector<Jet> jets = *event.jets;
+  vector<TopJet> hotvrjets = *event.topjets;
+  MET met = *event.met;
+  const auto lepton = returnPrimaryLepton(event);
+
+  floatvars[i++] = float(jets.at(0).pt());
+  floatvars[i++] = float(jets.at(1).pt());
+  floatvars[i++] = float(abs(jets.at(0).eta()));
+  floatvars[i++] = float(abs(jets.at(1).eta()));
+  floatvars[i++] = float(jets.size());
+  floatvars[i++] = float(0); // spectator
+  floatvars[i++] = float(hotvrjets.size());
+  floatvars[i++] = float(TMath::ATan(TMath::Sqrt(jets.at(0).jetArea()/M_PI)));
+  floatvars[i++] = float(TMath::ATan(TMath::Sqrt(jets.at(1).jetArea()/M_PI)));
+  floatvars[i++] = float(met.pt());
+  floatvars[i++] = float(TMath::Cos(uhh2::deltaPhi(met.v4(), lepton.v4())));
+  floatvars[i++] = float(TMath::Cos(uhh2::deltaPhi(met.v4(), (nextJetToMET(event, jets))->v4())));
+  floatvars[i++] = float(TMath::Cos(uhh2::deltaPhi(met.v4(), hotvrjets.at(0).v4())));
+  floatvars[i++] = float(TMath::Cos(uhh2::deltaPhi(lepton.v4(), (nextJet(lepton, jets)->v4()))));
+  floatvars[i++] = float(TMath::Cos(uhh2::deltaPhi(lepton.v4(), hotvrjets.at(0).v4())));
+  floatvars[i++] = float(calcMTW(lepton, event));
+  floatvars[i++] = float(TMath::ATan(uhh2::deltaR(lepton.v4(), (nextJet(lepton, jets)->v4()))));
+  floatvars[i++] = float(TMath::ATan(uhh2::deltaR(lepton.v4(), hotvrjets.at(0).v4())));
+  floatvars[i++] = float(abs(lepton.eta()));
+  floatvars[i++] = float(lepton.pt());
+  floatvars[i++] = float(jets.size() > 1 ? TMath::ATan(uhh2::deltaR(jets.at(0).v4(), (closestParticle(jets.at(0), jets))->v4())) : -1);
+  floatvars[i++] = float(jets.size() > 1 ? TMath::Cos(uhh2::deltaPhi(jets.at(0).v4(), (closestParticle(jets.at(0), jets))->v4())) : -1);
+  floatvars[i++] = float(jets.size() > 1 ? TMath::ATan(uhh2::deltaR(jets.at(1).v4(), (closestParticle(jets.at(1), jets))->v4())) : -1);
+  floatvars[i++] = float(jets.size() > 1 ? TMath::Cos(uhh2::deltaPhi(jets.at(1).v4(), (closestParticle(jets.at(1), jets))->v4())) : -1);
+  floatvars[i++] = float(0); // spectator
+  
+  float response = -100;
+  response = reader->EvaluateMVA("BDT");
+
+  event.set(h_BDTResponse, response);
+
+  return true;
+}
+
+
+TMVAApplication::~TMVAApplication() {
+
+  delete reader;
+}
