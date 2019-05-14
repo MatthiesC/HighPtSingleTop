@@ -8,7 +8,7 @@ class DNNSetup: public uhh2::AnalysisModule {
 
  public:
 
-  explicit DNNSetup(uhh2::Context & ctx, std::vector<uhh2::Event::Handle<float>> & h_dnn_inputs, const unsigned int & n_hotvr, const unsigned int & n_jets, const float & zero_padding_value = -3);
+  explicit DNNSetup(uhh2::Context & ctx, std::vector<uhh2::Event::Handle<float>> & h_dnn_inputs, const unsigned int & n_hotvr, const unsigned int & n_jets, const float & zero_padding_value = -10);
   virtual bool process(uhh2::Event & event) override;
 
  private:

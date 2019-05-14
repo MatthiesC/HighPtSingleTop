@@ -80,3 +80,29 @@ const Jet * nextJetToMET(const uhh2::Event & event, const std::vector<Jet> & jet
 
   return next;
 }
+
+
+// for fun
+void it_works() {
+  std::cout << "IT HELLA WORKS! YEAH!" << std::endl;
+  std::cout << "░░░░░░░░░░▄▄█▀▀▀▀▀▀▀▀█▄▄░░░░░░░░" << std::endl;
+  std::cout << "░░░░░░░▄▄▀▀░░░░░░░░░░░░▀▀▄▄░░░░░" << std::endl;
+  std::cout << "░░░░░▄█▀░░░░▄▀░░░░▄░░░░░░░▀█░░░░" << std::endl;
+  std::cout << "░░░░██▄▄████░░░░░░▀▄░░░░░░░░█▄░░" << std::endl;
+  std::cout << "░░▄████▀███▄▀▄░░░░░░███▄▄▄▄░░█░░" << std::endl;
+  std::cout << "░▄█████▄████░██░░░▄███▄▄░▀█▀░░█░" << std::endl;
+  std::cout << "▄███████▀▀░█░▄█░▄███▀█████░█░░▀▄" << std::endl;
+  std::cout << "█░█▀██▄▄▄▄█▀░█▀█▀██████▀░██▀█░░█" << std::endl;
+  std::cout << "█░█░▀▀▀▀▀░░░█▀░█░███▀▀░░▄█▀░█░░█" << std::endl;
+  std::cout << "█░░█▄░░░░▄▄▀░░░█░▀██▄▄▄██▀░░█▄░█" << std::endl;
+  std::cout << "█░░░░▀█▀▀▀░░░░░░█░░▀▀▀▀░░░░▄█░░█" << std::endl;
+  std::cout << "█░░░░░░░░░░░░░░░░▀▄░░░░░░▄█▀░░░█" << std::endl;
+  std::cout << "░█░░░░░░░░░░░░░░░░▀▀▀▀▀▀▀▄░░░░█░" << std::endl;
+  std::cout << "░░█░░░░░░▄▄▄▄▄▄▄░░░░░░░░░░░░░▄▀░" << std::endl;
+  std::cout << "░░░▀▄░░░░░▀█▄░░░▀▀██▄░░░░░░░▄▀░░" << std::endl;
+  std::cout << "░░░░░▀▄▄░░░░░▀▀▀▀▀░░░░░░░░▄▀░░░░" << std::endl;
+  std::cout << "░░░░░░░░▀▀▄▄▄░░░░░░░░▄▄▄▀▀█░░░░░" << std::endl;
+  std::cout << "░░░░░░░░░░▄▀▀█████▀▀▀▀░░░░██░░░░" << std::endl;
+  std::cout << "░░░░░░░░░█░░░██░░░█▀▀▀▀▀▀▀▀█░░░░" << std::endl;
+  return;
+}

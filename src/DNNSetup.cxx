@@ -68,6 +68,8 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
   // Fill the event handle vector with the variable names:
   for(unsigned int i = 0; i < m_inputs.size(); i++) {
     m_h_dnn_inputs.push_back(ctx.declare_event_output<float>(m_inputs.at(i))); }
+
+  it_works();
 }
 
 

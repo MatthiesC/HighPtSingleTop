@@ -49,3 +49,5 @@ double calcMTW(const FlavorParticle&, const uhh2::Event&);
 FlavorParticle returnPrimaryLepton(const uhh2::Event&);
 
 const Jet * nextJetToMET(const uhh2::Event&, const std::vector<Jet>&);
+
+void it_works();
