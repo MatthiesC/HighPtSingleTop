@@ -15,8 +15,10 @@
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
 
-#include "UHH2/HighPtSingleTop/include/TMVASetup.h"
-#include "UHH2/HighPtSingleTop/include/TMVAHists.h"
+//#include "UHH2/HighPtSingleTop/include/TMVASetup.h"
+//#include "UHH2/HighPtSingleTop/include/TMVAHists.h"
+
+#include "UHH2/HighPtSingleTop/include/DNNSetup.h"
 
 #include "UHH2/HOTVR/include/HOTVRHists.h"
 #include "UHH2/HOTVR/include/HOTVRIds.h"
@@ -37,13 +39,13 @@ namespace uhh2 {
     
   private:
     
-    std::unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag, sf_btag;
-    std::unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, tmva_setup, tmva_reader;
+    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag;//, sf_btag;
+    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, dnn_setup;//, tmva_setup, tmva_reader;
 
-    std::unique_ptr<Selection> slct_deltaRcut, slct_1toptag, slct_2jets, slct_1btag;
+    unique_ptr<Selection> slct_deltaRcut, slct_1toptag; //, slct_1btag;
     
-    std::unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag, hist_tmva, hist_1btag;
-    std::unique_ptr<Hists> hist_BTagMCEfficiency;
+    unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag;//, hist_tmva, hist_1btag;
+    //unique_ptr<Hists> hist_BTagMCEfficiency;
 
     bool is_data, is_mc, is_muon, is_elec, bTopPtReweighting;
     string dataset_version;
@@ -53,9 +55,11 @@ namespace uhh2 {
     double deltaR_lepton_nextjet_min;
 
     TopJetId StandardHOTVRTopTagID;
-    JetId bjetID;
+    //JetId bjetID;
 
-    std::vector<Event::Handle<float>> h_tmva_variables;
+    //vector<Event::Handle<float>> h_tmva_variables;
+    //unique_ptr<vector<uhh2::Event::Handle<float>>> h_dnn_inputs;
+    vector<Event::Handle<float>> h_dnn_inputs;
   };
 
 
@@ -103,8 +107,8 @@ namespace uhh2 {
     //-----------------//
 
     StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
-    CSVBTag::wp btagWP = CSVBTag::WP_MEDIUM;
-    bjetID = CSVBTag(btagWP);
+    //CSVBTag::wp btagWP = CSVBTag::WP_MEDIUM;
+    //bjetID = CSVBTag(btagWP);
 
 
     //----------------//
@@ -124,7 +128,7 @@ namespace uhh2 {
     sf_muon_trk.reset(new MCMuonTrkScaleFactor(ctx, "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/data/Tracking_EfficienciesAndSF_BCDEFGH.root", 1, "track", syst_muon_trk));
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_hotvr_toptag));
-    sf_btag.reset(new MCBTagScaleFactor(ctx, btagWP, "jets", syst_btag));
+    //sf_btag.reset(new MCBTagScaleFactor(ctx, btagWP, "jets", syst_btag));
 
 
     //---------------//
@@ -133,6 +137,7 @@ namespace uhh2 {
 
     primarylep.reset(new PrimaryLepton(ctx));
     hadronictop.reset(new HadronicTop(ctx));
+    dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8));
 
 
     //------------//
@@ -141,8 +146,8 @@ namespace uhh2 {
 
     slct_deltaRcut.reset(new DeltaRCut(ctx, deltaR_lepton_nextjet_min));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
-    slct_1btag.reset(new NJetSelection(1, -1, bjetID));
-    slct_2jets.reset(new NJetSelection(2, -1));
+    //slct_1btag.reset(new NJetSelection(1, -1, bjetID));
+    //slct_2jets.reset(new NJetSelection(2, -1));
 
 
     //------------//
@@ -160,22 +165,22 @@ namespace uhh2 {
     hist_1toptag.reset(new AndHists(ctx, "4_OneTopTag"));
     hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "4_OneTopTag_CustomHists"));
     hist_1toptag->add_hist(new HOTVRHists(ctx, "4_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
-    hist_tmva.reset(new AndHists(ctx, "5_TMVA"));
-    hist_tmva->add_hist(new HighPtSingleTopHists(ctx, "5_TMVA_CustomHists"));
-    hist_tmva->add_hist(new HOTVRHists(ctx, "5_TMVA_HOTVRTopTag", StandardHOTVRTopTagID));
-    hist_tmva->add_hist(new TMVAHists(ctx, "5_TMVA_BDTHists"));
-    hist_BTagMCEfficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", btagWP));
-    hist_1btag.reset(new AndHists(ctx, "6_OneBTag"));
-    hist_1btag->add_hist(new HighPtSingleTopHists(ctx, "6_OneBTag_CustomHists"));
-    hist_1btag->add_hist(new HOTVRHists(ctx, "6_OneBTag_HOTVRTopTag", StandardHOTVRTopTagID));
-    hist_1btag->add_hist(new TMVAHists(ctx, "6_OneBTag_BDTHists"));
+    //hist_tmva.reset(new AndHists(ctx, "5_TMVA"));
+    //hist_tmva->add_hist(new HighPtSingleTopHists(ctx, "5_TMVA_CustomHists"));
+    //hist_tmva->add_hist(new HOTVRHists(ctx, "5_TMVA_HOTVRTopTag", StandardHOTVRTopTagID));
+    //hist_tmva->add_hist(new TMVAHists(ctx, "5_TMVA_BDTHists"));
+    //hist_BTagMCEfficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", btagWP));
+    //hist_1btag.reset(new AndHists(ctx, "6_OneBTag"));
+    //hist_1btag->add_hist(new HighPtSingleTopHists(ctx, "6_OneBTag_CustomHists"));
+    //hist_1btag->add_hist(new HOTVRHists(ctx, "6_OneBTag_HOTVRTopTag", StandardHOTVRTopTagID));
+    //hist_1btag->add_hist(new TMVAHists(ctx, "6_OneBTag_BDTHists"));
 
 
     //------//
     // TMVA //
     //------//
 
-    std::vector<std::string> tmva_names = {"tmva_jet1_pt", "tmva_jet2_pt", "tmva_jet3_pt", "tmva_jet4_pt", "tmva_jet5_pt", "tmva_jet6_pt", 
+    /*std::vector<std::string> tmva_names = {"tmva_jet1_pt", "tmva_jet2_pt", "tmva_jet3_pt", "tmva_jet4_pt", "tmva_jet5_pt", "tmva_jet6_pt", 
 					   "tmva_jet1_eta", "tmva_jet2_eta", "tmva_jet3_eta", "tmva_jet4_eta", "tmva_jet5_eta", "tmva_jet6_eta", "tmva_number_ak4",
 					   "tmva_hotvr1_pt", "tmva_hotvr2_pt", "tmva_hotvr3_pt", "tmva_hotvr4_pt", "tmva_hotvr1_eta", "tmva_hotvr2_eta", "tmva_hotvr3_eta", "tmva_hotvr4_eta", "tmva_number_hotvr",
 					   "tmva_jet1_area", "tmva_jet2_area", "tmva_jet3_area", "tmva_jet4_area", "tmva_jet5_area", "tmva_jet6_area", 
@@ -190,7 +195,7 @@ namespace uhh2 {
     }
     tmva_setup.reset(new TMVASetup(ctx, tmva_names, StandardHOTVRTopTagID));
     const std::string tmva_weightfile = "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/HighPtSingleTop/data/TMVAClassification_BDT_adv2_BDT_AdaB_Gini.weights.xml";
-    tmva_reader.reset(new TMVAApplication(ctx, tmva_weightfile));
+    tmva_reader.reset(new TMVAApplication(ctx, tmva_weightfile)); */
 }
 
 
@@ -201,27 +206,22 @@ namespace uhh2 {
   bool HighPtSingleTopMainSelectionModule::process(Event & event) {
 
     // Scale variations
-    //    if(is_mc)
     scale_variation->process(event);
 
     // Apply scale factors
     hist_noweights->fill(event);
-    //if(is_mc) {
-      sf_lumi->process(event);
-      sf_pileup->process(event);
-      //}
+    sf_lumi->process(event);
+    sf_pileup->process(event);
     hist_lumipuweights->fill(event);
-    //if(is_mc) {
-      if(is_muon) {
-	sf_muon_trig->process(event);
-	sf_muon_id->process(event);
-	sf_muon_iso->process(event);
-	sf_muon_trk->process(event);
-      }
-      else if(is_elec) {
-	// electron trigger, id, reco
-      }
-      //}
+    if(is_muon) {
+      sf_muon_trig->process(event);
+      sf_muon_id->process(event);
+      sf_muon_iso->process(event);
+      sf_muon_trk->process(event);
+    }
+    else if(is_elec) {
+      // electron trigger, id, reco
+    }
     hist_leptonsf->fill(event);
 
     // Apply cut on DeltaR(lepton, jet) to reject QCD
@@ -235,17 +235,20 @@ namespace uhh2 {
     sf_toptag->process(event);
     hist_1toptag->fill(event);
 
+    // DNN setup
+    dnn_setup->process(event);
+
     // Do some TMVA shenanigans ...
-    tmva_setup->process(event);
-    if(!slct_2jets->passes(event)) return false;
-    tmva_reader->process(event);
-    hist_tmva->fill(event);
+    //tmva_setup->process(event);
+    //if(!slct_2jets->passes(event)) return false;
+    //tmva_reader->process(event);
+    //hist_tmva->fill(event);
 
     // Require at least one AK4 b-tag (change to DeepCSV once using 10_2_X)
-    hist_BTagMCEfficiency->fill(event);
-    if(!slct_1btag->passes(event)) return false;
-    sf_btag->process(event);
-    hist_1btag->fill(event);
+    //hist_BTagMCEfficiency->fill(event);
+    //if(!slct_1btag->passes(event)) return false;
+    //sf_btag->process(event);
+    //hist_1btag->fill(event);
 
     // Place analysis routines into a new Module!!!
     // End of main selection
