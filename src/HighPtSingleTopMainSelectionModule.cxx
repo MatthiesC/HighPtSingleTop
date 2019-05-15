@@ -14,10 +14,8 @@
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
-
 //#include "UHH2/HighPtSingleTop/include/TMVASetup.h"
 //#include "UHH2/HighPtSingleTop/include/TMVAHists.h"
-
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
 
 #include "UHH2/HOTVR/include/HOTVRHists.h"
@@ -58,8 +56,8 @@ namespace uhh2 {
     //JetId bjetID;
 
     //vector<Event::Handle<float>> h_tmva_variables;
-    //unique_ptr<vector<uhh2::Event::Handle<float>>> h_dnn_inputs;
     vector<Event::Handle<float>> h_dnn_inputs;
+    Event::Handle<float> h_event_weight, h_toptag_pt;
   };
 
 
@@ -138,6 +136,8 @@ namespace uhh2 {
     primarylep.reset(new PrimaryLepton(ctx));
     hadronictop.reset(new HadronicTop(ctx));
     dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8));
+    h_event_weight = ctx.declare_event_output<float>("DNN_EventWeight");
+    h_toptag_pt = ctx.declare_event_output<float>("DNN_TopTagPt");
 
 
     //------------//
@@ -237,6 +237,10 @@ namespace uhh2 {
 
     // DNN setup
     dnn_setup->process(event);
+    event.set(h_event_weight, event.weight);
+    TopJet toptaggedjet;
+    for(auto t : *event.topjets) { if(StandardHOTVRTopTagID(t, event)) toptaggedjet = t; }
+    event.set(h_toptag_pt, toptaggedjet.v4().Pt());
 
     // Do some TMVA shenanigans ...
     //tmva_setup->process(event);
