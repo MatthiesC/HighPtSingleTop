@@ -235,6 +235,8 @@ namespace uhh2 {
     sf_toptag->process(event);
     hist_1toptag->fill(event);
 
+    // Need to implement CSVv2 reweighting since I use b-tagging information as DNN input
+
     // DNN setup
     dnn_setup->process(event);
     event.set(h_event_weight, event.weight);
