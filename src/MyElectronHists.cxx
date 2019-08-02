@@ -2,7 +2,7 @@
 #include "UHH2/core/include/Event.h"
 #include "UHH2/core/include/LorentzVector.h"
 
-#include "UHH2/BoostedSingleTop/include/MyElectronHists.h"
+#include "UHH2/HighPtSingleTop/include/MyElectronHists.h"
 
 #include "TH1F.h"
 #include "TH2F.h"

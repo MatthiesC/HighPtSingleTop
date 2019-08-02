@@ -1,7 +1,7 @@
 // based on TTbarGen.cxx
 // edited by Christopher Matthies, 02/2018
 
-#include "UHH2/BoostedSingleTop/include/SingleTopGen_tWch.h"
+#include "UHH2/HighPtSingleTop/include/SingleTopGen_tWch.h"
 // #include "UHH2/core/include/Utils.h"
 
 using namespace std;
