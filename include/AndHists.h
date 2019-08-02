@@ -10,6 +10,7 @@
 namespace uhh2 {
 
   class AndHists: public Hists {
+
   public:
     AndHists(uhh2::Context &ctx, const std::string & dirname);
 
@@ -18,13 +19,13 @@ namespace uhh2 {
     void add_hist(uhh2::Hists *hist);
     std::string get_dirname();
 
+  private:
+    std::string m_dirname;
+
   protected:
     std::vector<uhh2::Hists*> hists_vector;
 
     TH1F *nevt, *wevt;
-
-  private:
-    std::string m_dirname;
 
   };
 
