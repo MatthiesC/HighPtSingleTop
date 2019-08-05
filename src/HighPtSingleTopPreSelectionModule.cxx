@@ -17,7 +17,6 @@
 #include "UHH2/common/include/Utils.h"
 
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
-#include "UHH2/HighPtSingleTop/include/HighPtSingleTopModules.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
 #include "UHH2/HighPtSingleTop/include/SingleTopGen_tWch.h"
@@ -47,7 +46,8 @@ namespace uhh2 {
     std::unique_ptr<AnalysisModule> SingleTopGen_tWchProd;
 
     std::unique_ptr<Selection> slct_mttbarGenCut, slct_tWgenSignal;
-    std::unique_ptr<Selection> trig_IsoMu24, trig_IsoTkMu24, trig_Ele27, trig_Pho175;
+    //std::unique_ptr<Selection> trig_IsoMu24, trig_IsoTkMu24, trig_Ele27, trig_Pho175;
+    std::unique_ptr<Selection> slct_trigger;
     std::unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
     std::unique_ptr<Selection> slct_met, slct_1jet, slct_1hotvr;
     
@@ -158,15 +158,10 @@ namespace uhh2 {
     slct_tWgenSignal.reset(new tWgenSignalSelection(ctx, is_muon));
 
     // For recommendations, see https://twiki.cern.ch/twiki/bin/view/CMS/SingleTopTWRun2
-
     // https://twiki.cern.ch/twiki/bin/view/CMS/MuonHLT2016
-    trig_IsoMu24.reset(new TriggerSelection("HLT_IsoMu24_v*"));
-    trig_IsoTkMu24.reset(new TriggerSelection("HLT_IsoTkMu24_v*"));
-
     // https://twiki.cern.ch/twiki/bin/view/CMS/EgHLTRunIISummary
-    // https://indico.cern.ch/event/662745/   Approval of SFs for this trigger combination
-    trig_Ele27.reset(new TriggerSelection("HLT_Ele27_WPTight_Gsf_v*"));
-    trig_Pho175.reset(new TriggerSelection("HLT_Photon175_v*"));
+    // https://indico.cern.ch/event/662745/   Approval of SFs for one of the previously used trigger combinations (see git commit history)
+    slct_trigger.reset(new HighPtSingleTopTriggerSelection(ctx));
 
     slct_1muon.reset(new NMuonSelection(1, 1));
     slct_0muon.reset(new NMuonSelection(0, 0));
@@ -225,12 +220,7 @@ namespace uhh2 {
     hist_common->fill(event);
 
     // Trigger paths
-    if(is_muon) {
-      if(!(trig_IsoMu24->passes(event) || trig_IsoTkMu24->passes(event))) return false;
-    }
-    else if(is_elec) {
-      if(!(trig_Ele27->passes(event) || trig_Pho175->passes(event))) return false;
-    }
+    if(!slct_trigger->passes(event)) return false;
     hist_trigger->fill(event);
 
     // Single-lepton selection and veto on additional leptons

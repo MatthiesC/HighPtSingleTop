@@ -8,6 +8,8 @@
 
 #include "UHH2/HighPtSingleTop/include/SingleTopGen_tWch.h"
 
+#include "UHH2/common/include/Utils.h"
+
 
 namespace uhh2 {
     
@@ -44,5 +46,18 @@ namespace uhh2 {
   private:
     uhh2::Event::Handle<SingleTopGen_tWch> h_GENtW;
     bool is_muon;
+  };
+
+  // copied from Alex
+  class HighPtSingleTopTriggerSelection : public uhh2::Selection {
+  public:
+    HighPtSingleTopTriggerSelection(uhh2::Context &ctx);
+    virtual bool passes(const uhh2::Event &event) override;
+  private:
+    Year year;
+    bool is_muo, is_ele;
+    std::unique_ptr<uhh2::Selection> trig_isomu24, trig_isotkmu24, trig_isomu27;
+    std::unique_ptr<uhh2::Selection> trig_ele27, trig_ele32, trig_ele35;
+    std::unique_ptr<uhh2::Selection> trig_photon175, trig_photon200;
   };
 }

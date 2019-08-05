@@ -6,6 +6,7 @@
 #include "UHH2/core/include/FlavorParticle.h"
 
 #include "UHH2/common/include/Utils.h"
+#include "UHH2/common/include/TriggerSelection.h"
 
 #include <stdexcept>
 
@@ -85,4 +86,66 @@ bool tWgenSignalSelection::passes(const Event & event) {
   }
 
   return true;
+}
+
+
+
+// copied from Alex
+HighPtSingleTopTriggerSelection::HighPtSingleTopTriggerSelection(Context &ctx) {
+  year = extract_year(ctx);
+  is_ele = ctx.get("analysis_channel") == "ELECTRON";
+  is_muo = ctx.get("analysis_channel") == "MUON";    
+
+  trig_isomu24.reset(new TriggerSelection("HLT_IsoMu24_v*"));
+  trig_isotkmu24.reset(new TriggerSelection("HLT_IsoTkMu24_v*"));
+  trig_isomu27.reset(new TriggerSelection("HLT_IsoMu27_v*"));
+
+  trig_ele27.reset(new TriggerSelection("HLT_Ele27_WPTight_Gsf_v*"));
+  trig_ele32.reset(new TriggerSelection("HLT_Ele32_WPTight_Gsf_v*"));
+  trig_ele35.reset(new TriggerSelection("HLT_Ele35_WPTight_Gsf_v*"));
+
+  trig_photon175.reset(new TriggerSelection("HLT_Photon175_v*"));
+  trig_photon200.reset(new TriggerSelection("HLT_Photon200_v*"));
+
+}
+
+bool HighPtSingleTopTriggerSelection::passes(const Event &event) {
+
+  if (year == Year::is2016v3) 
+    {
+      if (is_ele)
+	{
+	  return (trig_ele27->passes(event) || trig_photon175->passes(event));
+	}
+      if (is_muo)
+	{
+	  return (trig_isomu24->passes(event) || trig_isotkmu24->passes(event));
+	}
+    }
+
+  else if (year == Year::is2017v2) 
+    {
+      if (is_ele)
+	{
+	  return (trig_ele35->passes(event) || trig_photon200->passes(event));
+	}
+      if (is_muo)
+	{
+	  return (trig_isomu27->passes(event));
+	}
+    }
+  
+  else if (year == Year::is2018)
+    {
+      if (is_ele)
+	{
+	  return (trig_ele32->passes(event));
+	}
+      if (is_muo)
+	{
+	  return (trig_isomu24->passes(event));
+	}
+    }
+
+  return false;
 }
