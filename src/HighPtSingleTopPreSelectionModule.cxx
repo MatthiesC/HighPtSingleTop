@@ -4,7 +4,7 @@
 #include "UHH2/core/include/AnalysisModule.h"
 #include "UHH2/core/include/Event.h"
 
-#include "UHH2/common/include/LumiSelection.h"
+#include "UHH2/common/include/CommonModules.h"
 #include "UHH2/common/include/AdditionalSelections.h"
 #include "UHH2/common/include/TriggerSelection.h"
 #include "UHH2/common/include/ObjectIdUtils.h"
@@ -14,12 +14,15 @@
 #include "UHH2/common/include/NSelections.h"
 #include "UHH2/common/include/CleaningModules.h"
 #include "UHH2/common/include/PrimaryLepton.h"
+#include "UHH2/common/include/Utils.h"
 
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopModules.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
 #include "UHH2/HighPtSingleTop/include/SingleTopGen_tWch.h"
+
+#include "UHH2/HOTVR/include/HOTVRJetCorrectionModule.h"
 
 
 using namespace std;
@@ -34,26 +37,29 @@ namespace uhh2 {
     virtual bool process(Event & event) override;
     
   private:
+
+    Year year;
     
-    std::unique_ptr<AnalysisModule> object_setup, clnr_muon, clnr_elec;
+    std::unique_ptr<CommonModules> common_modules;
+
+    std::unique_ptr<AnalysisModule> clnr_muon, clnr_elec, clnr_hotvr, hotvr_jec_module;
     std::unique_ptr<AnalysisModule> primarylep;
     std::unique_ptr<AnalysisModule> SingleTopGen_tWchProd;
 
-    std::unique_ptr<Selection> slct_lumi, slct_mttbarGenCut;
+    std::unique_ptr<Selection> slct_mttbarGenCut, slct_tWgenSignal;
     std::unique_ptr<Selection> trig_IsoMu24, trig_IsoTkMu24, trig_Ele27, trig_Pho175;
     std::unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
-    std::unique_ptr<Selection> slct_met, slct_1jet, slct_1hotvr, slct_tWgenSignal;
+    std::unique_ptr<Selection> slct_met, slct_1jet, slct_1hotvr;
     
-    std::unique_ptr<AndHists> hist_nocuts, hist_trigger, hist_cleaning, hist_1lepton, hist_met, hist_1jet, hist_1hotvr;
+    std::unique_ptr<AndHists> hist_common, hist_trigger, hist_cleaning, hist_1lepton, hist_met, hist_1jet, hist_1hotvr;
 
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
 
-    MuonId muonID;
-    double muonPt_min, muonEta_max, muonIso_max;
-    ElectronId elecID;
-    double elecPt_min, elecEta_max;
+    double muonPt_min, muonEta_max, muonPt_min_veto, muonEta_max_veto, muonIso_max;
+    double elecPt_min, elecEta_max, elecPt_min_veto, elecEta_max_veto;
     double met_min;
+    double jetPt_min, jetEta_max, hotvrPt_min, hotvrEta_max;
   };
 
 
@@ -62,7 +68,9 @@ namespace uhh2 {
     //------//
     // KEYS //
     //------//
-    
+
+    year = extract_year(ctx);
+
     is_data = ctx.get("dataset_type") == "DATA";
     is_mc   = ctx.get("dataset_type") == "MC";
     is_muon = ctx.get("analysis_channel") == "MUON";
@@ -78,6 +86,18 @@ namespace uhh2 {
     // KINEMATIC VARIABLES //
     //---------------------//
 
+    muonPt_min_veto = 30.0;
+    muonEta_max_veto = 2.4;
+
+    elecPt_min_veto = 30.0;
+    elecEta_max_veto = 2.4;
+
+    jetPt_min = 30.0;
+    jetEta_max = 2.4;
+
+    hotvrPt_min = 0.0; // needs to be zero so that migrations from < 200 GeV bins into the boosted sector can still be calculated once the unfolding happens (although these migrations are probably tiny)
+    hotvrEta_max = 2.5;
+
     muonPt_min  = 50.0;
     muonEta_max =  2.4;
     muonIso_max =  0.15;
@@ -92,24 +112,48 @@ namespace uhh2 {
     // IDENTIFICATIONS //
     //-----------------//
 
-    muonID = AndId<Muon>(MuonIDTight(), PtEtaCut(muonPt_min, muonEta_max), MuonIso(muonIso_max));
-    elecID = AndId<Electron>(ElectronID_Spring16_tight, PtEtaCut(elecPt_min, elecEta_max));
+    MuonId muonID_veto = AndId<Muon>(MuonID(Muon::Selector::CutBasedIdLoose), PtEtaCut(muonPt_min_veto, muonEta_max_veto));
+    MuonId muonID = AndId<Muon>(MuonID(Muon::Selector::CutBasedIdTight), PtEtaCut(muonPt_min, muonEta_max), MuonIso(muonIso_max));
+    ElectronId elecID_veto;
+    ElectronId elecID;
+    if (year == Year::is2016v2 || year == Year::is2016v3)
+      {
+	elecID_veto = AndId<Electron>(ElectronID_Summer16_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
+	elecID = AndId<Electron>(ElectronID_Summer16_tight, PtEtaCut(elecPt_min, elecEta_max));
+      }
+    else
+      {
+	elecID_veto = AndId<Electron>(ElectronID_Fall17_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
+	elecID = AndId<Electron>(ElectronID_Fall17_tight, PtEtaCut(elecPt_min, elecEta_max));
+      }
+    JetId jetID = PtEtaCut(jetPt_min, jetEta_max);
+    TopJetId hotvrID = PtEtaCut(hotvrPt_min, hotvrEta_max);
 
 
     //----------------//
     // EVENT CLEANING //
     //----------------//
 
-    object_setup.reset(new ObjectSetup(ctx)); // includes jet corrections
+    common_modules.reset(new CommonModules());
+    common_modules->switch_jetlepcleaner(true);
+    common_modules->switch_jetPtSorter(true);
+    common_modules->switch_metcorrection(true);
+    common_modules->set_jet_id(jetID);
+    common_modules->set_muon_id(muonID_veto);
+    common_modules->set_electron_id(elecID_veto);
+    common_modules->init(ctx);
+
+    hotvr_jec_module.reset(new HOTVRJetCorrectionModule(ctx));
+
     clnr_muon.reset(new MuonCleaner(muonID));
     clnr_elec.reset(new ElectronCleaner(elecID));
+    clnr_hotvr.reset(new TopJetCleaner(ctx, hotvrID));
 
 
     //------------//
     // SELECTIONS //
     //------------//
 
-    slct_lumi.reset(new LumiSelection(ctx));
     slct_mttbarGenCut.reset(new MttbarGenSelection(0, 700));
     slct_tWgenSignal.reset(new tWgenSignalSelection(ctx, is_muon));
 
@@ -137,13 +181,12 @@ namespace uhh2 {
     // HISTOGRAMS //
     //------------//
 
-    hist_nocuts.reset(new AndHists(ctx, "0_NoCuts"));
+    hist_common.reset(new AndHists(ctx, "0_Common"));
     hist_trigger.reset(new AndHists(ctx, "1_Trigger"));
-    hist_cleaning.reset(new AndHists(ctx, "2_Cleaning"));
-    hist_1lepton.reset(new AndHists(ctx, "3_OneLepton"));
-    hist_met.reset(new AndHists(ctx, "4_MET"));
-    hist_1jet.reset(new AndHists(ctx, "5_OneJet"));
-    hist_1hotvr.reset(new AndHists(ctx, "6_OneHotvr"));
+    hist_1lepton.reset(new AndHists(ctx, "2_OneLepton"));
+    hist_met.reset(new AndHists(ctx, "3_MET"));
+    hist_1jet.reset(new AndHists(ctx, "4_OneJet"));
+    hist_1hotvr.reset(new AndHists(ctx, "5_OneHotvr"));
 
 
     //---------------//
@@ -161,14 +204,11 @@ namespace uhh2 {
 
   bool HighPtSingleTopPreSelectionModule::process(Event & event) {
     
-    /* No event weights will be applied in this Module!!! In particular:
-       - no MC lumi weight
-       - no MC pileup reweight
+    /* No event weights will be applied in this Module!!! Exceptions (via CommonModules):
+       - MC lumi weight
+       - MC pileup reweight
        I.e. the histograms filled here have little to no physical meaning! Be aware of that!
      */
-
-    // Luminosity selection
-    if(event.isRealData && !slct_lumi->passes(event)) return false;
 
     // Split up tW samples into SIGNAL and OTHER depending on MC truth info
     if(dataset_version.find("ST_tW") == 0) {
@@ -180,8 +220,9 @@ namespace uhh2 {
     // Mttbar gencut
     if(dataset_version == "TTbarM0to700" && !slct_mttbarGenCut->passes(event)) return false;
 
-    // Fill first histograms without any cuts on reco level
-    hist_nocuts->fill(event);
+    // Initial cleaning and lumi weights
+    if(!common_modules->process(event)) return false;
+    hist_common->fill(event);
 
     // Trigger paths
     if(is_muon) {
@@ -192,21 +233,19 @@ namespace uhh2 {
     }
     hist_trigger->fill(event);
 
-    // Initial event cleaning and jet corrections
-    if(!object_setup->process(event)) return false;
-    hist_cleaning->fill(event);
-
     // Single-lepton selection and veto on additional leptons
-    if(is_muon) {
-      if(!(slct_1muon->passes(event) && slct_0elec->passes(event))) return false;
-      clnr_muon->process(event);
-      if(!slct_1muon->passes(event)) return false;
-    }
-    else if(is_elec) {
-      if(!(slct_1elec->passes(event) && slct_0muon->passes(event))) return false;
-      clnr_elec->process(event);
-      if(!slct_1elec->passes(event)) return false;
-    }
+    if(is_muon)
+      {
+	if(!(slct_1muon->passes(event) && slct_0elec->passes(event))) return false;
+	clnr_muon->process(event);
+	if(!slct_1muon->passes(event)) return false;
+      }
+    else if(is_elec)
+      {
+	if(!(slct_1elec->passes(event) && slct_0muon->passes(event))) return false;
+	clnr_elec->process(event);
+	if(!slct_1elec->passes(event)) return false;
+      }
     primarylep->process(event);
     hist_1lepton->fill(event);
 
@@ -219,6 +258,8 @@ namespace uhh2 {
     hist_1jet->fill(event);
 
     // At least one HOTVR jet
+    hotvr_jec_module->process(event);
+    clnr_hotvr->process(event);
     if(!slct_1hotvr->passes(event)) return false;
     hist_1hotvr->fill(event);
 
