@@ -46,7 +46,6 @@ namespace uhh2 {
     std::unique_ptr<AnalysisModule> SingleTopGen_tWchProd;
 
     std::unique_ptr<Selection> slct_mttbarGenCut, slct_tWgenSignal;
-    //std::unique_ptr<Selection> trig_IsoMu24, trig_IsoTkMu24, trig_Ele27, trig_Pho175;
     std::unique_ptr<Selection> slct_trigger;
     std::unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
     std::unique_ptr<Selection> slct_met, slct_1jet, slct_1hotvr;
@@ -199,7 +198,7 @@ namespace uhh2 {
 
   bool HighPtSingleTopPreSelectionModule::process(Event & event) {
     
-    /* No event weights will be applied in this Module!!! Exceptions (via CommonModules):
+    /* No event weights will be applied in this Module!!! Except for (via CommonModules):
        - MC lumi weight
        - MC pileup reweight
        I.e. the histograms filled here have little to no physical meaning! Be aware of that!
@@ -213,9 +212,9 @@ namespace uhh2 {
     }
 
     // Mttbar gencut
-    if(dataset_version == "TTbarM0to700" && !slct_mttbarGenCut->passes(event)) return false;
+    if(dataset_version.find("TTbar_M0to700") == 0 && !slct_mttbarGenCut->passes(event)) return false;
 
-    // Initial cleaning and lumi weights
+    // Initial cleaning, MET+PV filter, and lumi+PU weights
     if(!common_modules->process(event)) return false;
     hist_common->fill(event);
 
