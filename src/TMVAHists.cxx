@@ -57,7 +57,7 @@ void TMVAHists::fill(const uhh2::Event & event){
   float hotvr1_pt = (*event.topjets).at(0).v4().pt();
   float hotvr1_mass = (*event.topjets).at(0).v4().M();
 
-  const CSVBTag bjetID(CSVBTag::WP_MEDIUM);
+  DeepCSVBTag bjetID(DeepCSVBTag::WP_MEDIUM);
   int n_bjets = 0;
   for(Jet j : jets) {
     if(bjetID(j,event)) ++n_bjets;
