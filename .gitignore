@@ -3,7 +3,6 @@
 .*
 obj/*
 *.root
-*.txt
 config/workdir_*
 config/jobTempOutput_*
 *.png
