@@ -4,7 +4,7 @@
 	  <!ENTITY TargetLumi      "35922">
 	  <!ENTITY PRESELdir       "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/GeneratorStudies/">
 	  <!ENTITY b_Cacheable     "False">
-	  <!ENTITY NEVT            "-1">
+	  <!ENTITY NEVT            "9999">
 	  <!ENTITY PROOFdir        "/nfs/dust/cms/user/matthies/.proof2">
 
 	  <!ENTITY tChannel_inclusive_T SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2016v3/MC_ST_t-channel_top_inclusiveDecays.xml">
@@ -26,16 +26,16 @@
 
 	    <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&PRESELdir;/" PostFix="" TargetLumi="&TargetLumi;" >
 
-	      <!--<InputData Lumi="477843.6995" NEventsMax="&NEVT;" Type="MC" Version="tChannel_inclusive_T" Cacheable="&b_Cacheable;"> 
+	      <InputData Lumi="477843.6995" NEventsMax="&NEVT;" Type="MC" Version="tChannel_inclusive_T" Cacheable="&b_Cacheable;"> 
 		&tChannel_inclusive_T; 
 		<InputTree Name="AnalysisTree" /> 
-		<OutputTree Name="AnalysisTree" /> 
-	      </InputData> -->
+		<!--<OutputTree Name="AnalysisTree" /> -->
+	      </InputData>
 
 	      <InputData Lumi="477080.5312" NEventsMax="&NEVT;" Type="MC" Version="tChannel_inclusive_Tbar" Cacheable="&b_Cacheable;"> 
 		&tChannel_inclusive_Tbar; 
 		<InputTree Name="AnalysisTree" /> 
-		<OutputTree Name="AnalysisTree" /> 
+		<!--<OutputTree Name="AnalysisTree" /> -->
 	      </InputData>
 
               <UserConfig>
@@ -57,7 +57,8 @@
 		<Item Name="pileup_directory" Value="/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MyMCPileupHistogram.root" /> 
 		<Item Name="pileup_directory_data" Value="/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MyDataPileupHistogram.root" />
 
-		<Item Name="AnalysisModule" Value="GenParticlesPrinter" />
+		<!--<Item Name="AnalysisModule" Value="GenParticlesPrinter" />-->
+		<Item Name="AnalysisModule" Value="GeneratorStudiesModule_tChannel" />
 		<Item Name="use_sframe_weight" Value="false" />
 
 		<!-- Keys for uncertainties -->
