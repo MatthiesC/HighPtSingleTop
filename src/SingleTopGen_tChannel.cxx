@@ -6,7 +6,7 @@ using namespace uhh2;
 SingleTopGen_tChannel::SingleTopGen_tChannel(const vector<GenParticle> & genparticles, bool throw_on_failure): m_type(e_notfound) {    
 
   int n_top = 0;
-  GenParticle top, initial1, initial2;
+  GenParticle top, initial1, initial2, bSpectator;
 
   for(unsigned int i = 0; i < genparticles.size(); ++i) {
     const GenParticle & genp = genparticles[i];
@@ -107,7 +107,27 @@ SingleTopGen_tChannel::SingleTopGen_tChannel(const vector<GenParticle> & genpart
       ++n_top;
 
     }
-    
+
+    // now identify the associated b quark ('spectator') coming from the gluon splitting due to 4-fermion scheme being used
+    else if(genp.index() == 3) { // using the index is highly dependent on the MC sample but it seems that it is o.k. for now
+      bSpectator = genp;
+      if(abs(bSpectator.pdgId()) == 3){
+	std::cout << "INFO from SingleTopGen_tChannel:  found t-channel event with no spectator b quark but spectator s quark" << std::endl;
+      }
+      else if(abs(bSpectator.pdgId()) == 1){
+	std::cout << "INFO from SingleTopGen_tChannel:  found t-channel event with no spectator b quark but spectator d quark" << std::endl;
+      }
+      m_bSpectator = bSpectator;
+    }
+
+    else if(genp.index() == 4) { // the scattered (light) quark that exchanged the W boson
+      m_scatteredQuark = genp;
+    }
+
+    else if(genp.index() == 5) { // radiated gluon or additional quark that radiates a gluon splitting into the bb pair
+      m_radiatedGluonOrQuark = genp;
+    }
+
   }
 
 
@@ -170,6 +190,18 @@ GenParticle SingleTopGen_tChannel::Initial1() const{
 
 GenParticle SingleTopGen_tChannel::Initial2() const{
   return m_initial2;
+}
+
+GenParticle SingleTopGen_tChannel::bSpectator() const{
+  return m_bSpectator;
+}
+
+GenParticle SingleTopGen_tChannel::scatteredQuark() const{
+  return m_scatteredQuark;
+}
+
+GenParticle SingleTopGen_tChannel::radiatedGluonOrQuark() const{
+  return m_radiatedGluonOrQuark;
 }
 
 

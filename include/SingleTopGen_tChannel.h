@@ -56,6 +56,9 @@ public:
   GenParticle WTopDecay2() const;
   GenParticle Initial1() const;
   GenParticle Initial2() const;
+  GenParticle bSpectator() const;
+  GenParticle scatteredQuark() const;
+  GenParticle radiatedGluonOrQuark() const;
   E_DecayChannel DecayChannel() const;
 
   bool IsTopHadronicDecay() const;
@@ -73,6 +76,9 @@ public:
   GenParticle m_WTopDecay2; 
   GenParticle m_initial1;
   GenParticle m_initial2;
+  GenParticle m_bSpectator;
+  GenParticle m_scatteredQuark;
+  GenParticle m_radiatedGluonOrQuark;
 
   E_DecayChannel m_type;
 };
@@ -87,5 +93,3 @@ private:
     uhh2::Event::Handle<SingleTopGen_tChannel> h_singletopgen_tChannel;
     bool throw_on_failure;
 };
-
-
