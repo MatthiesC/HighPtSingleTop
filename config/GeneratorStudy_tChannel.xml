@@ -26,17 +26,17 @@
 
 	    <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&PRESELdir;/" PostFix="" TargetLumi="&TargetLumi;" >
 
-	      <InputData Lumi="477843.6995" NEventsMax="&NEVT;" Type="MC" Version="tChannel_inclusive_T" Cacheable="&b_Cacheable;"> 
+	      <!--<InputData Lumi="477843.6995" NEventsMax="&NEVT;" Type="MC" Version="tChannel_inclusive_T" Cacheable="&b_Cacheable;"> 
 		&tChannel_inclusive_T; 
 		<InputTree Name="AnalysisTree" /> 
 		<OutputTree Name="AnalysisTree" /> 
-	      </InputData> 
+	      </InputData> -->
 
-	      <!--<InputData Lumi="477080.5312" NEventsMax="&NEVT;" Type="MC" Version="tChannel_inclusive_Tbar" Cacheable="&b_Cacheable;"> 
+	      <InputData Lumi="477080.5312" NEventsMax="&NEVT;" Type="MC" Version="tChannel_inclusive_Tbar" Cacheable="&b_Cacheable;"> 
 		&tChannel_inclusive_Tbar; 
 		<InputTree Name="AnalysisTree" /> 
 		<OutputTree Name="AnalysisTree" /> 
-	      </InputData> -->
+	      </InputData>
 
               <UserConfig>
 
