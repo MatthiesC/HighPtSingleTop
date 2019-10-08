@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE JobConfiguration PUBLIC "" "JobConfig.dtd"[
+
+	  <!ENTITY TargetLumi      "35922">
+	  <!ENTITY PRESELdir       "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/GeneratorStudies/">
+	  <!ENTITY b_Cacheable     "False">
+	  <!ENTITY NEVT            "-1">
+	  <!ENTITY PROOFdir        "/nfs/dust/cms/user/matthies/.proof2">
+
+	  <!ENTITY tChannel_inclusive_T SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2016v3/MC_ST_t-channel_top_inclusiveDecays.xml">
+	  <!ENTITY tChannel_inclusive_Tbar SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2016v3/MC_ST_t-channel_antitop_inclusiveDecays.xml">
+
+	  ]>
+
+
+
+	  <!--
+	     <ConfigParse NEventsBreak="0" FileSplit="10" AutoResubmit="5"/>
+	     <ConfigSGE RAM ="4" DISK ="3" Mail="christopher.matthies@desy.de" Notification="as" Workdir="workdir_genStudies_tChannel"/>
+	     -->
+
+	  <!-- OutputLevel controls which messages are printed; set to VERBOSE or DEBUG for more verbosity, to WARNING or ERROR for less -->
+	  <JobConfiguration JobName="ExampleCycleJob" OutputLevel="INFO">
+	    <Library Name="libSUHH2HighPtSingleTop"/>
+	    <Package Name="SUHH2HighPtSingleTop.par" />
+
+	    <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&PRESELdir;/" PostFix="" TargetLumi="&TargetLumi;" >
+
+	      <InputData Lumi="477843.6995" NEventsMax="&NEVT;" Type="MC" Version="tChannel_inclusive_T" Cacheable="&b_Cacheable;"> 
+		&tChannel_inclusive_T; 
+		<InputTree Name="AnalysisTree" /> 
+		<OutputTree Name="AnalysisTree" /> 
+	      </InputData> 
+
+	      <InputData Lumi="477080.5312" NEventsMax="&NEVT;" Type="MC" Version="tChannel_inclusive_Tbar" Cacheable="&b_Cacheable;"> 
+		&tChannel_inclusive_Tbar; 
+		<InputTree Name="AnalysisTree" /> 
+		<OutputTree Name="AnalysisTree" /> 
+	      </InputData> 
+
+              <UserConfig>
+
+		<Item Name="PrimaryVertexCollection" Value="offlineSlimmedPrimaryVertices" /> 
+		<Item Name="ElectronCollection" Value="slimmedElectronsUSER" />
+		<Item Name="MuonCollection" Value="slimmedMuonsUSER" /> 
+		<Item Name="JetCollection" Value="jetsAk4CHS" />
+		<Item Name="METName" Value="slimmedMETs" />
+		<Item Name="GenJetCollection" Value="slimmedGenJets" /> 
+		<Item Name="TopJetCollection" Value="hotvrPuppi" />  
+		<Item Name="GenTopJetCollection" Value="hotvrGen" />  
+		<Item Name="GenParticleCollection" Value="GenParticles" />
+		<Item Name="GenInfoName" Value="genInfo" />
+
+		<Item Name="lumi_file" Value="/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.root" />
+		<Item Name="lumihists_lumi_per_bin" Value="1000."/>
+		
+		<Item Name="pileup_directory" Value="/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MyMCPileupHistogram.root" /> 
+		<Item Name="pileup_directory_data" Value="/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MyDataPileupHistogram.root" />
+
+		<Item Name="AnalysisModule" Value="GenParticlesPrinter" />
+		<Item Name="use_sframe_weight" Value="false" />
+
+		<!-- Keys for uncertainties -->
+		<Item Name="jecsmear_direction" Value="nominal" />
+		<Item Name="jersmear_direction" Value="nominal" />
+		
+              </UserConfig>
+	    </Cycle>
+	  </JobConfiguration>
