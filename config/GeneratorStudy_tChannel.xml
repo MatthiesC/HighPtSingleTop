@@ -32,11 +32,11 @@
 		<OutputTree Name="AnalysisTree" /> 
 	      </InputData> 
 
-	      <InputData Lumi="477080.5312" NEventsMax="&NEVT;" Type="MC" Version="tChannel_inclusive_Tbar" Cacheable="&b_Cacheable;"> 
+	      <!--<InputData Lumi="477080.5312" NEventsMax="&NEVT;" Type="MC" Version="tChannel_inclusive_Tbar" Cacheable="&b_Cacheable;"> 
 		&tChannel_inclusive_Tbar; 
 		<InputTree Name="AnalysisTree" /> 
 		<OutputTree Name="AnalysisTree" /> 
-	      </InputData> 
+	      </InputData> -->
 
               <UserConfig>
 
