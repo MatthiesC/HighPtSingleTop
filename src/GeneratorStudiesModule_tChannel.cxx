@@ -7,6 +7,7 @@
 #include "UHH2/common/include/MCWeight.h"
 
 #include "UHH2/HighPtSingleTop/include/SingleTopGen_tChannel.h"
+#include "UHH2/HighPtSingleTop/include/SingleTopGenHists_tChannel.h"
 
 
 using namespace std;
@@ -25,6 +26,7 @@ namespace uhh2 {
     string dataset_version;
     std::unique_ptr<AnalysisModule> sf_lumi;//, sf_pileup;
     std::unique_ptr<AnalysisModule> SingleTopGen_tChannelProd;
+    std::unique_ptr<Hists> histograms;
   };
 
 
@@ -34,8 +36,9 @@ namespace uhh2 {
 
     sf_lumi.reset(new MCLumiWeight(ctx));
     //sf_pileup.reset(new MCPileupReweight(ctx,"nominal"));
+    histograms.reset(new SingleTopGenHists_tChannel(ctx, "NoCuts"));
 
-    SingleTopGen_tChannelProd.reset(new SingleTopGen_tChannelProducer(ctx, "h_GENtCh"));
+    SingleTopGen_tChannelProd.reset(new SingleTopGen_tChannelProducer(ctx, "singletopgen_tChannel"));
   }
 
 
@@ -43,7 +46,9 @@ namespace uhh2 {
 
     sf_lumi->process(event);
     //sf_pileup->process(event);
-
+    SingleTopGen_tChannelProd->process(event);
+    histograms->fill(event);
+    
     return true;
   }
 

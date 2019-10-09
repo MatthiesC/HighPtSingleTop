@@ -4,7 +4,7 @@
 	  <!ENTITY TargetLumi      "35922">
 	  <!ENTITY PRESELdir       "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/GeneratorStudies/">
 	  <!ENTITY b_Cacheable     "False">
-	  <!ENTITY NEVT            "9999">
+	  <!ENTITY NEVT            "-1">
 	  <!ENTITY PROOFdir        "/nfs/dust/cms/user/matthies/.proof2">
 
 	  <!ENTITY tChannel_inclusive_T SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2016v3/MC_ST_t-channel_top_inclusiveDecays.xml">
