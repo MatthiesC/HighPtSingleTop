@@ -38,7 +38,7 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, dnn_setup;
 
-    unique_ptr<Selection> slct_deltaRcut, slct_1toptag;
+    unique_ptr<Selection> slct_deltaRcut, slct_1toptag, slct_met;
     
     unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag;
  
@@ -47,7 +47,7 @@ namespace uhh2 {
     string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag;
 
     double hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min, hotvr_tau32_max;
-    double deltaR_lepton_nextjet_min;
+    double met_min, deltaR_lepton_nextjet_min;
 
     TopJetId StandardHOTVRTopTagID;
  
@@ -83,6 +83,8 @@ namespace uhh2 {
     //---------------------//
     // KINEMATIC VARIABLES //
     //---------------------//
+
+    met_min = 50.0;
 
     // t-tagging criteria
     hotvr_fpt_max     = 0.8;
@@ -135,6 +137,7 @@ namespace uhh2 {
     // SELECTIONS //
     //------------//
 
+    slct_met.reset(new METSelection(met_min));
     slct_deltaRcut.reset(new DeltaRCut(ctx, deltaR_lepton_nextjet_min));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
 
@@ -165,6 +168,10 @@ namespace uhh2 {
 
     // Some space for preselection optimization
     // ...
+
+    // new MET cut
+
+    if(!slct_met->passes(event)) return false;
 
 
     // Scale variations
