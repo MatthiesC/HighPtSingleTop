@@ -14,8 +14,6 @@
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
-//#include "UHH2/HighPtSingleTop/include/TMVASetup.h"
-//#include "UHH2/HighPtSingleTop/include/TMVAHists.h"
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
 
 #include "UHH2/HOTVR/include/HOTVRHists.h"
@@ -40,7 +38,7 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, dnn_setup;
 
-    unique_ptr<Selection> slct_deltaRcut, slct_1toptag; //, slct_1btag;
+    unique_ptr<Selection> slct_deltaRcut, slct_1toptag;
     
     unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag;
  
