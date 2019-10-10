@@ -37,14 +37,13 @@ namespace uhh2 {
     
   private:
     
-    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag;//, sf_btag;
-    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, dnn_setup;//, tmva_setup, tmva_reader;
+    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag;
+    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, dnn_setup;
 
     unique_ptr<Selection> slct_deltaRcut, slct_1toptag; //, slct_1btag;
     
-    unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag;//, hist_tmva, hist_1btag;
-    //unique_ptr<Hists> hist_BTagMCEfficiency;
-
+    unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag;
+ 
     bool is_data, is_mc, is_muon, is_elec, bTopPtReweighting;
     string dataset_version;
     string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag, syst_btag;
@@ -53,9 +52,7 @@ namespace uhh2 {
     double deltaR_lepton_nextjet_min;
 
     TopJetId StandardHOTVRTopTagID;
-    //JetId bjetID;
-
-    //vector<Event::Handle<float>> h_tmva_variables;
+ 
     vector<Event::Handle<float>> h_dnn_inputs;
     Event::Handle<float> h_event_weight, h_toptag_pt;
   };
@@ -83,7 +80,6 @@ namespace uhh2 {
     syst_muon_iso = ctx.get("SystDirection_MuonIso", "nominal");
     syst_muon_trk = ctx.get("SystDirection_MuonTrk", "nominal");
     syst_hotvr_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
-    syst_btag = ctx.get("SystDirection_CSVv2BTagSF", "nominal");
 
 
     //---------------------//
@@ -105,8 +101,6 @@ namespace uhh2 {
     //-----------------//
 
     StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
-    //CSVBTag::wp btagWP = CSVBTag::WP_MEDIUM;
-    //bjetID = CSVBTag(btagWP);
 
 
     //----------------//
@@ -126,7 +120,6 @@ namespace uhh2 {
     sf_muon_trk.reset(new MCMuonTrkScaleFactor(ctx, "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/common/data/Tracking_EfficienciesAndSF_BCDEFGH.root", 1, "track", syst_muon_trk));
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_hotvr_toptag));
-    //sf_btag.reset(new MCBTagScaleFactor(ctx, btagWP, "jets", syst_btag));
 
 
     //---------------//
@@ -146,8 +139,6 @@ namespace uhh2 {
 
     slct_deltaRcut.reset(new DeltaRCut(ctx, deltaR_lepton_nextjet_min));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
-    //slct_1btag.reset(new NJetSelection(1, -1, bjetID));
-    //slct_2jets.reset(new NJetSelection(2, -1));
 
 
     //------------//
@@ -165,37 +156,6 @@ namespace uhh2 {
     hist_1toptag.reset(new AndHists(ctx, "4_OneTopTag"));
     hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "4_OneTopTag_CustomHists"));
     hist_1toptag->add_hist(new HOTVRHists(ctx, "4_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
-    //hist_tmva.reset(new AndHists(ctx, "5_TMVA"));
-    //hist_tmva->add_hist(new HighPtSingleTopHists(ctx, "5_TMVA_CustomHists"));
-    //hist_tmva->add_hist(new HOTVRHists(ctx, "5_TMVA_HOTVRTopTag", StandardHOTVRTopTagID));
-    //hist_tmva->add_hist(new TMVAHists(ctx, "5_TMVA_BDTHists"));
-    //hist_BTagMCEfficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", btagWP));
-    //hist_1btag.reset(new AndHists(ctx, "6_OneBTag"));
-    //hist_1btag->add_hist(new HighPtSingleTopHists(ctx, "6_OneBTag_CustomHists"));
-    //hist_1btag->add_hist(new HOTVRHists(ctx, "6_OneBTag_HOTVRTopTag", StandardHOTVRTopTagID));
-    //hist_1btag->add_hist(new TMVAHists(ctx, "6_OneBTag_BDTHists"));
-
-
-    //------//
-    // TMVA //
-    //------//
-
-    /*std::vector<std::string> tmva_names = {"tmva_jet1_pt", "tmva_jet2_pt", "tmva_jet3_pt", "tmva_jet4_pt", "tmva_jet5_pt", "tmva_jet6_pt", 
-					   "tmva_jet1_eta", "tmva_jet2_eta", "tmva_jet3_eta", "tmva_jet4_eta", "tmva_jet5_eta", "tmva_jet6_eta", "tmva_number_ak4",
-					   "tmva_hotvr1_pt", "tmva_hotvr2_pt", "tmva_hotvr3_pt", "tmva_hotvr4_pt", "tmva_hotvr1_eta", "tmva_hotvr2_eta", "tmva_hotvr3_eta", "tmva_hotvr4_eta", "tmva_number_hotvr",
-					   "tmva_jet1_area", "tmva_jet2_area", "tmva_jet3_area", "tmva_jet4_area", "tmva_jet5_area", "tmva_jet6_area", 
-					   "tmva_hotvr1_area", "tmva_hotvr2_area", "tmva_hotvr3_area", "tmva_hotvr4_area",
-					   "tmva_met_pt", "tmva_deltaPhi_met_lepton", "tmva_deltaPhi_met_ak4", "tmva_deltaPhi_met_hotvr1", "tmva_deltaPhi_lepton_ak4", "tmva_deltaPhi_lepton_hotvr1", "tmva_mtw",
-					   "tmva_deltaR_lepton_ak4", "tmva_deltaR_lepton_hotvr1",
-					   "tmva_lepton_eta", "tmva_lepton_pt",
-					   "tmva_deltaR_jet1_ak4", "tmva_deltaPhi_jet1_ak4", "tmva_deltaR_jet2_ak4", "tmva_deltaPhi_jet2_ak4",
-					   "tmva_eventweight", "tmva_toptag_pt"};
-    for(unsigned int i = 0; i < tmva_names.size(); i++) {
-      h_tmva_variables.push_back(ctx.declare_event_output<float>(tmva_names.at(i)));
-    }
-    tmva_setup.reset(new TMVASetup(ctx, tmva_names, StandardHOTVRTopTagID));
-    const std::string tmva_weightfile = "/nfs/dust/cms/user/matthies/Analysis_80x_v5/CMSSW_8_0_24_patch1/src/UHH2/HighPtSingleTop/data/TMVAClassification_BDT_adv2_BDT_AdaB_Gini.weights.xml";
-    tmva_reader.reset(new TMVAApplication(ctx, tmva_weightfile)); */
 }
 
 
@@ -204,6 +164,10 @@ namespace uhh2 {
   //------------//
 
   bool HighPtSingleTopMainSelectionModule::process(Event & event) {
+
+    // Some space for preselection optimization
+    // ...
+
 
     // Scale variations
     scale_variation->process(event);
@@ -235,26 +199,12 @@ namespace uhh2 {
     sf_toptag->process(event);
     hist_1toptag->fill(event);
 
-    // Need to implement CSVv2 reweighting since I use b-tagging information as DNN input
-
     // DNN setup
     dnn_setup->process(event);
     event.set(h_event_weight, event.weight);
     TopJet toptaggedjet;
     for(auto t : *event.topjets) { if(StandardHOTVRTopTagID(t, event)) toptaggedjet = t; }
     event.set(h_toptag_pt, toptaggedjet.v4().Pt());
-
-    // Do some TMVA shenanigans ...
-    //tmva_setup->process(event);
-    //if(!slct_2jets->passes(event)) return false;
-    //tmva_reader->process(event);
-    //hist_tmva->fill(event);
-
-    // Require at least one AK4 b-tag (change to DeepCSV once using 10_2_X)
-    //hist_BTagMCEfficiency->fill(event);
-    //if(!slct_1btag->passes(event)) return false;
-    //sf_btag->process(event);
-    //hist_1btag->fill(event);
 
     // Place analysis routines into a new Module!!!
     // End of main selection
