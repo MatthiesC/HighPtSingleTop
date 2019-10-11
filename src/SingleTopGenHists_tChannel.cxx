@@ -54,15 +54,15 @@ void SingleTopGenHists_tChannel::fill(const uhh2::Event & e){
   const double w = e.weight;
 
   const LorentzVector Top = singletopgen.Top().v4();
-  const LorentzVector bTop = singletopgen.bTop().v4();
-  const LorentzVector WTop = singletopgen.WTop().v4();
-  const LorentzVector WTopDecay1 = singletopgen.WTopDecay1().v4();
-  const LorentzVector WTopDecay2 = singletopgen.WTopDecay2().v4();
+  //const LorentzVector bTop = singletopgen.bTop().v4();
+  //const LorentzVector WTop = singletopgen.WTop().v4();
+  //const LorentzVector WTopDecay1 = singletopgen.WTopDecay1().v4();
+  //const LorentzVector WTopDecay2 = singletopgen.WTopDecay2().v4();
   const LorentzVector Initial1 = singletopgen.Initial1().v4();
   const LorentzVector Initial2 = singletopgen.Initial2().v4();
   const LorentzVector bSpectator = singletopgen.bSpectator().v4();
   const LorentzVector scatteredQuark = singletopgen.scatteredQuark().v4();
-  const LorentzVector radiatedGluonOrQuark = singletopgen.radiatedGluonOrQuark().v4();
+  //const LorentzVector radiatedGluonOrQuark = singletopgen.radiatedGluonOrQuark().v4();
 
 
   /////////////////////////////
