@@ -8,6 +8,7 @@
 #include "UHH2/common/include/JetIds.h"
 #include "UHH2/common/include/MCWeight.h"
 #include "UHH2/common/include/NSelections.h"
+#include "UHH2/common/include/ObjectIdUtils.h"
 #include "UHH2/common/include/PrimaryLepton.h"
 #include "UHH2/common/include/TopJetIds.h"
 
@@ -102,7 +103,7 @@ namespace uhh2 {
     // IDENTIFICATIONS //
     //-----------------//
 
-    StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
+    StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max), PtEtaCut(600, 2.5)); // ATTENTION!!!!!!!!!!! Cut on pT!!!!!!
     BTag::algo btag_algo = BTag::DEEPJET;
     BTag::wp btag_workingpoint = BTag::WP_MEDIUM;
     BJetID = BTag(btag_algo, btag_workingpoint);
