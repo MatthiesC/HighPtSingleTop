@@ -5,8 +5,8 @@ using namespace std;
 using namespace uhh2;
 
 
-DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, const unsigned int & numberOfHotvrJets, const unsigned int & numberOfAk4Jets, const float & zero_padding_value):
-  m_h_dnn_inputs(h_dnn_inputs), m_n_hotvr(numberOfHotvrJets), m_n_jets(numberOfAk4Jets), m_zeropadding(zero_padding_value) {
+DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, const unsigned int & numberOfHotvrJets, const unsigned int & numberOfAk4Jets, const TopJetId & topJetId, const JetId & bJetId, const float & zero_padding_value):
+  m_h_dnn_inputs(h_dnn_inputs), m_n_hotvr(numberOfHotvrJets), m_n_jets(numberOfAk4Jets), m_topjetid(topJetId), m_bjetid(bJetId), m_zeropadding(zero_padding_value) {
 
   template_event = {
     "met_pt",
@@ -15,8 +15,10 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
     "ht_lep",
     "st",
     "n_hotvr",
-    "n_jets" };
+    "n_jets",
+    "n_btags" };
   template_hotvr = {
+    "toptagged",
     "pt",
     "eta",
     "phi",
@@ -42,12 +44,12 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
     "mpair",
     "tau32" };
   template_jet = {
+    "btagged",
     "pt",
     "eta",
     "phi",
     "v4mass",
-    "area",
-    "csvv2" };
+    "area" };
   template_lepton = {
     "pt",
     "eta",
@@ -103,11 +105,18 @@ bool DNNSetup::process(Event & event) {
   values.at(i++) = ht_had + ht_lep;
   values.at(i++) = hotvrjets.size();
   values.at(i++) = jets.size();
+  int n_btags = 0;
+  for(Jet j : jets) {
+    if(m_bjetid && (m_bjetid)(j, event)) ++n_btags; }
+  values.at(i++) = n_btags;
 
   // HOTVR
   bool need_hotvrVector_resize = hotvrjets.size() < m_n_hotvr;
   unsigned int n_valid_hotvr = need_hotvrVector_resize ? hotvrjets.size() : m_n_hotvr;
   for(unsigned int j = 0; j < n_valid_hotvr; j++) {
+    bool is_toptagged = false;
+    if(m_topjetid && (m_topjetid)(hotvrjets.at(j), event)) is_toptagged = true;
+    values.at(i++) = is_toptagged ? -m_zeropadding : 0; // can have three values: m_zeropadding (= no j-th HOTVR jet), 0 (= not tagged), -m_zeropadding (= tagged)
     values.at(i++) = hotvrjets.at(j).v4().Pt();
     values.at(i++) = hotvrjets.at(j).v4().Eta();
     values.at(i++) = hotvrjets.at(j).v4().Phi();
@@ -131,12 +140,14 @@ bool DNNSetup::process(Event & event) {
   bool need_jetsVector_resize = jets.size() < m_n_jets;
   unsigned int n_valid_jets = need_jetsVector_resize ? jets.size() : m_n_jets;
   for(unsigned int j = 0; j < n_valid_jets; j++) {
+    bool is_btagged = false;
+    if(m_bjetid && (m_bjetid)(jets.at(j), event)) is_btagged = true;
+    values.at(i++) = is_btagged ? -m_zeropadding : 0; // can have three values: m_zeropadding (= no j-th AK4 jet), 0 (= not tagged), -m_zeropadding (= tagged)
     values.at(i++) = jets.at(j).v4().Pt();
     values.at(i++) = jets.at(j).v4().Eta();
     values.at(i++) = jets.at(j).v4().Phi();
     values.at(i++) = jets.at(j).v4().M();
-    values.at(i++) = jets.at(j).jetArea();
-    values.at(i++) = jets.at(j).btag_combinedSecondaryVertex(); }
+    values.at(i++) = jets.at(j).jetArea(); }
   if(need_jetsVector_resize) { for(unsigned int j = 0; j < (m_n_jets-jets.size())*template_jet.size(); j++) values.at(i++) = m_zeropadding; }; // zero padding for non-existent AK4 jets
 
   // Lepton

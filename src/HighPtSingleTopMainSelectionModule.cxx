@@ -50,6 +50,7 @@ namespace uhh2 {
     double met_min, deltaR_lepton_nextjet_min;
 
     TopJetId StandardHOTVRTopTagID;
+    JetId BJetID;
  
     vector<Event::Handle<float>> h_dnn_inputs;
     Event::Handle<float> h_event_weight, h_toptag_pt;
@@ -101,6 +102,9 @@ namespace uhh2 {
     //-----------------//
 
     StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
+    BTag::algo btag_algo = BTag::DEEPJET;
+    BTag::wp btag_workingpoint = BTag::WP_MEDIUM;
+    BJetID = BTag(btag_algo, btag_workingpoint);
 
 
     //----------------//
@@ -128,7 +132,7 @@ namespace uhh2 {
 
     primarylep.reset(new PrimaryLepton(ctx));
     hadronictop.reset(new HadronicTop(ctx));
-    dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8));
+    dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID));
     h_event_weight = ctx.declare_event_output<float>("DNN_EventWeight");
     h_toptag_pt = ctx.declare_event_output<float>("DNN_TopTagPt");
 
