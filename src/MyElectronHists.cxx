@@ -18,6 +18,7 @@ MyElectronHists::MyElectronHists(Context & ctx, const std::string & dname, bool 
     pt          = book<TH1F>("pt",          "electron p_{T} [GeV]",           40,0,2000);
     eta         = book<TH1F>("eta",         "electron #eta",            30,-3,3);
     phi         = book<TH1F>("phi",         "electron #phi",            50,-M_PI,M_PI);
+    deltaPhiMET = book<TH1F>("deltaPhiMET", "#Delta#phi(e, p_{T}^{miss})", 50, 0, M_PI);
     isolation   = book<TH1F>("isolation",   "electron isolation",          50,0,0.2);
     charge      = book<TH1F>("charge",      "electron charge [e]",          3,-1.5,1.5);
     ptrel       = book<TH1F>("ptrel",       "p_{T}^{rel}(e, jet)",       40, 0, 200.);
@@ -66,6 +67,7 @@ void MyElectronHists::fill(const Event & event){
         pt->Fill(ele.pt(), w);
         eta->Fill(ele.eta(), w);
         phi->Fill(ele.phi(), w);
+	deltaPhiMET->Fill(uhh2::deltaPhi(ele.v4(), event.met->v4()), w);
         isolation->Fill(ele.relIso(), w);
         charge->Fill(ele.charge(), w);
         

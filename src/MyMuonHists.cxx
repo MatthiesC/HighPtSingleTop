@@ -18,6 +18,7 @@ MyMuonHists::MyMuonHists(Context & ctx, const std::string & dname, bool gen_plot
     pt = book<TH1F>("pt","muon p_{T} [GeV]",50,0,1000);
     eta = book<TH1F>("eta","muon #eta",50,-3,3);
     phi = book<TH1F>("phi","muon #phi",50,-M_PI,M_PI);
+    deltaPhiMET = book<TH1F>("deltaPhiMET","#Delta#phi(#mu, p_{T}^{miss})", 50, 0, M_PI);
     isolation = book<TH1F>("isolation","muon isolation",50,0,0.2);
     charge = book<TH1F>("charge", "muon charge [e]",3,-1.5,1.5);
     ptrel = book<TH1F>("ptrel", "p_{T}^{rel}(#mu, jet)", 40, 0, 200.);
@@ -65,6 +66,7 @@ void MyMuonHists::fill(const Event & event){
         pt->Fill(muon.pt(), w);
         eta->Fill(muon.eta(), w);
         phi->Fill(muon.phi(), w);
+	deltaPhiMET->Fill(uhh2::deltaPhi(muon.v4(), event.met->v4()), w);
         isolation->Fill(muon.relIso(), w);
         charge->Fill(muon.charge(), w);
         
