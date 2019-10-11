@@ -38,16 +38,16 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, dnn_setup;
 
-    unique_ptr<Selection> slct_deltaRcut, slct_1toptag, slct_met;
+    unique_ptr<Selection> slct_deltaRcut, slct_1toptag, slct_met, slct_deltaPhiTopLepton;
     
-    unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag;
+    unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag, hist_deltaPhiCut;
  
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
     string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag;
 
     double hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min, hotvr_tau32_max;
-    double met_min, deltaR_lepton_nextjet_min;
+    double met_min, deltaR_lepton_nextjet_min, deltaPhi_lepton_toptag_min;
 
     TopJetId StandardHOTVRTopTagID;
     JetId BJetID;
@@ -95,6 +95,7 @@ namespace uhh2 {
     hotvr_tau32_max   = 0.56;
 
     deltaR_lepton_nextjet_min = 0.4; // minimum R-distance between primary lepton and next AK4 jet
+    deltaPhi_lepton_toptag_min = 0.5*M_PI; // top-tag and lepton need to be back-to-back
 
 
     //-----------------//
@@ -144,6 +145,7 @@ namespace uhh2 {
     slct_met.reset(new METSelection(met_min));
     slct_deltaRcut.reset(new DeltaRCut(ctx, deltaR_lepton_nextjet_min));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
+    slct_deltaPhiTopLepton.reset(new DeltaPhiTopLeptonCut(ctx, deltaPhi_lepton_toptag_min, StandardHOTVRTopTagID));
 
 
     //------------//
@@ -161,6 +163,9 @@ namespace uhh2 {
     hist_1toptag.reset(new AndHists(ctx, "4_OneTopTag"));
     hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "4_OneTopTag_CustomHists"));
     hist_1toptag->add_hist(new HOTVRHists(ctx, "4_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
+    hist_deltaPhiCut.reset(new AndHists(ctx, "5_DeltaPhiCut"));
+    hist_deltaPhiCut->add_hist(new HighPtSingleTopHists(ctx, "5_DeltaPhiCut_CustomHists"));
+    hist_deltaPhiCut->add_hist(new HOTVRHists(ctx, "5_DeltaPhiCut_HOTVRTopTag", StandardHOTVRTopTagID));
 }
 
 
@@ -207,6 +212,10 @@ namespace uhh2 {
     hadronictop->process(event);
     sf_toptag->process(event);
     hist_1toptag->fill(event);
+
+    // Require deltaPhi between HOTVR t-tag and lepton
+    if(!slct_deltaPhiTopLepton->passes(event)) return false;
+    hist_deltaPhiCut->fill(event);
 
     // DNN setup
     dnn_setup->process(event);

@@ -9,6 +9,7 @@
 #include "UHH2/HighPtSingleTop/include/SingleTopGen_tWch.h"
 
 #include "UHH2/common/include/Utils.h"
+#include "UHH2/common/include/TopJetIds.h"
 
 
 namespace uhh2 {
@@ -37,6 +38,16 @@ namespace uhh2 {
   private:
     uhh2::Event::Handle<FlavorParticle> h_primlepton;
     double deltaR_min;
+  };
+
+  class DeltaPhiTopLeptonCut: public uhh2::Selection {
+  public:
+    DeltaPhiTopLeptonCut(uhh2::Context & ctx, double & deltaPhi_min_, TopJetId & topJetId_, std::string primlep_name_ = "PrimaryLepton");
+    virtual bool passes(const uhh2::Event & event) override;
+  private:
+    uhh2::Event::Handle<FlavorParticle> h_primlepton;
+    double deltaPhi_min;
+    TopJetId topJetId;
   };
 
   class tWgenSignalSelection: public uhh2::Selection {

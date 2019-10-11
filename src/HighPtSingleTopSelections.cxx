@@ -6,6 +6,7 @@
 #include "UHH2/core/include/FlavorParticle.h"
 
 #include "UHH2/common/include/Utils.h"
+#include "UHH2/common/include/TopJetIds.h"
 #include "UHH2/common/include/TriggerSelection.h"
 
 #include <stdexcept>
@@ -61,6 +62,26 @@ bool DeltaRCut::passes(const Event & event) {
   const auto jets = *event.jets;
 
   return deltaR_min < uhh2::deltaR(lepton.v4(), (nextJet(lepton, jets))->v4());
+}
+
+
+//------------------------------------------------//
+// DeltaPhi(primary lepton, top-tagged HOTVR jet) //
+//------------------------------------------------//
+
+DeltaPhiTopLeptonCut::DeltaPhiTopLeptonCut(Context & ctx, double & deltaPhi_min_, TopJetId & topJetId_, string primlep_name_):
+  h_primlepton(ctx.get_handle<FlavorParticle>(primlep_name_)),
+  deltaPhi_min(deltaPhi_min_),
+  topJetId(topJetId_) {}
+
+bool DeltaPhiTopLeptonCut::passes(const Event & event) {
+
+  const FlavorParticle & lepton = event.get(h_primlepton);
+
+  TopJet toptaggedjet;
+  for(auto t : *event.topjets) { if(topJetId(t, event)) toptaggedjet = t; }
+
+  return deltaPhi_min < uhh2::deltaPhi(lepton.v4(), toptaggedjet.v4());
 }
 
 
