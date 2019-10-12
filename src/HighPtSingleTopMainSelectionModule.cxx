@@ -36,16 +36,18 @@ namespace uhh2 {
     
   private:
     
-    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag;
+    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag, sf_btag;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, dnn_setup;
 
     unique_ptr<Selection> slct_deltaRcut, slct_1toptag, slct_met, slct_deltaPhiTopLepton;
     
-    unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag, hist_deltaPhiCut;
+    unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_deltaRcut, hist_1toptag, hist_deltaPhiCut, hist_btagsf;
  
+    unique_ptr<Hists> hist_btag_mc_efficiency;
+
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
-    string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag;
+    string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag, syst_btag;
 
     double hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min, hotvr_tau32_max;
     double met_min, deltaR_lepton_nextjet_min, deltaPhi_lepton_toptag_min;
@@ -80,6 +82,7 @@ namespace uhh2 {
     syst_muon_iso = ctx.get("SystDirection_MuonIso", "nominal");
     syst_muon_trk = ctx.get("SystDirection_MuonTrk", "nominal");
     syst_hotvr_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
+    syst_btag = ctx.get("SystDirection_BTagSF", "nominal");
 
 
     //---------------------//
@@ -126,6 +129,7 @@ namespace uhh2 {
     sf_muon_trk.reset(new MCMuonTrkScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/Tracking_EfficienciesAndSF_BCDEFGH.root", 1, "track", syst_muon_trk));
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_hotvr_toptag));
+    sf_btag.reset(new MCBTagScaleFactor(ctx, btag_algo, btag_workingpoint, "jets", syst_btag)); // can have more arguments, see MCWeight.h
 
 
     //---------------//
@@ -167,6 +171,10 @@ namespace uhh2 {
     hist_deltaPhiCut.reset(new AndHists(ctx, "5_DeltaPhiCut"));
     hist_deltaPhiCut->add_hist(new HighPtSingleTopHists(ctx, "5_DeltaPhiCut_CustomHists"));
     hist_deltaPhiCut->add_hist(new HOTVRHists(ctx, "5_DeltaPhiCut_HOTVRTopTag", StandardHOTVRTopTagID));
+    hist_btag_mc_efficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", BJetID, "jets"));
+    hist_btagsf.reset(new AndHists(ctx, "6_BTagScaleFactors"));
+    hist_btagsf->add_hist(new HighPtSingleTopHists(ctx, "6_BTagScaleFactors_CustomHists"));
+    hist_btagsf->add_hist(new HOTVRHists(ctx, "6_BTagScaleFactors_HOTVRTopTag", StandardHOTVRTopTagID));
 }
 
 
@@ -218,9 +226,10 @@ namespace uhh2 {
     if(!slct_deltaPhiTopLepton->passes(event)) return false;
     hist_deltaPhiCut->fill(event);
 
-
-    // b-tag scale factors!!!! DeepJet
-
+    // Apply b-tag scale factors
+    hist_btag_mc_efficiency->fill(event);
+    sf_btag->process(event);
+    hist_btagsf->fill(event);
 
     // DNN setup
     dnn_setup->process(event);
