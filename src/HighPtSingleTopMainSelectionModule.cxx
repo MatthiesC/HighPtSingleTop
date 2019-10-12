@@ -218,6 +218,10 @@ namespace uhh2 {
     if(!slct_deltaPhiTopLepton->passes(event)) return false;
     hist_deltaPhiCut->fill(event);
 
+
+    // b-tag scale factors!!!! DeepJet
+
+
     // DNN setup
     dnn_setup->process(event);
     event.set(h_event_weight, event.weight);
