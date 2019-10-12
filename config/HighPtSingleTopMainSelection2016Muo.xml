@@ -72,7 +72,7 @@
 
 
 	  <!--
-	     <ConfigParse NEventsBreak="0" FileSplit="10" AutoResubmit="5"/>
+	     <ConfigParse NEventsBreak="100000" FileSplit="0" AutoResubmit="5"/>
 	     <ConfigSGE RAM ="4" DISK ="3" Mail="christopher.matthies@desy.de" Notification="as" Workdir="workdir_mainsel2016_muo"/>
 	     -->
 
