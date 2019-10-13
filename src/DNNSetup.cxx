@@ -54,7 +54,7 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
     "pt",
     "eta",
     "phi",
-    "reliso",
+    "reliso", // if electron channel, filled with zero padding value
     "charge" };
 
   // Prepare vector with input name strings:
@@ -82,8 +82,8 @@ bool DNNSetup::process(Event & event) {
   const vector<Electron> electrons = *event.electrons;
   const vector<Muon> muons = *event.muons;
   const MET met = *event.met;
-  //const auto lepton = returnPrimaryLepton(event); // need to fix this later! .relIso not available for FlavorParticle
-  const Muon lepton = muons.at(0);
+  const auto lepton = returnPrimaryLepton(event); // member .relIso not available for FlavorParticle
+  //const Muon lepton = muons.at(0);
 
   unsigned int i = 0;
   vector<float> values;
@@ -154,7 +154,7 @@ bool DNNSetup::process(Event & event) {
   values.at(i++) = lepton.v4().Pt();
   values.at(i++) = lepton.v4().Eta();
   values.at(i++) = lepton.v4().Phi();
-  values.at(i++) = lepton.relIso();
+  values.at(i++) = muons.size() == 1 ? muons.at(0).relIso() : m_zeropadding; // if electron channel, fill with zero padding value
   values.at(i++) = lepton.charge();
 
   if(values.size() != i) throw runtime_error("DNNSetup::process - Lengths of input and value vectors are not equal! Please check!");
