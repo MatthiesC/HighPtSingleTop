@@ -106,7 +106,7 @@ namespace uhh2 {
     // IDENTIFICATIONS //
     //-----------------//
 
-    StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max), PtEtaCut(600, 2.5)); // ATTENTION!!!!!!!!!!! Cut on pT!!!!!!
+    StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));//, PtEtaCut(600, 2.5)); // ATTENTION!!!!!!!!!!! Cut on pT!!!!!!
     BTag::algo btag_algo = BTag::DEEPJET;
     BTag::wp btag_workingpoint = BTag::WP_MEDIUM;
     BJetID = BTag(btag_algo, btag_workingpoint);
