@@ -134,7 +134,7 @@ namespace uhh2 {
     //----------------//
 
     common_modules.reset(new CommonModules());
-    common_modules->switch_jetlepcleaner(true);
+    common_modules->switch_jetlepcleaner(false); // switch off jet lepton cleaning <-- Roman's recommendation from October 16, 2019
     common_modules->switch_jetPtSorter(true);
     common_modules->switch_metcorrection(true);
     common_modules->set_jet_id(jetID);
