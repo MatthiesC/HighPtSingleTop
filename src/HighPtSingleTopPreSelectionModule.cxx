@@ -22,6 +22,7 @@
 #include "UHH2/HighPtSingleTop/include/SingleTopGen_tWch.h"
 
 #include "UHH2/HOTVR/include/HOTVRJetCorrectionModule.h"
+#include "UHH2/HOTVR/include/HOTVRIds.h"
 
 
 using namespace std;
@@ -58,7 +59,7 @@ namespace uhh2 {
     double muonPt_min, muonEta_max, muonPt_min_veto, muonEta_max_veto, muonIso_max;
     double elecPt_min, elecEta_max, elecPt_min_veto, elecEta_max_veto;
     double met_min;
-    double jetPt_min, jetEta_max, hotvrPt_min, hotvrEta_max;
+    double jetPt_min, jetEta_max, hotvrPt_min, hotvrEta_max, hotvrDeltaRToLepton_min;
   };
 
 
@@ -97,6 +98,8 @@ namespace uhh2 {
     hotvrPt_min = 0.0; // needs to be zero so that migrations from < 200 GeV bins into the boosted sector can still be calculated once the unfolding happens (although these migrations are probably tiny)
     hotvrEta_max = 2.5;
 
+    hotvrDeltaRToLepton_min = 1.5;
+
     muonPt_min  = 50.0;
     muonEta_max =  2.4;
     muonIso_max =  0.15;
@@ -126,7 +129,7 @@ namespace uhh2 {
 	elecID = AndId<Electron>(ElectronID_Fall17_tight, PtEtaCut(elecPt_min, elecEta_max));
       }
     JetId jetID = PtEtaCut(jetPt_min, jetEta_max);
-    TopJetId hotvrID = PtEtaCut(hotvrPt_min, hotvrEta_max);
+    TopJetId hotvrID = AndId<TopJet>(PtEtaCut(hotvrPt_min, hotvrEta_max), DeltaRCut(ctx, hotvrDeltaRToLepton_min)); // // through away all HOTVR jets with lepton close by <-- Roman's recommendation from October 16, 2019
 
 
     //----------------//
