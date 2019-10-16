@@ -104,7 +104,7 @@ namespace uhh2 {
     elecPt_min  = 50.0;
     elecEta_max =  2.4;
 
-    met_min = 30.0;
+    met_min = 50.0;
 
 
     //-----------------//
