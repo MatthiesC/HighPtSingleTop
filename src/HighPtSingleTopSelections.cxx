@@ -52,11 +52,11 @@ bool MTWSelection::passes(const Event & event) {
 // DeltaR(primary lepton, next AK4 jet) //
 //--------------------------------------//
 
-DeltaRCut::DeltaRCut(Context & ctx, double deltaR_min_, string primlep_name_):
+DeltaRLeptonNextJetCut::DeltaRLeptonNextJetCut(Context & ctx, double deltaR_min_, string primlep_name_):
   h_primlepton(ctx.get_handle<FlavorParticle>(primlep_name_)),
   deltaR_min(deltaR_min_) {}
 
-bool DeltaRCut::passes(const Event & event) {
+bool DeltaRLeptonNextJetCut::passes(const Event & event) {
 
   const FlavorParticle & lepton = event.get(h_primlepton);
   const auto jets = *event.jets;
