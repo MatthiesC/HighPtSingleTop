@@ -148,7 +148,7 @@ namespace uhh2 {
     // SELECTIONS //
     //------------//
 
-    slct_deltaRcut.reset(new DeltaRCut(ctx, deltaR_lepton_nextjet_min));
+    slct_deltaRcut.reset(new DeltaRLeptonNextJetCut(ctx, deltaR_lepton_nextjet_min));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
     slct_deltaPhiTopLepton.reset(new DeltaPhiTopLeptonCut(ctx, deltaPhi_lepton_toptag_min, StandardHOTVRTopTagID));
     slct_mtwCut.reset(new MTWSelection(ctx, mtw_min));
