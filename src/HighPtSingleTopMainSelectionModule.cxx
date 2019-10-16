@@ -140,7 +140,7 @@ namespace uhh2 {
 
     primarylep.reset(new PrimaryLepton(ctx));
     hadronictop.reset(new HadronicTop(ctx));
-    dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID));
+    dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID, 0.));
     h_event_weight = ctx.declare_event_output<float>("DNN_EventWeight");
     h_toptag_pt = ctx.declare_event_output<float>("DNN_TopTagPt");
 
