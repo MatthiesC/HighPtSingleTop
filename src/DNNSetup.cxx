@@ -68,6 +68,7 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
     "tau32" };
   template_jet = {
     "btagged",
+    "DeepJet",
     "px",
     "py",
     "pz",
@@ -192,6 +193,7 @@ bool DNNSetup::process(Event & event) {
     bool is_btagged = false;
     if(m_bjetid && (m_bjetid)(jets.at(j), event)) is_btagged = true;
     values.at(i++) = is_btagged ? -m_zeropadding+1 : 0; // can have three values: m_zeropadding (= no j-th AK4 jet), 0 (= not tagged), -m_zeropadding+1 (= tagged)
+    values.at(i++) = jets.at(j).btag_DeepJet();
     values.at(i++) = jets.at(j).v4().px();
     values.at(i++) = jets.at(j).v4().py();
     values.at(i++) = jets.at(j).v4().pz();
