@@ -87,7 +87,10 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
     "phi",
     "v4mass",
     "reliso",
-    "charge" };
+    "charge",
+    "dr_jet",
+    "dphi_jet",
+    "ptrel_jet" };
 
   // Prepare vector with input name strings:
   for(auto s : template_event) m_inputs.push_back(string("DNN__")+s);
@@ -211,6 +214,10 @@ bool DNNSetup::process(Event & event) {
   values.at(i++) = lepton.v4().M();
   values.at(i++) = muons.size() > 0 ? muons.at(0).relIso() : (electrons.size() > 0 ? electrons.at(0).relIso() : m_zeropadding);
   values.at(i++) = lepton.charge();
+  auto nj = nextJet(lepton, *event.jets);
+  values.at(i++) = deltaR(lepton, *nj);
+  values.at(i++) = deltaPhi(lepton, *nj);
+  values.at(i++) = pTrel(lepton, nj);
 
   if(values.size() != i) throw runtime_error("DNNSetup::process - Lengths of input and value vectors are not equal! Please check!");
 
