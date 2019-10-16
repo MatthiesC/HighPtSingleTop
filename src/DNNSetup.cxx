@@ -9,6 +9,9 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
   m_h_dnn_inputs(h_dnn_inputs), m_n_hotvr(numberOfHotvrJets), m_n_jets(numberOfAk4Jets), m_topjetid(topJetId), m_bjetid(bJetId), m_zeropadding(zero_padding_value) {
 
   template_event = {
+    "n_pv",
+    "met_px",
+    "met_py",
     "met_pt",
     "met_phi",
     "ht_had",
@@ -19,22 +22,38 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
     "n_btags" };
   template_hotvr = {
     "toptagged",
+    "px",
+    "py",
+    "pz",
+    "e",
     "pt",
     "eta",
     "phi",
     "v4mass",
     "area",
     "nsubjets",
+    "sub1_px",
+    "sub1_py",
+    "sub1_pz",
+    "sub1_e",
     "sub1_pt",
     "sub1_eta",
     "sub1_phi",
     "sub1_v4mass",
     "sub1_area",
+    "sub2_px",
+    "sub2_py",
+    "sub2_pz",
+    "sub2_e",
     "sub2_pt",
     "sub2_eta",
     "sub2_phi",
     "sub2_v4mass",
     "sub2_area",
+    "sub3_px",
+    "sub3_py",
+    "sub3_pz",
+    "sub3_e",
     "sub3_pt",
     "sub3_eta",
     "sub3_phi",
@@ -42,18 +61,31 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
     "sub3_area",
     "fpt",
     "mpair",
+    "tau1",
+    "tau2",
+    "tau3",
+    "tau21",
     "tau32" };
   template_jet = {
     "btagged",
+    "px",
+    "py",
+    "pz",
+    "e",
     "pt",
     "eta",
     "phi",
     "v4mass",
     "area" };
   template_lepton = {
+    "px",
+    "py",
+    "pz",
+    "e",
     "pt",
     "eta",
     "phi",
+    "v4mass",
     "reliso",
     "charge" };
 
@@ -81,7 +113,7 @@ bool DNNSetup::process(Event & event) {
   const vector<TopJet> hotvrjets = *event.topjets;
   const vector<Electron> electrons = *event.electrons;
   const vector<Muon> muons = *event.muons;
-  const MET met = *event.met;
+  MET met = *event.met;
   const auto lepton = returnPrimaryLepton(event); // member .relIso() not available for FlavorParticle
 
   unsigned int i = 0;
@@ -89,6 +121,9 @@ bool DNNSetup::process(Event & event) {
   values.resize(m_inputs.size(), m_zeropadding);
 
   // Event
+  values.at(i++) = (*event.pvs).size();
+  values.at(i++) = (met.v4()).px();
+  values.at(i++) = (met.v4()).py();
   values.at(i++) = met.pt();
   values.at(i++) = met.phi();
   float ht_had = 0;
@@ -115,7 +150,11 @@ bool DNNSetup::process(Event & event) {
   for(unsigned int j = 0; j < n_valid_hotvr; j++) {
     bool is_toptagged = false;
     if(m_topjetid && (m_topjetid)(hotvrjets.at(j), event)) is_toptagged = true;
-    values.at(i++) = is_toptagged ? -m_zeropadding : 0; // can have three values: m_zeropadding (= no j-th HOTVR jet), 0 (= not tagged), -m_zeropadding (= tagged)
+    values.at(i++) = is_toptagged ? -m_zeropadding+1 : 0; // can have three values: m_zeropadding (= no j-th HOTVR jet), 0 (= not tagged), -m_zeropadding+1 (= tagged)
+    values.at(i++) = hotvrjets.at(j).v4().px();
+    values.at(i++) = hotvrjets.at(j).v4().py();
+    values.at(i++) = hotvrjets.at(j).v4().pz();
+    values.at(i++) = hotvrjets.at(j).v4().e();
     values.at(i++) = hotvrjets.at(j).v4().Pt();
     values.at(i++) = hotvrjets.at(j).v4().Eta();
     values.at(i++) = hotvrjets.at(j).v4().Phi();
@@ -125,6 +164,10 @@ bool DNNSetup::process(Event & event) {
     values.at(i++) = subjets.size();
     bool no_3rd_subjet = subjets.size() < 3;
     for(unsigned int k = 0; k < 3; k++) {
+      values.at(i++) = no_3rd_subjet && k==2 ? m_zeropadding : subjets.at(k).v4().px();
+      values.at(i++) = no_3rd_subjet && k==2 ? m_zeropadding : subjets.at(k).v4().py();
+      values.at(i++) = no_3rd_subjet && k==2 ? m_zeropadding : subjets.at(k).v4().pz();
+      values.at(i++) = no_3rd_subjet && k==2 ? m_zeropadding : subjets.at(k).v4().e();
       values.at(i++) = no_3rd_subjet && k==2 ? m_zeropadding : subjets.at(k).v4().Pt();
       values.at(i++) = no_3rd_subjet && k==2 ? m_zeropadding : subjets.at(k).v4().Eta();
       values.at(i++) = no_3rd_subjet && k==2 ? m_zeropadding : subjets.at(k).v4().Phi();
@@ -132,6 +175,10 @@ bool DNNSetup::process(Event & event) {
       values.at(i++) = no_3rd_subjet && k==2 ? m_zeropadding : subjets.at(k).jetArea(); }
     values.at(i++) = subjets.at(0).v4().Pt() / hotvrjets.at(j).v4().Pt();
     values.at(i++) = no_3rd_subjet ? m_zeropadding : min((subjets.at(0).v4() + subjets.at(1).v4()).M(), min((subjets.at(0).v4() + subjets.at(2).v4()).M(), (subjets.at(1).v4() + subjets.at(2).v4()).M()));
+    values.at(i++) = hotvrjets.at(j).tau1_groomed(); // need to take groomed values; plane tau values don't make sense since HOTVR jets are groomed (combination of actual subjets)!
+    values.at(i++) = hotvrjets.at(j).tau2_groomed();
+    values.at(i++) = hotvrjets.at(j).tau3_groomed();
+    values.at(i++) = hotvrjets.at(j).tau2_groomed() / hotvrjets.at(j).tau1_groomed();
     values.at(i++) = hotvrjets.at(j).tau3_groomed() / hotvrjets.at(j).tau2_groomed(); }
   if(need_hotvrVector_resize) { for(unsigned int j = 0; j < (m_n_hotvr-hotvrjets.size())*template_hotvr.size(); j++) values.at(i++) = m_zeropadding; }; // zero padding for non-existent HOTVR jets
 
@@ -141,7 +188,11 @@ bool DNNSetup::process(Event & event) {
   for(unsigned int j = 0; j < n_valid_jets; j++) {
     bool is_btagged = false;
     if(m_bjetid && (m_bjetid)(jets.at(j), event)) is_btagged = true;
-    values.at(i++) = is_btagged ? -m_zeropadding : 0; // can have three values: m_zeropadding (= no j-th AK4 jet), 0 (= not tagged), -m_zeropadding (= tagged)
+    values.at(i++) = is_btagged ? -m_zeropadding+1 : 0; // can have three values: m_zeropadding (= no j-th AK4 jet), 0 (= not tagged), -m_zeropadding+1 (= tagged)
+    values.at(i++) = jets.at(j).v4().px();
+    values.at(i++) = jets.at(j).v4().py();
+    values.at(i++) = jets.at(j).v4().pz();
+    values.at(i++) = jets.at(j).v4().e();
     values.at(i++) = jets.at(j).v4().Pt();
     values.at(i++) = jets.at(j).v4().Eta();
     values.at(i++) = jets.at(j).v4().Phi();
@@ -150,9 +201,14 @@ bool DNNSetup::process(Event & event) {
   if(need_jetsVector_resize) { for(unsigned int j = 0; j < (m_n_jets-jets.size())*template_jet.size(); j++) values.at(i++) = m_zeropadding; }; // zero padding for non-existent AK4 jets
 
   // Lepton
+  values.at(i++) = lepton.v4().px();
+  values.at(i++) = lepton.v4().py();
+  values.at(i++) = lepton.v4().pz();
+  values.at(i++) = lepton.v4().e();
   values.at(i++) = lepton.v4().Pt();
   values.at(i++) = lepton.v4().Eta();
   values.at(i++) = lepton.v4().Phi();
+  values.at(i++) = lepton.v4().M();
   values.at(i++) = muons.size() > 0 ? muons.at(0).relIso() : (electrons.size() > 0 ? electrons.at(0).relIso() : m_zeropadding);
   values.at(i++) = lepton.charge();
 
