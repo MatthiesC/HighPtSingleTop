@@ -4,6 +4,7 @@
 #include "UHH2/core/include/AnalysisModule.h"
 #include "UHH2/core/include/Event.h"
 
+#include "UHH2/common/include/LumiSelection.h"
 #include "UHH2/common/include/CommonModules.h"
 #include "UHH2/common/include/AdditionalSelections.h"
 #include "UHH2/common/include/TriggerSelection.h"
@@ -47,7 +48,7 @@ namespace uhh2 {
     std::unique_ptr<AnalysisModule> SingleTopGen_tWchProd;
 
     std::unique_ptr<Selection> slct_mttbarGenCut, slct_tWgenSignal;
-    std::unique_ptr<Selection> slct_trigger;
+    std::unique_ptr<Selection> slct_lumi, slct_trigger;
     std::unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
     std::unique_ptr<Selection> slct_met, slct_1jet, slct_1hotvr;
     
@@ -156,6 +157,8 @@ namespace uhh2 {
     // SELECTIONS //
     //------------//
 
+    slct_lumi.reset(new LumiSelection(ctx));
+
     slct_mttbarGenCut.reset(new MttbarGenSelection(0, 700));
     slct_tWgenSignal.reset(new tWgenSignalSelection(ctx, is_muon));
 
@@ -206,6 +209,9 @@ namespace uhh2 {
        - MC pileup reweight
        I.e. the histograms filled here have little to no physical meaning! Be aware of that!
      */
+
+    // Lumi selection
+    if(is_data && !slct_lumi->passes(event)) return false;
 
     // Split up tW samples into SIGNAL and OTHER depending on MC truth info
     if(dataset_version.find("ST_tW") == 0) {
