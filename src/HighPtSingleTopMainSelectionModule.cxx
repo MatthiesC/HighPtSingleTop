@@ -206,17 +206,17 @@ namespace uhh2 {
       // electron trigger, id, reco
     }
     hist_leptonsf->fill(event);
-
-    // Apply cut on DeltaR(lepton, jet) to reject QCD
     primarylep->process(event);
-    if(!slct_deltaRcut->passes(event)) return false;
-    hist_deltaRcut->fill(event);
-
+ 
     // Require exactly one HOTVR t-tag
     if(!slct_1toptag->passes(event)) return false;
     hadronictop->process(event);
     sf_toptag->process(event);
     hist_1toptag->fill(event);
+
+    // Apply cut on DeltaR(lepton, jet) to reject QCD
+    if(!slct_deltaRcut->passes(event)) return false;
+    hist_deltaRcut->fill(event);
 
     // Require deltaPhi between HOTVR t-tag and lepton
     if(!slct_deltaPhiTopLepton->passes(event)) return false;
