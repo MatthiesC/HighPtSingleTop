@@ -166,9 +166,9 @@ namespace uhh2 {
     hist_leptonsf->add_hist(new HighPtSingleTopHists(ctx, "2_LeptonScaleFactors_CustomHists"));
     //hist_deltaRcut.reset(new AndHists(ctx, "3_DeltaRCut"));
     //hist_deltaRcut->add_hist(new HighPtSingleTopHists(ctx, "3_DeltaRCut_CustomHists"));
-    hist_1toptag.reset(new AndHists(ctx, "4_OneTopTag"));
-    hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "4_OneTopTag_CustomHists"));
-    hist_1toptag->add_hist(new HOTVRHists(ctx, "4_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
+    hist_1toptag.reset(new AndHists(ctx, "3_OneTopTag"));
+    hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "3_OneTopTag_CustomHists"));
+    hist_1toptag->add_hist(new HOTVRHists(ctx, "3_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
     //hist_deltaPhiCut.reset(new AndHists(ctx, "5_DeltaPhiCut"));
     //hist_deltaPhiCut->add_hist(new HighPtSingleTopHists(ctx, "5_DeltaPhiCut_CustomHists"));
     //hist_deltaPhiCut->add_hist(new HOTVRHists(ctx, "5_DeltaPhiCut_HOTVRTopTag", StandardHOTVRTopTagID));
@@ -176,9 +176,9 @@ namespace uhh2 {
     //hist_mtwCut->add_hist(new HighPtSingleTopHists(ctx, "6_MTWCut_CustomHists"));
     //hist_mtwCut->add_hist(new HOTVRHists(ctx, "6_MTWCut_HOTVRTopTag", StandardHOTVRTopTagID));
     hist_btag_mc_efficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", BJetID, "jets"));
-    hist_btagsf.reset(new AndHists(ctx, "7_BTagScaleFactors"));
-    hist_btagsf->add_hist(new HighPtSingleTopHists(ctx, "7_BTagScaleFactors_CustomHists"));
-    hist_btagsf->add_hist(new HOTVRHists(ctx, "7_BTagScaleFactors_HOTVRTopTag", StandardHOTVRTopTagID));
+    hist_btagsf.reset(new AndHists(ctx, "4_BTagScaleFactors"));
+    hist_btagsf->add_hist(new HighPtSingleTopHists(ctx, "4_BTagScaleFactors_CustomHists"));
+    hist_btagsf->add_hist(new HOTVRHists(ctx, "4_BTagScaleFactors_HOTVRTopTag", StandardHOTVRTopTagID));
 }
 
 
