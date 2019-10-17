@@ -3,6 +3,7 @@
 
 #include "UHH2/core/include/Event.h"
 #include "UHH2/common/include/Utils.h"
+#include "UHH2/common/include/JetIds.h"
 
 #include "TH1F.h"
 #include "TH2F.h"
@@ -39,6 +40,9 @@ HighPtSingleTopHists::HighPtSingleTopHists(Context & ctx, const string & dirname
   deltaPhi_nextjet_met_VS_met = book<TH2F>("deltaPhi_nextjet_met_VS_met", "missing p_{T} [GeV] vs. #Delta#phi(missing p_{T}, next AK4 jet)", 100, 0, 1000, 100, 0, M_PI); // 2D
 
   jets_number = book<TH1F>("N_jets", "number of AK4 jets", 11, -0.5, 10.5);
+  jets_Nbtags_loose = book<TH1F>("N_btags_loose", "number of loose b-tags", 11, -0.5, 10.5);
+  jets_Nbtags_medium = book<TH1F>("N_btags_medium", "number of medium b-tags", 11, -0.5, 10.5);
+  jets_Nbtags_tight = book<TH1F>("N_btags_tight", "number of tight b-tags", 11, -0.5, 10.5);
   jet1_eta = book<TH1F>("eta_jet1", "#eta(leading AK4 jet)", 60, -3, 3);
   jet2_eta = book<TH1F>("eta_jet2", "#eta(2nd leading AK4 jet)", 60, -3, 3);
   jet3_eta = book<TH1F>("eta_jet3", "#eta(3rd leading AK4 jet)", 60, -3, 3);
@@ -123,6 +127,24 @@ void HighPtSingleTopHists::fill(const Event & event) {
   //----------//
 
   jets_number->Fill(Njets, weight);
+
+  int n_btags_loose(0), n_btags_medium(0), n_btags_tight(0);
+
+  BTag::algo btag_algo = BTag::DEEPJET;
+  JetId BJetID_loose = BTag(btag_algo, BTag::WP_LOOSE);
+  JetId BJetID_medium = BTag(btag_algo, BTag::WP_MEDIUM);
+  JetId BJetID_tight = BTag(btag_algo, BTag::WP_TIGHT);
+
+  for(auto j : jets) {
+    if(BJetID_loose(j, event)) n_btags_loose++;
+    if(BJetID_medium(j, event)) n_btags_medium++;
+    if(BJetID_tight(j, event)) n_btags_tight++;
+  }
+
+  jets_Nbtags_loose->Fill(n_btags_loose, weight);
+  jets_Nbtags_medium->Fill(n_btags_medium, weight);
+  jets_Nbtags_tight->Fill(n_btags_tight, weight);
+
   if(Njets >= 1) {
     jet1_eta->Fill(jets.at(0).eta(), weight);
     jet1_pt->Fill(jets.at(0).pt(), weight);
