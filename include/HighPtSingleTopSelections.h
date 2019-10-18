@@ -58,7 +58,16 @@ namespace uhh2 {
     uhh2::Event::Handle<SingleTopGen_tWch> h_GENtW;
     bool is_muon;
   };
-
+  
+  class JetLeptonOverlapRemoval: public uhh2::AnalysisModule {
+  public:
+    explicit JetLeptonOverlapRemoval(uhh2::Context & ctx, double & deltaR_min_, std::string primlep_name_ = "PrimaryLepton");
+    virtual bool process(uhh2::Event & event) override;
+  private:
+    uhh2::Event::Handle<FlavorParticle> h_primlepton;
+    double deltaR_min;
+  };
+  
   // copied from Alex
   class HighPtSingleTopTriggerSelection : public uhh2::Selection {
   public:

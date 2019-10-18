@@ -43,7 +43,7 @@ namespace uhh2 {
     
     std::unique_ptr<CommonModules> common_modules;
 
-    std::unique_ptr<AnalysisModule> clnr_muon, clnr_elec, clnr_hotvr, hotvr_jec_module;
+    std::unique_ptr<AnalysisModule> clnr_muon, clnr_elec, clnr_hotvr, hotvr_jec_module, clnr_jetLeptonOverlap;
     std::unique_ptr<AnalysisModule> primarylep;
     std::unique_ptr<AnalysisModule> SingleTopGen_tWchProd;
 
@@ -60,7 +60,7 @@ namespace uhh2 {
     double muonPt_min, muonEta_max, muonPt_min_veto, muonEta_max_veto, muonIso_max;
     double elecPt_min, elecEta_max, elecPt_min_veto, elecEta_max_veto;
     double met_min;
-    double jetPt_min, jetEta_max, hotvrPt_min, hotvrEta_max, hotvrDeltaRToLepton_min;
+    double jetPt_min, jetEta_max, hotvrPt_min, hotvrEta_max, hotvrDeltaRToLepton_min, jetDeltaRToLepton_min;
   };
 
 
@@ -100,6 +100,7 @@ namespace uhh2 {
     hotvrEta_max = 2.5;
 
     hotvrDeltaRToLepton_min = 1.5;
+    jetDeltaRToLepton_min = 0.4;
 
     muonPt_min  = 50.0;
     muonEta_max =  2.4;
@@ -151,6 +152,7 @@ namespace uhh2 {
     clnr_muon.reset(new MuonCleaner(muonID));
     clnr_elec.reset(new ElectronCleaner(elecID));
     clnr_hotvr.reset(new TopJetCleaner(ctx, hotvrID));
+    clnr_jetLeptonOverlap.reset(new JetLeptonOverlapRemoval(ctx, jetDeltaRToLepton_min));
 
 
     //------------//
@@ -252,6 +254,7 @@ namespace uhh2 {
     hist_met->fill(event);
 
     // At least one AK4 jet
+    clnr_jetLeptonOverlap->process(event);
     if(!slct_1jet->passes(event)) return false;
     hist_1jet->fill(event);
 

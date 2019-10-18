@@ -110,6 +110,33 @@ bool tWgenSignalSelection::passes(const Event & event) {
 }
 
 
+//--------------------------------------------------//
+// Cleaner for jets overlapping with primary lepton //
+//--------------------------------------------------//
+
+// NB: The standard jet-lepton cleaning in UHH2 looks at all leptons (wihtout ID criteria and so on...) and also requires jet.muonMultiplicity > 0.
+
+JetLeptonOverlapRemoval::JetLeptonOverlapRemoval(Context & ctx, double & deltaR_min_, string primlep_name_):
+  h_primlepton(ctx.get_handle<FlavorParticle>(primlep_name_)),
+  deltaR_min(deltaR_min_) {}
+
+bool JetLeptonOverlapRemoval::process(Event & event) {
+  
+  std::vector<Jet> result;
+  const FlavorParticle & lepton = event.get(h_primlepton);
+  
+  for(const auto & jet : *event.jets) {
+    if(uhh2::deltaR(jet, lepton) > deltaR_min) {
+      result.push_back(jet);
+    }
+   }
+  
+  std::swap(result, *event.jets);
+  
+  return true;
+}
+
+
 
 // copied from Alex
 HighPtSingleTopTriggerSelection::HighPtSingleTopTriggerSelection(Context &ctx) {
