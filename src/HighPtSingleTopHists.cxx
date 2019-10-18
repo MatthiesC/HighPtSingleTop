@@ -51,6 +51,14 @@ HighPtSingleTopHists::HighPtSingleTopHists(Context & ctx, const string & dirname
   jet2_pt = book<TH1F>("pt_jet2", "p_{T}(2nd leading AK4 jet) [GeV]", 100, 0, 500);
   jet3_pt = book<TH1F>("pt_jet3", "p_{T}(3rd leading AK4 jet) [GeV]", 100, 0, 250);
   jet4_pt = book<TH1F>("pt_jet4", "p_{T}(n-th leading AK4 jet, n #geq 4) [GeV]", 100, 0, 250);
+  jet1_deepjet = book<TH1F>("deepjet_jet1", "DeepJet discriminator (leading AK4 jet)", 50, 0 ,1);
+  jet2_deepjet = book<TH1F>("deepjet_jet2", "DeepJet discriminator (2nd leading AK4 jet)", 50, 0 ,1);
+  jet3_deepjet = book<TH1F>("deepjet_jet3", "DeepJet discriminator (3rd leading AK4 jet)", 50, 0 ,1);
+  jet4_deepjet = book<TH1F>("deepjet_jet4", "DeepJet discriminator (n-th leading AK4 jet, n #geq 4)", 50, 0 ,1);
+  jet1_deltaRlepton = book<TH1F>("deltaRlepton_jet1", "#DeltaR(lepton, leading AK4 jet)", 100, 0, 5);
+  jet2_deltaRlepton = book<TH1F>("deltaRlepton_jet2", "#DeltaR(lepton, 2nd leading AK4 jet)", 100, 0, 5);
+  jet3_deltaRlepton = book<TH1F>("deltaRlepton_jet3", "#DeltaR(lepton, 3rd leading AK4 jet)", 100, 0, 5);
+  jet4_deltaRlepton = book<TH1F>("deltaRlepton_jet4", "#DeltaR(lepton, n-th leading AK4 jet, n #geq 4)", 100, 0, 5);
 
   hotvr_number = book<TH1F>("N_hotvr", "number of HOTVR jets", 11, -0.5, 10.5);
   hotvr1_eta = book<TH1F>("eta_hotvr1", "#eta(leading HOTVR jet)", 60, -3, 3);
@@ -148,19 +156,27 @@ void HighPtSingleTopHists::fill(const Event & event) {
   if(Njets >= 1) {
     jet1_eta->Fill(jets.at(0).eta(), weight);
     jet1_pt->Fill(jets.at(0).pt(), weight);
+    jet1_deepjet->Fill(jets.at(0).btag_DeepJet(), weight);
+    jet1_deltaRlepton->Fill(uhh2::deltaR(lepton.v4(), jets.at(0).v4()), weight);
   }
   if(Njets >= 2) {
     jet2_eta->Fill(jets.at(1).eta(), weight);
     jet2_pt->Fill(jets.at(1).pt(), weight);
+    jet2_deepjet->Fill(jets.at(1).btag_DeepJet(), weight);
+    jet2_deltaRlepton->Fill(uhh2::deltaR(lepton.v4(), jets.at(1).v4()), weight);
   }
   if(Njets >= 3) {
     jet3_eta->Fill(jets.at(2).eta(), weight);
     jet3_pt->Fill(jets.at(2).pt(), weight);
+    jet3_deepjet->Fill(jets.at(2).btag_DeepJet(), weight);
+    jet3_deltaRlepton->Fill(uhh2::deltaR(lepton.v4(), jets.at(2).v4()), weight);
   }
   if(Njets >= 4) {
     for(unsigned int i = 3; i < Njets; i++) {
       jet4_eta->Fill(jets.at(i).eta(), weight);
       jet4_pt->Fill(jets.at(i).pt(), weight);
+      jet4_deepjet->Fill(jets.at(i).btag_DeepJet(), weight);
+      jet4_deltaRlepton->Fill(uhh2::deltaR(lepton.v4(), jets.at(i).v4()), weight);
     }
   }
 

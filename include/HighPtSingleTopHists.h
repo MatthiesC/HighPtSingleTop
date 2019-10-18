@@ -26,6 +26,7 @@ namespace uhh2 {
     TH2F *deltaPhi_lepton_met_VS_met, *deltaPhi_leadhotvr_met_VS_met, *deltaPhi_nextjet_met_VS_met;
 
     TH1F *jets_number, *jets_Nbtags_loose, *jets_Nbtags_medium, *jets_Nbtags_tight, *jet1_eta, *jet2_eta, *jet3_eta, *jet4_eta, *jet1_pt, *jet2_pt, *jet3_pt, *jet4_pt;
+    TH1F *jet1_deepjet, *jet2_deepjet, *jet3_deepjet, *jet4_deepjet, *jet1_deltaRlepton, *jet2_deltaRlepton, *jet3_deltaRlepton, *jet4_deltaRlepton;
     TH1F *hotvr_number, *hotvr1_eta, *hotvr1_phi, *hotvr2_eta, *hotvr2_phi, *hotvr3_eta, *hotvr3_phi, *hotvr4_eta, *hotvr4_phi, *hotvr1_pt, *hotvr1_pt_lowpt, *hotvr1_pt_highpt, *hotvr2_pt, *hotvr2_pt_lowpt, *hotvr2_pt_highpt, *hotvr3_pt, *hotvr4_pt;
     TH1F *hotvr1_mass, *hotvr1_mass_ca173, *hotvr2_mass, *hotvr3_mass, *hotvr4_mass;
   };
