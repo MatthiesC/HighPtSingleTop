@@ -1,6 +1,7 @@
 *~
 *#
 .*
+*.bak
 obj/*
 *.root
 config/workdir_*
