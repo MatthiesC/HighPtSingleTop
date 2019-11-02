@@ -15,6 +15,7 @@
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
+#include "UHH2/HighPtSingleTop/include/TopTaggedJet.h"
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
 
 #include "UHH2/HOTVR/include/HOTVRHists.h"
@@ -37,11 +38,11 @@ namespace uhh2 {
   private:
     
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag, sf_btag;
-    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, dnn_setup;
+    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, dnn_setup;
 
-    unique_ptr<Selection> slct_1toptag;  //slct_deltaPhiTopLepton, slct_mtwCut, slct_deltaRcut;
+    unique_ptr<Selection> slct_1toptag;
     
-    unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_1toptag, hist_btagsf; //hist_deltaRcut, hist_deltaPhiCut, hist_mtwCut;
+    unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_1toptag, hist_btagsf;
  
     unique_ptr<Hists> hist_btag_mc_efficiency;
 
@@ -50,7 +51,6 @@ namespace uhh2 {
     string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag, syst_btag;
 
     double hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min, hotvr_tau32_max;
-    //double mtw_min, deltaR_lepton_nextjet_min, deltaPhi_lepton_toptag_min;
 
     TopJetId StandardHOTVRTopTagID;
     JetId BJetID;
@@ -89,17 +89,12 @@ namespace uhh2 {
     // KINEMATIC VARIABLES //
     //---------------------//
 
-    //mtw_min = 20.0;
-
     // t-tagging criteria
     hotvr_fpt_max     = 0.8;
     hotvr_jetmass_min = 140;
     hotvr_jetmass_max = 220;
     hotvr_mpair_min   = 50;
     hotvr_tau32_max   = 0.56;
-
-    //deltaR_lepton_nextjet_min = 0.4; // minimum R-distance between primary lepton and next AK4 jet
-    //deltaPhi_lepton_toptag_min = 0.5*M_PI; // top-tag and lepton need to be back-to-back
 
 
     //-----------------//
@@ -139,6 +134,7 @@ namespace uhh2 {
 
     primarylep.reset(new PrimaryLepton(ctx));
     hadronictop.reset(new HadronicTop(ctx));
+    toptaggedjet.reset(new TopTaggedJet(ctx, StandardHOTVRTopTagID));
     dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID, 0.));
     h_event_weight = ctx.declare_event_output<float>("DNN_EventWeight");
     h_toptag_pt = ctx.declare_event_output<float>("DNN_TopTagPt");
@@ -148,10 +144,7 @@ namespace uhh2 {
     // SELECTIONS //
     //------------//
 
-    //slct_deltaRcut.reset(new DeltaRLeptonNextJetCut(ctx, deltaR_lepton_nextjet_min));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
-    //slct_deltaPhiTopLepton.reset(new DeltaPhiTopLeptonCut(ctx, deltaPhi_lepton_toptag_min, StandardHOTVRTopTagID));
-    //slct_mtwCut.reset(new MTWSelection(ctx, mtw_min));
 
 
     //------------//
@@ -164,17 +157,9 @@ namespace uhh2 {
     hist_lumipuweights->add_hist(new HighPtSingleTopHists(ctx, "1_LumiAndPileupWeights_CustomHists"));
     hist_leptonsf.reset(new AndHists(ctx, "2_LeptonScaleFactors"));
     hist_leptonsf->add_hist(new HighPtSingleTopHists(ctx, "2_LeptonScaleFactors_CustomHists"));
-    //hist_deltaRcut.reset(new AndHists(ctx, "3_DeltaRCut"));
-    //hist_deltaRcut->add_hist(new HighPtSingleTopHists(ctx, "3_DeltaRCut_CustomHists"));
     hist_1toptag.reset(new AndHists(ctx, "3_OneTopTag"));
     hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "3_OneTopTag_CustomHists"));
     hist_1toptag->add_hist(new HOTVRHists(ctx, "3_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
-    //hist_deltaPhiCut.reset(new AndHists(ctx, "5_DeltaPhiCut"));
-    //hist_deltaPhiCut->add_hist(new HighPtSingleTopHists(ctx, "5_DeltaPhiCut_CustomHists"));
-    //hist_deltaPhiCut->add_hist(new HOTVRHists(ctx, "5_DeltaPhiCut_HOTVRTopTag", StandardHOTVRTopTagID));
-    //hist_mtwCut.reset(new AndHists(ctx, "6_MTWCut"));
-    //hist_mtwCut->add_hist(new HighPtSingleTopHists(ctx, "6_MTWCut_CustomHists"));
-    //hist_mtwCut->add_hist(new HOTVRHists(ctx, "6_MTWCut_HOTVRTopTag", StandardHOTVRTopTagID));
     hist_btag_mc_efficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", BJetID, "jets"));
     hist_btagsf.reset(new AndHists(ctx, "4_BTagScaleFactors"));
     hist_btagsf->add_hist(new HighPtSingleTopHists(ctx, "4_BTagScaleFactors_CustomHists"));
@@ -212,19 +197,16 @@ namespace uhh2 {
     if(!slct_1toptag->passes(event)) return false;
     hadronictop->process(event);
     sf_toptag->process(event);
+    toptaggedjet->process(event);
+    // Split tW signal into 3-merged, 2-merged, 1-merged, 0-merged (== how many top decay products ended up inside t-tagged HOTVR jet)
+    /*    if(dataset_version.find("ST_tW") == 0) {
+      SingleTopGen_tWchProd->process(event);
+      if(dataset_version.find("ST_tW_merged3") == 0 && !slct_tW_merged3->passes(event)) return false;
+      if(dataset_version.find("ST_tW_merged2") == 0 && !slct_tW_merged2->passes(event)) return false;
+      if(dataset_version.find("ST_tW_merged1") == 0 && !slct_tW_merged1->passes(event)) return false;
+      if(dataset_version.find("ST_tW_merged0") == 0 && !slct_tW_merged0->passes(event)) return false;
+      }*/
     hist_1toptag->fill(event);
-
-    // Apply cut on DeltaR(lepton, jet) to reject QCD
-    //if(!slct_deltaRcut->passes(event)) return false;
-    //hist_deltaRcut->fill(event);
-
-    // Require deltaPhi between HOTVR t-tag and lepton
-    //if(!slct_deltaPhiTopLepton->passes(event)) return false;
-    //hist_deltaPhiCut->fill(event);
-
-    // Apply cut on transverse mass of W hypothesis to reject big fraction of remaining QCD
-    //if(!slct_mtwCut->passes(event)) return false;
-    //hist_mtwCut->fill(event);
 
     // Apply b-tag scale factors
     hist_btag_mc_efficiency->fill(event);
