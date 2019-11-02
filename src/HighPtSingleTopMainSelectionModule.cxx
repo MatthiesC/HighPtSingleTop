@@ -17,6 +17,7 @@
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
 #include "UHH2/HighPtSingleTop/include/TopTaggedJet.h"
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
+#include "UHH2/HighPtSingleTop/include/MatchHists.h"
 
 #include "UHH2/HOTVR/include/HOTVRHists.h"
 #include "UHH2/HOTVR/include/HOTVRIds.h"
@@ -44,7 +45,7 @@ namespace uhh2 {
     
     unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_1toptag, hist_btagsf;
  
-    unique_ptr<Hists> hist_btag_mc_efficiency;
+    unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch;
 
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
@@ -165,6 +166,7 @@ namespace uhh2 {
     hist_1toptag.reset(new AndHists(ctx, "3_OneTopTag"));
     hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "3_OneTopTag_CustomHists"));
     hist_1toptag->add_hist(new HOTVRHists(ctx, "3_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
+    hist_decaymatch.reset(new MatchHists(ctx, "MatchHists"));
     hist_btag_mc_efficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", BJetID, "jets"));
     hist_btagsf.reset(new AndHists(ctx, "4_BTagScaleFactors"));
     hist_btagsf->add_hist(new HighPtSingleTopHists(ctx, "4_BTagScaleFactors_CustomHists"));
@@ -210,6 +212,7 @@ namespace uhh2 {
       if(dataset_version.find("ST_tW_merged2") == 0 && !slct_tW_merged2->passes(event)) return false;
       if(dataset_version.find("ST_tW_merged1") == 0 && !slct_tW_merged1->passes(event)) return false;
       if(dataset_version.find("ST_tW_merged0") == 0 && !slct_tW_merged0->passes(event)) return false;
+      hist_decaymatch->fill(event);
     }
     hist_1toptag->fill(event);
     
