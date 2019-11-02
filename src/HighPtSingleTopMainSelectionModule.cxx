@@ -38,9 +38,9 @@ namespace uhh2 {
   private:
     
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag, sf_btag;
-    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, dnn_setup;
+    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, SingleTopGen_tWchProd, dnn_setup;
 
-    unique_ptr<Selection> slct_1toptag;
+    unique_ptr<Selection> slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0;
     
     unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_1toptag, hist_btagsf;
  
@@ -135,6 +135,7 @@ namespace uhh2 {
     primarylep.reset(new PrimaryLepton(ctx));
     hadronictop.reset(new HadronicTop(ctx));
     toptaggedjet.reset(new TopTaggedJet(ctx, StandardHOTVRTopTagID));
+    SingleTopGen_tWchProd.reset(new SingleTopGen_tWchProducer(ctx, "h_GENtW"));
     dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID, 0.));
     h_event_weight = ctx.declare_event_output<float>("DNN_EventWeight");
     h_toptag_pt = ctx.declare_event_output<float>("DNN_TopTagPt");
@@ -145,6 +146,10 @@ namespace uhh2 {
     //------------//
 
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
+    slct_tW_merged3.reset(new MergeScenarioSelection(ctx, 3));
+    slct_tW_merged2.reset(new MergeScenarioSelection(ctx, 2));
+    slct_tW_merged1.reset(new MergeScenarioSelection(ctx, 1));
+    slct_tW_merged0.reset(new MergeScenarioSelection(ctx, 0));
 
 
     //------------//
@@ -199,15 +204,15 @@ namespace uhh2 {
     sf_toptag->process(event);
     toptaggedjet->process(event);
     // Split tW signal into 3-merged, 2-merged, 1-merged, 0-merged (== how many top decay products ended up inside t-tagged HOTVR jet)
-    /*    if(dataset_version.find("ST_tW") == 0) {
+    if(dataset_version.find("ST_tW") == 0) {
       SingleTopGen_tWchProd->process(event);
       if(dataset_version.find("ST_tW_merged3") == 0 && !slct_tW_merged3->passes(event)) return false;
       if(dataset_version.find("ST_tW_merged2") == 0 && !slct_tW_merged2->passes(event)) return false;
       if(dataset_version.find("ST_tW_merged1") == 0 && !slct_tW_merged1->passes(event)) return false;
       if(dataset_version.find("ST_tW_merged0") == 0 && !slct_tW_merged0->passes(event)) return false;
-      }*/
+    }
     hist_1toptag->fill(event);
-
+    
     // Apply b-tag scale factors
     hist_btag_mc_efficiency->fill(event);
     sf_btag->process(event);

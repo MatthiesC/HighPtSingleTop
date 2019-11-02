@@ -141,7 +141,7 @@ bool JetLeptonOverlapRemoval::process(Event & event) {
 // Selection based on how many quarks are merged to HOTVR jet //
 //------------------------------------------------------------//
 
-MergeScenarioSelection::MergeScenarioSelection(Context & ctx, unsigned int & number_of_merged_quarks, string toptaggedjet_name_):
+MergeScenarioSelection::MergeScenarioSelection(Context & ctx, unsigned int number_of_merged_quarks, string toptaggedjet_name_):
   h_toptaggedjet(ctx.get_handle<TopJet>(toptaggedjet_name_)),
   h_GENtW(ctx.get_handle<SingleTopGen_tWch>("h_GENtW")),
   m_mergedQuarks(number_of_merged_quarks) {}

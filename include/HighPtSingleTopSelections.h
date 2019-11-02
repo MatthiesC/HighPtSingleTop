@@ -70,7 +70,7 @@ namespace uhh2 {
 
   class MergeScenarioSelection: public uhh2::Selection {
   public:
-    MergeScenarioSelection(uhh2::Context & ctx, unsigned int & number_of_merged_quarks, std::string toptaggedjet_name_ = "TopTaggedJet");
+    MergeScenarioSelection(uhh2::Context & ctx, unsigned int number_of_merged_quarks, std::string toptaggedjet_name_ = "TopTaggedJet");
     virtual bool passes(const uhh2::Event & event) override;
   private:
     uhh2::Event::Handle<TopJet> h_toptaggedjet;
