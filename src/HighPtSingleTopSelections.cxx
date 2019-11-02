@@ -137,6 +137,42 @@ bool JetLeptonOverlapRemoval::process(Event & event) {
 }
 
 
+//------------------------------------------------------------//
+// Selection based on how many quarks are merged to HOTVR jet //
+//------------------------------------------------------------//
+
+MergeScenarioSelection::MergeScenarioSelection(Context & ctx, unsigned int & number_of_merged_quarks, string toptaggedjet_name_):
+  h_toptaggedjet(ctx.get_handle<TopJet>(toptaggedjet_name_)),
+  h_GENtW(ctx.get_handle<SingleTopGen_tWch>("h_GENtW")),
+  m_mergedQuarks(number_of_merged_quarks) {}
+
+bool MergeScenarioSelection::passes(const Event & event) {
+
+  const auto & GENtW = event.get(h_GENtW);
+  const auto & topjet = event.get(h_toptaggedjet);
+
+  if(!GENtW.IsTopHadronicDecay()) throw runtime_error("MergeScenarioSelection: Cannot use this selection class on event which has no hadronic top quark decay!");
+
+  vector<GenParticle> top_decays;
+  top_decays.push_back(GENtW.bTop());
+  top_decays.push_back(GENtW.WTopDecay1());
+  top_decays.push_back(GENtW.WTopDecay2());
+
+  // assume that HOTVR jets are circular
+  double jet_radius = sqrt(topjet.jetArea()/M_PI);
+
+  unsigned int mergedQuarks = 0;
+
+  for(GenParticle gp : top_decays) {
+    if(jet_radius > uhh2::deltaR(gp.v4(), topjet.v4())) ++mergedQuarks;
+  }
+
+  return mergedQuarks == m_mergedQuarks;
+}
+
+
+
+
 
 // copied from Alex
 HighPtSingleTopTriggerSelection::HighPtSingleTopTriggerSelection(Context &ctx) {

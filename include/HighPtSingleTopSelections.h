@@ -67,6 +67,17 @@ namespace uhh2 {
     uhh2::Event::Handle<FlavorParticle> h_primlepton;
     double deltaR_min;
   };
+
+  class MergeScenarioSelection: public uhh2::Selection {
+  public:
+    MergeScenarioSelection(uhh2::Context & ctx, unsigned int & number_of_merged_quarks, std::string toptaggedjet_name_ = "TopTaggedJet");
+    virtual bool passes(const uhh2::Event & event) override;
+  private:
+    uhh2::Event::Handle<TopJet> h_toptaggedjet;
+    uhh2::Event::Handle<SingleTopGen_tWch> h_GENtW;
+    unsigned int m_mergedQuarks;
+  };
+
   
   // copied from Alex
   class HighPtSingleTopTriggerSelection : public uhh2::Selection {
