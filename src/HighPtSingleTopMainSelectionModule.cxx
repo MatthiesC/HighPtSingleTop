@@ -41,7 +41,7 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag, sf_btag;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, SingleTopGen_tWchProd, dnn_setup;
 
-    unique_ptr<Selection> slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0;
+    unique_ptr<Selection> slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_TopToTauToHad, slct_tW_WToMu, slct_tW_WToTauToMu;
     
     unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_1toptag, hist_btagsf;
  
@@ -151,6 +151,10 @@ namespace uhh2 {
     slct_tW_merged2.reset(new MergeScenarioSelection(ctx, 2));
     slct_tW_merged1.reset(new MergeScenarioSelection(ctx, 1));
     slct_tW_merged0.reset(new MergeScenarioSelection(ctx, 0));
+    slct_tW_TopToHad.reset(new tWgenSelection(ctx, "TopToHad", is_muon));
+    slct_tW_TopToTauToHad.reset(new tWgenSelection(ctx, "TopToTauToHad", is_muon));
+    slct_tW_WToMu.reset(new tWgenSelection(ctx, "WToMu", is_muon));
+    slct_tW_WToTauToMu.reset(new tWgenSelection(ctx, "WToTauToMu", is_muon));
 
 
     //------------//
@@ -212,6 +216,14 @@ namespace uhh2 {
       if(dataset_version.find("ST_tW_merged2") == 0 && !slct_tW_merged2->passes(event)) return false;
       if(dataset_version.find("ST_tW_merged1") == 0 && !slct_tW_merged1->passes(event)) return false;
       if(dataset_version.find("ST_tW_merged0") == 0 && !slct_tW_merged0->passes(event)) return false;
+      // now, also check if we have signal-like decay but with intermediate tau leptons
+      bool is_TopToHadAndWToTauToMu = slct_tW_TopToHad->passes(event) && slct_tW_WToTauToMu->passes(event);
+      bool is_TopToTauToHadAndWToMu = slct_tW_TopToTauToHad->passes(event) && slct_tW_WToMu->passes(event);
+      bool is_TopToTauToHadAndWToTauToMu = slct_tW_TopToTauToHad->passes(event) && slct_tW_WToTauToMu->passes(event);
+      if(dataset_version.find("ST_tW_bkg_TopToHadAndWToTauToMu") == 0 && !is_TopToHadAndWToTauToMu) return false;
+      if(dataset_version.find("ST_tW_bkg_TopToTauToHadAndWToMu") == 0 && !is_TopToTauToHadAndWToMu) return false;
+      if(dataset_version.find("ST_tW_bkg_TopToTauToHadAndWToTauToMu") == 0 && !is_TopToTauToHadAndWToTauToMu) return false;
+      if(dataset_version.find("ST_tW_bkg_Else") == 0 && !(is_TopToHadAndWToTauToMu || is_TopToTauToHadAndWToMu || is_TopToTauToHadAndWToTauToMu)) return false;
       hist_decaymatch->fill(event);
     }
     hist_1toptag->fill(event);

@@ -110,6 +110,48 @@ bool tWgenSignalSelection::passes(const Event & event) {
 }
 
 
+//--------------------------------------------------------------------//
+// Select tW events based on a specific decay channel given by string //
+//--------------------------------------------------------------------//
+
+tWgenSelection::tWgenSelection(Context & ctx, string decay_, bool is_muon_):
+  h_GENtW(ctx.get_handle<SingleTopGen_tWch>("h_GENtW")),
+  m_decay(decay_),
+  m_is_muon(is_muon_) {
+
+  cout << "tWgenSelection: CAVEAT, cannot check which particles a tau lepton decays into! Generator info missing." << endl;
+}
+
+bool tWgenSelection::passes(const Event & event) {
+
+  const auto & GENtW = event.get(h_GENtW);
+
+  if(m_decay == "TopToHad") {
+    if(!GENtW.IsTopHadronicDecay()) return false;
+  }
+  else if(m_decay == "WToMu") {
+    if(m_is_muon) { // Muon+jets channel
+      if(!GENtW.IsAssToMuonDecay()) return false;
+    }
+    else { // Electron+jets channel
+      if(!GENtW.IsAssToElectronDecay()) return false;
+    }
+  }
+  else if(m_decay == "TopToTauToHad") {
+    if(!GENtW.IsTopToTauonDecay()) return false;
+    // check if tau decays hadronically
+    // cannot be checked with generator particles!!!
+  }
+  else if(m_decay == "WToTauToMu") {
+    if(!GENtW.IsAssToTauonDecay()) return false;
+    // check if tau decays to muon (or electron in case of e+jets channel)
+    // cannot be checked with generator particles!!!
+  }
+
+  return true;
+}
+
+
 //--------------------------------------------------//
 // Cleaner for jets overlapping with primary lepton //
 //--------------------------------------------------//

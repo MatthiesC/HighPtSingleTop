@@ -58,6 +58,16 @@ namespace uhh2 {
     uhh2::Event::Handle<SingleTopGen_tWch> h_GENtW;
     bool is_muon;
   };
+
+  class tWgenSelection: public uhh2::Selection {
+  public:
+    tWgenSelection(uhh2::Context & ctx, std::string decay_, bool is_muon_);
+    virtual bool passes(const uhh2::Event & event) override;
+  private:
+    uhh2::Event::Handle<SingleTopGen_tWch> h_GENtW;
+    std::string m_decay;
+    bool m_is_muon;
+  };
   
   class JetLeptonOverlapRemoval: public uhh2::AnalysisModule {
   public:
