@@ -20,6 +20,13 @@ class MatchHists: public uhh2::Hists {
  protected:
   
   TH1F *hist_deltaR_topQuark_topRecoJet, *hist_deltaPhi_topQuark_topRecoJet, *hist_deltaR_topQuark_recoLepton, *hist_deltaPhi_topQuark_recoLepton;
+  TH1F *hist_deltaR_WBoson_topRecoJet, *hist_deltaPhi_WBoson_topRecoJet, *hist_deltaR_WBoson_recoLepton, *hist_deltaPhi_WBoson_recoLepton;
+  TH1F *hist_deltaR_topQuark_topRecoJet_Pt0to400, *hist_deltaPhi_topQuark_topRecoJet_Pt0to400, *hist_deltaR_topQuark_recoLepton_Pt0to400, *hist_deltaPhi_topQuark_recoLepton_Pt0to400;
+  TH1F *hist_deltaR_WBoson_topRecoJet_Pt0to400, *hist_deltaPhi_WBoson_topRecoJet_Pt0to400, *hist_deltaR_WBoson_recoLepton_Pt0to400, *hist_deltaPhi_WBoson_recoLepton_Pt0to400;
+  TH1F *hist_deltaR_topQuark_topRecoJet_Pt400toInf, *hist_deltaPhi_topQuark_topRecoJet_Pt400toInf, *hist_deltaR_topQuark_recoLepton_Pt400toInf, *hist_deltaPhi_topQuark_recoLepton_Pt400toInf;
+  TH1F *hist_deltaR_WBoson_topRecoJet_Pt400toInf, *hist_deltaPhi_WBoson_topRecoJet_Pt400toInf, *hist_deltaR_WBoson_recoLepton_Pt400toInf, *hist_deltaPhi_WBoson_recoLepton_Pt400toInf;
+
+  TH1F *hist_decayChannel;
 
   uhh2::Event::Handle<SingleTopGen_tWch> h_GENtW;
   uhh2::Event::Handle<TopJet> h_toptaggedjet;
