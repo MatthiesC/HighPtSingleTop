@@ -15,7 +15,7 @@ SteerPlotter(){
   
   bRatioPlot = false;   // plot ratio histograms?
   bZScoreInRatio = false;   // plot z-score instead of usual ratio
-  bDrawLegend = true;   // draw a legend on each histogram? (otherwise only on the first one in each ps file)
+  bDrawLegend = false;   // draw a legend on each histogram? (otherwise only on the first one in each ps file)
   bShapeNorm = false;   // shape normalization? 
   bPortrait = true;    // portrait or landscape?
   bDrawEntries = false; // draw the histogram entries?

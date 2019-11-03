@@ -3,7 +3,7 @@ SteerPlotter(){
   // steering for the plotter
   fCycleName     = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/uhh2.AnalysisModuleRunner";
   fInputFiles    = " MC.ST_tW_signal.root, MC.ST_tW_other.root, MC.TTbar.root, MC.WJets.root, MC.DYJets.root, ";
-  fSampleNames   = " tWSPACEsignal, tWSPACEother, ttbar, W+jets, DY+jets, ";
+  fSampleNames   = " tWSPACEsignal, tWSPACEbackground, ttbar, W+jets, DY+jets, ";
   fSamplesWeight = " 1., 1., 1., 1., 1., ";
   fSamplesUnc    = " 0., 0., 0., 0., 0., ";
   fHistColors    = " 596, 590, 633, 418, 400, ";
