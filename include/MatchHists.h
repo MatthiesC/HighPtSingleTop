@@ -28,6 +28,8 @@ class MatchHists: public uhh2::Hists {
 
   TH1F *hist_decayChannel;
 
+  TH1F *hist_topRecoJet_pt, *hist_topRecoJet_eta, *hist_topRecoJet_mass, *hist_topRecoJet_phi;
+
   uhh2::Event::Handle<SingleTopGen_tWch> h_GENtW;
   uhh2::Event::Handle<TopJet> h_toptaggedjet;
   uhh2::Event::Handle<FlavorParticle> h_primlep;

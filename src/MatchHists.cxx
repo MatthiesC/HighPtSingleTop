@@ -69,6 +69,11 @@ MatchHists::MatchHists(Context & ctx, const string & dirname):
                                    "t_{e}W_{#tau}", "t_{#mu}W_{#tau}", "t_{#tau}W_{#tau}", "t_{h}W_{#tau}",
 				   "t_{e}W_{h}", "t_{#mu}W_{h}", "t_{#tau}W_{h}", "t_{h}W_{h}"};
   for(int i=1; i<=nx; ++i) hist_decayChannel->GetXaxis()->SetBinLabel(i,decayChannels[i-1]);
+
+  hist_topRecoJet_pt = book<TH1F>("topRecoJet_pt", "HOTVR t-tag p_{T} [GeV]", 100, 0, 1000);
+  hist_topRecoJet_eta = book<TH1F>("topRecoJet_eta", "HOTVR t-tag #eta", 100, -2.5, 2.5);
+  hist_topRecoJet_mass = book<TH1F>("topRecoJet_mass", "HOTVR t-tag m_{jet} [GeV]", 100, 140, 220);
+  hist_topRecoJet_phi = book<TH1F>("topRecoJet_phi", "HOTVR t-tag #phi", 100, -M_PI, M_PI);
 }
 
 
@@ -118,4 +123,9 @@ void MatchHists::fill(const uhh2::Event & event) {
   }
   
   hist_decayChannel->Fill(GENtW.DecayChannel(), w);
+
+  hist_topRecoJet_pt->Fill(topjet.v4().Pt(), w);
+  hist_topRecoJet_eta->Fill(topjet.v4().Eta(), w);
+  hist_topRecoJet_mass->Fill(topjet.v4().M(), w);
+  hist_topRecoJet_phi->Fill(topjet.v4().Phi(), w);
 }
