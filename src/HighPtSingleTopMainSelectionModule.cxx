@@ -18,6 +18,7 @@
 #include "UHH2/HighPtSingleTop/include/TopTaggedJet.h"
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
 #include "UHH2/HighPtSingleTop/include/MatchHists.h"
+#include "UHH2/HighPtSingleTop/include/TopTagHists.h"
 
 #include "UHH2/HOTVR/include/HOTVRHists.h"
 #include "UHH2/HOTVR/include/HOTVRIds.h"
@@ -168,11 +169,13 @@ namespace uhh2 {
     hist_1toptag.reset(new AndHists(ctx, "3_OneTopTag"));
     hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "3_OneTopTag_CustomHists"));
     hist_1toptag->add_hist(new HOTVRHists(ctx, "3_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
+    hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists"));
     hist_decaymatch.reset(new MatchHists(ctx, "MatchHists"));
     hist_btag_mc_efficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", BJetID, "jets"));
     hist_btagsf.reset(new AndHists(ctx, "4_BTagScaleFactors"));
     hist_btagsf->add_hist(new HighPtSingleTopHists(ctx, "4_BTagScaleFactors_CustomHists"));
     hist_btagsf->add_hist(new HOTVRHists(ctx, "4_BTagScaleFactors_HOTVRTopTag", StandardHOTVRTopTagID));
+    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagScaleFactors_TopTagHists"));
 }
 
 
@@ -220,8 +223,8 @@ namespace uhh2 {
       if(dataset_version.find("ST_tW_bkg_Else") == 0 && is_TopToHadAndWToTau) return false;
       hist_decaymatch->fill(event);
     }
-    hist_1toptag->fill(event);
-    
+    hist_1toptag->fill(event);    
+
     // Apply b-tag scale factors
     hist_btag_mc_efficiency->fill(event);
     sf_btag->process(event);
