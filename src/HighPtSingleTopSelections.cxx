@@ -129,23 +129,8 @@ bool tWgenSelection::passes(const Event & event) {
   if(m_decay == "TopToHad") {
     if(!GENtW.IsTopHadronicDecay()) return false;
   }
-  else if(m_decay == "WToMu") {
-    if(m_is_muon) { // Muon+jets channel
-      if(!GENtW.IsAssToMuonDecay()) return false;
-    }
-    else { // Electron+jets channel
-      if(!GENtW.IsAssToElectronDecay()) return false;
-    }
-  }
-  else if(m_decay == "TopToTauToHad") {
-    if(!GENtW.IsTopToTauonDecay()) return false;
-    // check if tau decays hadronically
-    // cannot be checked with generator particles!!!
-  }
-  else if(m_decay == "WToTauToMu") {
+  else if(m_decay == "WToTau") {
     if(!GENtW.IsAssToTauonDecay()) return false;
-    // check if tau decays to muon (or electron in case of e+jets channel)
-    // cannot be checked with generator particles!!!
   }
 
   return true;

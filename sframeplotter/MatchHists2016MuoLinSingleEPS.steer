@@ -2,14 +2,14 @@ SteerPlotter(){
   
   // steering for the plotter
   fCycleName     = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/uhh2.AnalysisModuleRunner";
-  fInputFiles    = " MC.ST_tW_merged3.root, MC.ST_tW_merged2.root, MC.ST_tW_merged1.root, MC.ST_tW_merged0.root, MC.ST_tW_other.root, ";
-  fSampleNames   = " tWSPACEsignalSPACE(fullySPACEmerged), tWSPACEsignalSPACE(2/3SPACEquarksSPACEmerged), tWSPACEsignalSPACE(1/3SPACEquarksSPACEmerged), tWSPACEsignalSPACE(notSPACEmerged), tWSPACEbackground, ";
-  fSamplesWeight = " 1., 1., 1., 1., 1., ";
-  fSamplesUnc    = " 0., 0., 0., 0., 0., ";
-  fHistColors    = " 602, 596, 866, 432, 800, ";
-  fHistMarkers   = " 0, 0, 0, 0, 0, ";
+  fInputFiles    = " MC.ST_tW_merged3.root, MC.ST_tW_merged2.root, MC.ST_tW_merged1.root, MC.ST_tW_merged0.root, MC.ST_tW_bkg_TopToHadAndWToTau.root, MC.ST_tW_bkg_Else.root, ";
+  fSampleNames   = " tW_signal_(fully_merged), tW_signal_(2/3_merged), tW_signal_(1/3_merged), tW_signal_(not_merged), t(h)W(#tau)_background, other_tW_background, ";
+  fSamplesWeight = " 1., 1., 1., 1., 1., 1., ";
+  fSamplesUnc    = " 0., 0., 0., 0., 0., 0., ";
+  fHistColors    = " 602, 596, 866, 432, 800, 810, ";
+  fHistMarkers   = " 0, 0, 0, 0, 0, 0, ";
 
-  fSamplesToStack = " ST_tW_other, ST_tW_merged3, ST_tW_merged2, ST_tW_merged1, ST_tW_merged0, ";
+  fSamplesToStack = " ST_tW_merged3, ST_tW_merged2, ST_tW_merged1, ST_tW_merged0, ST_tW_bkg_TopToHadAndWToTau, ST_tW_bkg_Else, ";
 
   fOutputPsFile = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/plots/match/lin/SingleEPS/Match2016Muo.ps";	
   
