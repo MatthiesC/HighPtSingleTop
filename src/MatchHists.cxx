@@ -61,7 +61,7 @@ MatchHists::MatchHists(Context & ctx, const string & dirname, double arg_MIN_PT,
 
   hist_topRecoJet_pt = book<TH1F>("topRecoJet_pt", "t jet p_{T} [GeV]", nBins, 0, 1000);
   hist_topRecoJet_eta = book<TH1F>("topRecoJet_eta", "t jet #eta", nBins, -2.5, 2.5);
-  hist_topRecoJet_mass = book<TH1F>("topRecoJet_mass", "t jet m_{jet} [GeV]", nBins, 120, 240); // 140 - 220
+  hist_topRecoJet_mass = book<TH1F>("topRecoJet_mass", "t jet m_{jet} [GeV]", nBins, 130, 230); // 140 - 220
   hist_topRecoJet_phi = book<TH1F>("topRecoJet_phi", "t jet #phi", nBins_dPhi, -M_PI, M_PI);
   hist_topRecoJet_px = book<TH1F>("topRecoJet_px", "t jet p_{x} [GeV]", nBins, -2000, 2000);
   hist_topRecoJet_py = book<TH1F>("topRecoJet_py", "t jet p_{y} [GeV]", nBins, -2000, 2000);
