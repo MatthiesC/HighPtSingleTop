@@ -30,13 +30,13 @@ MatchHists::MatchHists(Context & ctx, const string & dirname, double arg_MIN_PT,
     nBins_dPhi = nBins_dPhi_lowRes;
   }
 
-  hist_deltaR_topQuark_topRecoJet = book<TH1F>("deltaR_topQuark_topRecoJet", "#DeltaR(gen. t quark, t jet)", nBins_dR, 0, 5);
-  hist_deltaPhi_topQuark_topRecoJet = book<TH1F>("deltaPhi_topQuark_topRecoJet", "#Delta#phi(gen. t quark, t jet)", nBins_dPhi, 0, M_PI);
+  hist_deltaR_topQuark_topRecoJet = book<TH1F>("deltaR_topQuark_topRecoJet", "#DeltaR(gen. t quark, rec. t jet)", nBins_dR, 0, 5);
+  hist_deltaPhi_topQuark_topRecoJet = book<TH1F>("deltaPhi_topQuark_topRecoJet", "#Delta#phi(gen. t quark, rec. t jet)", nBins_dPhi, 0, M_PI);
   hist_deltaR_topQuark_recoLepton = book<TH1F>("deltaR_topQuark_recoLepton", "#DeltaR(gen. t quark, rec. lepton)", nBins_dR, 0, 5);
   hist_deltaPhi_topQuark_recoLepton = book<TH1F>("deltaPhi_topQuark_recoLepton", "#Delta#phi(gen. t quark, rec. lepton)", nBins_dPhi, 0, M_PI);
 
-  hist_deltaR_WBoson_topRecoJet = book<TH1F>("deltaR_WBoson_topRecoJet", "#DeltaR(gen. assoc. W, t jet)", nBins_dR, 0, 5);
-  hist_deltaPhi_WBoson_topRecoJet = book<TH1F>("deltaPhi_WBoson_topRecoJet", "#Delta#phi(gen. assoc. W, t jet)", nBins_dPhi, 0, M_PI);
+  hist_deltaR_WBoson_topRecoJet = book<TH1F>("deltaR_WBoson_topRecoJet", "#DeltaR(gen. assoc. W, rec. t jet)", nBins_dR, 0, 5);
+  hist_deltaPhi_WBoson_topRecoJet = book<TH1F>("deltaPhi_WBoson_topRecoJet", "#Delta#phi(gen. assoc. W, rec. t jet)", nBins_dPhi, 0, M_PI);
   hist_deltaR_WBoson_recoLepton = book<TH1F>("deltaR_WBoson_recoLepton", "#DeltaR(gen. assoc. W, rec. lepton)", nBins_dR, 0, 5);
   hist_deltaPhi_WBoson_recoLepton = book<TH1F>("deltaPhi_WBoson_recoLepton", "#Delta#phi(gen. assoc. W, rec. lepton)", nBins_dPhi, 0, M_PI);
 
