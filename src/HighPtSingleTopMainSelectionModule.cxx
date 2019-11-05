@@ -46,8 +46,7 @@ namespace uhh2 {
     
     unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_1toptag, hist_btagsf;
  
-    unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch;
-
+    unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
     string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag, syst_btag;
@@ -170,7 +169,12 @@ namespace uhh2 {
     hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "3_OneTopTag_CustomHists"));
     hist_1toptag->add_hist(new HOTVRHists(ctx, "3_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
     hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists"));
-    hist_decaymatch.reset(new MatchHists(ctx, "MatchHists"));
+    hist_decaymatch.reset(new MatchHists(ctx, "MatchHists_Full"));
+    hist_decaymatch_Pt0to300.reset(new MatchHists(ctx, "MatchHists_Pt0to300", 0, 300));
+    hist_decaymatch_Pt300toInf.reset(new MatchHists(ctx, "MatchHists_Pt300toInf", 300));
+    hist_decaymatch_Pt300to400.reset(new MatchHists(ctx, "MatchHists_Pt300to400", 300, 400));
+    hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
+    hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
     hist_btag_mc_efficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", BJetID, "jets"));
     hist_btagsf.reset(new AndHists(ctx, "4_BTagScaleFactors"));
     hist_btagsf->add_hist(new HighPtSingleTopHists(ctx, "4_BTagScaleFactors_CustomHists"));
@@ -222,6 +226,11 @@ namespace uhh2 {
       if(dataset_version.find("ST_tW_bkg_TopToHadAndWToTau") == 0 && !is_TopToHadAndWToTau) return false;
       if(dataset_version.find("ST_tW_bkg_Else") == 0 && is_TopToHadAndWToTau) return false;
       hist_decaymatch->fill(event);
+      hist_decaymatch_Pt0to300->fill(event);
+      hist_decaymatch_Pt300toInf->fill(event);
+      hist_decaymatch_Pt300to400->fill(event);
+      hist_decaymatch_Pt0to400->fill(event);
+      hist_decaymatch_Pt400toInf->fill(event);
     }
     hist_1toptag->fill(event);    
 

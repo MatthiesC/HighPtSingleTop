@@ -21,7 +21,7 @@ TopTagHists::TopTagHists(Context & ctx, const string & dirname):
 
   hist_top_pt = book<TH1F>("top_pt", "t jet p_{T} [GeV]", 100, 0, 1600);
   hist_top_eta = book<TH1F>("top_eta", "t jet #eta", 100, -2.5, 2.5);
-  hist_top_mass = book<TH1F>("top_mass", "t jet m_{jet} [GeV]", 100, 140, 220);
+  hist_top_mass = book<TH1F>("top_mass", "t jet m_{jet} [GeV]", 100, 120, 240); // 140 - 220
   hist_top_phi = book<TH1F>("top_phi", "t jet #phi", 100, -M_PI, M_PI);
   hist_top_px = book<TH1F>("top_px", "t jet p_{x} [GeV]", 100, -2000, 2000);
   hist_top_py = book<TH1F>("top_py", "t jet p_{y} [GeV]", 100, -2000, 2000);
@@ -29,7 +29,7 @@ TopTagHists::TopTagHists(Context & ctx, const string & dirname):
   hist_top_energy = book<TH1F>("top_energy", "t jet energy [GeV]", 100, 0, 5000);
   hist_top_area = book<TH1F>("top_area", "t jet area", 100, 0, 20);
 
-  hist_top_nsub = book<TH1F>("top_nsub", "t jet N_{subjets}", 8, -0.5, 7.5);
+  hist_top_nsub = book<TH1F>("top_nsub", "t jet N_{subjets}", 6, 1.5, 7.5); // 2 - 7
   hist_top_fpt = book<TH1F>("top_fpt", "t jet f_{pT}(lead. subjet)", 100, 0, 1);
   hist_top_mpair = book<TH1F>("top_mpair", "t jet min. m_{ij} [GeV]", 100, 0, 200);
   hist_top_tau32 = book<TH1F>("top_tau32", "t jet #tau_{3}/#tau_{2}", 100, 0, 1);
