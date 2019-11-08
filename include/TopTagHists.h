@@ -17,7 +17,7 @@ class TopTagHists: public uhh2::Hists {
 
  protected:
 
-  TH1F *hist_top_pt, *hist_top_eta, *hist_top_mass, *hist_top_phi, *hist_top_px, *hist_top_py, *hist_top_pz, *hist_top_energy, *hist_top_area, *hist_top_nsub, *hist_top_fpt, *hist_top_mpair, *hist_top_tau32, *hist_top_tau21, *hist_top_tau1, *hist_top_tau2, *hist_top_tau3, *hist_top_dr_lepton, *hist_top_dphi_lepton, *hist_top_dphi_met, *hist_met_dphi_lepton;
+  TH1F *hist_top_pt, *hist_top_pt_1GeV, *hist_top_eta, *hist_top_mass, *hist_top_phi, *hist_top_px, *hist_top_py, *hist_top_pz, *hist_top_energy, *hist_top_area, *hist_top_nsub, *hist_top_fpt, *hist_top_mpair, *hist_top_tau32, *hist_top_tau21, *hist_top_tau1, *hist_top_tau2, *hist_top_tau3, *hist_top_dr_lepton, *hist_top_dphi_lepton, *hist_top_dphi_met, *hist_met_dphi_lepton;
 
   uhh2::Event::Handle<TopJet> h_toptaggedjet;
   uhh2::Event::Handle<FlavorParticle> h_primlep;

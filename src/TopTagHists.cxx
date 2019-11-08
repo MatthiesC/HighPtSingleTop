@@ -23,6 +23,7 @@ TopTagHists::TopTagHists(Context & ctx, const string & dirname, double arg_MIN_P
   const int nBins_dPhi_lowRes = 64;
 
   hist_top_pt = book<TH1F>("top_pt", "t jet p_{T} [GeV]", 100, 0, 1600);
+  hist_top_pt_1GeV = book<TH1F>("top_pt_1GeV", "t jet p_{T} [GeV]", 1600, 0, 1600);
   hist_top_eta = book<TH1F>("top_eta", "t jet #eta", 100, -2.5, 2.5);
   hist_top_mass = book<TH1F>("top_mass", "t jet m_{jet} [GeV]", 100, 130, 230); // 140 - 220
   hist_top_phi = book<TH1F>("top_phi", "t jet #phi", 100, -M_PI, M_PI);
@@ -60,6 +61,7 @@ void TopTagHists::fill(const uhh2::Event & event) {
     
     // Lorentz vector
     hist_top_pt->Fill(topjet.v4().Pt(), w);
+    hist_top_pt_1GeV->Fill(topjet.v4().Pt(), w);
     hist_top_eta->Fill(topjet.v4().Eta(), w);
     hist_top_mass->Fill(topjet.v4().M(), w);
     hist_top_phi->Fill(topjet.v4().Phi(), w);
