@@ -62,8 +62,8 @@ bool BTaggedJets::process(uhh2::Event & event) {
   }
 
   if (m_workingpoint == BTag::WP_LOOSE) { event.set(h_btaggedjets_analysis, bjets_loose); }
-  if (m_workingpoint == BTag::WP_MEDIUM) { event.set(h_btaggedjets_analysis, bjets_medium); }
-  if (m_workingpoint == BTag::WP_TIGHT) { event.set(h_btaggedjets_analysis, bjets_tight); }
+  else if (m_workingpoint == BTag::WP_MEDIUM) { event.set(h_btaggedjets_analysis, bjets_medium); }
+  else if (m_workingpoint == BTag::WP_TIGHT) { event.set(h_btaggedjets_analysis, bjets_tight); }
 
   event.set(h_btaggedjets_loose, std::move(bjets_loose));
   event.set(h_btaggedjets_medium, std::move(bjets_medium));

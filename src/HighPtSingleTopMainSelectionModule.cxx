@@ -19,6 +19,7 @@
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
 #include "UHH2/HighPtSingleTop/include/MatchHists.h"
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
+#include "UHH2/HighPtSingleTop/include/ReconstructionAlgorithms.h"
 
 #include "UHH2/HOTVR/include/HOTVRHists.h"
 #include "UHH2/HOTVR/include/HOTVRIds.h"
@@ -40,7 +41,7 @@ namespace uhh2 {
   private:
     
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag, sf_btag;
-    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, SingleTopGen_tWchProd, dnn_setup;
+    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, wboson, SingleTopGen_tWchProd, dnn_setup;
 
     unique_ptr<Selection> slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau;
     
@@ -137,6 +138,7 @@ namespace uhh2 {
     hadronictop.reset(new HadronicTop(ctx));
     toptaggedjet.reset(new TopTaggedJet(ctx, StandardHOTVRTopTagID));
     btaggedjets.reset(new BTaggedJets(ctx, btag_algo, btag_workingpoint));
+    wboson.reset(new WBosonLeptonic(ctx));
     SingleTopGen_tWchProd.reset(new SingleTopGen_tWchProducer(ctx, "h_GENtW"));
     dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID, 0.));
     h_event_weight = ctx.declare_event_output<float>("DNN_EventWeight");
@@ -219,7 +221,8 @@ namespace uhh2 {
     }
     hist_leptonsf->fill(event);
     primarylep->process(event);
- 
+    wboson->process(event);
+
     // Require exactly one HOTVR t-tag
     if(!slct_1toptag->passes(event)) return false;
     hadronictop->process(event);
