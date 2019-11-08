@@ -15,7 +15,7 @@
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
-#include "UHH2/HighPtSingleTop/include/TopTaggedJet.h"
+#include "UHH2/HighPtSingleTop/include/TaggedJets.h"
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
 #include "UHH2/HighPtSingleTop/include/MatchHists.h"
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
@@ -40,7 +40,7 @@ namespace uhh2 {
   private:
     
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag, sf_btag;
-    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, SingleTopGen_tWchProd, dnn_setup;
+    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, SingleTopGen_tWchProd, dnn_setup;
 
     unique_ptr<Selection> slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau;
     
@@ -136,6 +136,7 @@ namespace uhh2 {
     primarylep.reset(new PrimaryLepton(ctx));
     hadronictop.reset(new HadronicTop(ctx));
     toptaggedjet.reset(new TopTaggedJet(ctx, StandardHOTVRTopTagID));
+    btaggedjets.reset(new BTaggedJets(ctx, btag_algo, btag_workingpoint));
     SingleTopGen_tWchProd.reset(new SingleTopGen_tWchProducer(ctx, "h_GENtW"));
     dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID, 0.));
     h_event_weight = ctx.declare_event_output<float>("DNN_EventWeight");
@@ -229,6 +230,7 @@ namespace uhh2 {
     // Apply b-tag scale factors
     hist_btag_mc_efficiency->fill(event);
     sf_btag->process(event);
+    btaggedjets->process(event);
     hist_btagsf->fill(event);
 
     // Split tW signal into 3-merged, 2-merged, 1-merged, 0-merged (== how many top decay products ended up inside t-tagged HOTVR jet)
