@@ -161,25 +161,35 @@ namespace uhh2 {
 
     hist_noweights.reset(new AndHists(ctx, "0_NoWeights"));
     hist_noweights->add_hist(new HighPtSingleTopHists(ctx, "0_NoWeights_CustomHists"));
+
     hist_lumipuweights.reset(new AndHists(ctx, "1_LumiAndPileupWeights"));
     hist_lumipuweights->add_hist(new HighPtSingleTopHists(ctx, "1_LumiAndPileupWeights_CustomHists"));
+
     hist_leptonsf.reset(new AndHists(ctx, "2_LeptonScaleFactors"));
     hist_leptonsf->add_hist(new HighPtSingleTopHists(ctx, "2_LeptonScaleFactors_CustomHists"));
+
     hist_1toptag.reset(new AndHists(ctx, "3_OneTopTag"));
     hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "3_OneTopTag_CustomHists"));
     hist_1toptag->add_hist(new HOTVRHists(ctx, "3_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
-    hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists"));
+    hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Full"));
+    hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Pt0to300", 0, 300));
+    hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Pt300toInf", 300));
+
     hist_decaymatch.reset(new MatchHists(ctx, "MatchHists_Full"));
     hist_decaymatch_Pt0to300.reset(new MatchHists(ctx, "MatchHists_Pt0to300", 0, 300));
     hist_decaymatch_Pt300toInf.reset(new MatchHists(ctx, "MatchHists_Pt300toInf", 300));
     hist_decaymatch_Pt300to400.reset(new MatchHists(ctx, "MatchHists_Pt300to400", 300, 400));
     hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
     hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
+
     hist_btag_mc_efficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", BJetID, "jets"));
+
     hist_btagsf.reset(new AndHists(ctx, "4_BTagScaleFactors"));
     hist_btagsf->add_hist(new HighPtSingleTopHists(ctx, "4_BTagScaleFactors_CustomHists"));
     hist_btagsf->add_hist(new HOTVRHists(ctx, "4_BTagScaleFactors_HOTVRTopTag", StandardHOTVRTopTagID));
-    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagScaleFactors_TopTagHists"));
+    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagScaleFactors_TopTagHists_Full"));
+    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagScaleFactors_TopTagHists_Pt0to300", 0, 300));
+    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagScaleFactors_TopTagHists_Pt300toInf", 300));
 }
 
 

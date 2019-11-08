@@ -12,7 +12,7 @@ class TopTagHists: public uhh2::Hists {
 
  public:
 
-  TopTagHists(uhh2::Context & ctx, const std::string & dirname);
+  TopTagHists(uhh2::Context & ctx, const std::string & dirname, double arg_MIN_PT = 0.0, double arg_MAX_PT = 99999.0);
   virtual void fill(const uhh2::Event & event) override;
 
  protected:
@@ -21,4 +21,6 @@ class TopTagHists: public uhh2::Hists {
 
   uhh2::Event::Handle<TopJet> h_toptaggedjet;
   uhh2::Event::Handle<FlavorParticle> h_primlep;
+  
+  double m_MIN_PT, m_MAX_PT;
 };
