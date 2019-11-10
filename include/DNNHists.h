@@ -11,10 +11,10 @@ class DNNHists: public uhh2::Hists {
 
  protected:
   
-  TH1F *hist_tlep_mass, *hist_tlep_mt, *hist_tlep_pt, *hist_tlep_eta, *hist_tlep_phi, *hist_dr_tlep_tjet;
-  TH1F *hist_tlep_mass_guaranteed_b, *hist_tlep_mt_guaranteed_b, *hist_tlep_pt_guaranteed_b, *hist_tlep_eta_guaranteed_b, *hist_tlep_phi_guaranteed_b, *hist_dr_tlep_tjet_guaranteed_b;
+  TH1F *hist_tlep_mass, *hist_tlep_pt, *hist_tlep_eta, *hist_tlep_phi, *hist_dr_tlep_tjet;
+  TH1F *hist_tlep_mass_guaranteed_b, *hist_tlep_pt_guaranteed_b, *hist_tlep_eta_guaranteed_b, *hist_tlep_phi_guaranteed_b, *hist_dr_tlep_tjet_guaranteed_b;
 
-  TH1F *hist_wlep_mass, *hist_wlep_mt, *hist_wlep_mt_calc, *hist_wlep_pt, *hist_wlep_eta, *hist_wlep_phi;
+  TH1F *hist_wlep_mass, *hist_wlep_mt, *hist_wlep_pt, *hist_wlep_eta, *hist_wlep_phi;
 
   TH1F *hist_ptbalance_wlep_tjet, *hist_ptbalance_tlep_tjet;
 

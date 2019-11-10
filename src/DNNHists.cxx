@@ -30,15 +30,13 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, double arg_MIN_PT, dou
     nBins_dPhi = nBins_dPhi_lowRes;
   }
 
-  hist_tlep_mass = book<TH1F>("tlep_mass", "leptonic pseudo t quark mass [GeV]", nBins, 0, 500);
-  hist_tlep_mt = book<TH1F>("tlep_mt", "leptonic pseudo t quark m_{T} [GeV]", nBins, 0, 500);
+  hist_tlep_mass = book<TH1F>("tlep_mass", "leptonic pseudo t quark mass [GeV]", nBins, 0, 800);
   hist_tlep_pt = book<TH1F>("tlep_pt", "leptonic pseudo t quark p_{T} [GeV]", nBins, 0, 1000);
   hist_tlep_eta = book<TH1F>("tlep_eta", "leptonic pseudo t quark #eta", nBins, -3, 3);
   hist_tlep_phi = book<TH1F>("tlep_phi", "leptonic pseudo t quark #phi", nBins_dPhi, -M_PI, M_PI);
   hist_dr_tlep_tjet = book<TH1F>("dr_tlep_tjet", "#DeltaR(leptonic pseudo t quark, t jet)", nBins, 0, 5);
 
-  hist_tlep_mass_guaranteed_b = book<TH1F>("tlep_mass_guaranteed_b", "leptonic pseudo t quark mass [GeV]", nBins, 0, 500);
-  hist_tlep_mt_guaranteed_b = book<TH1F>("tlep_mt_guaranteed_b", "leptonic pseudo t quark m_{T} [GeV]", nBins, 0, 500);
+  hist_tlep_mass_guaranteed_b = book<TH1F>("tlep_mass_guaranteed_b", "leptonic pseudo t quark mass [GeV]", nBins, 0, 800);
   hist_tlep_pt_guaranteed_b = book<TH1F>("tlep_pt_guaranteed_b", "leptonic pseudo t quark p_{T} [GeV]", nBins, 0, 1000);
   hist_tlep_eta_guaranteed_b = book<TH1F>("tlep_eta_guaranteed_b", "leptonic pseudo t quark #eta", nBins, -3, 3);
   hist_tlep_phi_guaranteed_b = book<TH1F>("tlep_phi_guaranteed_b", "leptonic pseudo t quark #phi", nBins_dPhi, -M_PI, M_PI);
@@ -46,17 +44,16 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, double arg_MIN_PT, dou
   
   hist_wlep_mass = book<TH1F>("wlep_mass", "leptonic W boson mass [GeV]", nBins, 0, 200);
   hist_wlep_mt = book<TH1F>("wlep_mt", "leptonic W boson m_{T} [GeV]", nBins, 0, 500);
-  hist_wlep_mt_calc = book<TH1F>("wlep_mt_calc", "leptonic W boson m_{T} [GeV]", nBins, 0, 500);
   hist_wlep_pt = book<TH1F>("wlep_pt", "leptonic W boson p_{T} [GeV]", nBins, 0, 1000);
   hist_wlep_eta = book<TH1F>("wlep_eta", "leptonic W boson #eta", nBins, -3, 3);
   hist_wlep_phi = book<TH1F>("wlep_phi", "leptonic W boson #phi", nBins_dPhi, -M_PI, M_PI);
 
-  hist_ptbalance_wlep_tjet = book<TH1F>("ptbalance_wlep_tjet", "[p_{T}(lep. W) - p_{T}(t jet)] / [p_{T}(lep. W) + p_{T}(t jet)]", nBins, 0, 0);
-  hist_ptbalance_tlep_tjet = book<TH1F>("ptbalance_tlep_tjet", "[p_{T}(lep. t) - p_{T}(t jet)] / [p_{T}(lep. t) + p_{T}(t jet)]", nBins, 0, 0);
+  hist_ptbalance_wlep_tjet = book<TH1F>("ptbalance_wlep_tjet", "[p_{T}(lep. W) - p_{T}(t jet)] / [p_{T}(lep. W) + p_{T}(t jet)]", nBins, -1.2, 0.8);
+  hist_ptbalance_tlep_tjet = book<TH1F>("ptbalance_tlep_tjet", "[p_{T}(lep. t) - p_{T}(t jet)] / [p_{T}(lep. t) + p_{T}(t jet)]", nBins, -1.2, 0.8);
 
   hist_dr_wlep_tjet = book<TH1F>("dr_wlep_tjet", "#DeltaR(lep. W, t jet)", nBins, 0, 5);
-  hist_dphi_wlep_tjet = book<TH1F>("dphi_wlep_tjet", "#Delta#phi(lep. W, t jet)", nBins_dPhi, -M_PI, M_PI);
-  hist_dphi_tlep_tjet = book<TH1F>("dphi_tlep_tjet", "#Delta#phi(lep. t, t jet)", nBins_dPhi, -M_PI, M_PI);
+  hist_dphi_wlep_tjet = book<TH1F>("dphi_wlep_tjet", "#Delta#phi(lep. W, t jet)", nBins_dPhi, 0, M_PI);
+  hist_dphi_tlep_tjet = book<TH1F>("dphi_tlep_tjet", "#Delta#phi(lep. t, t jet)", nBins_dPhi, 0, M_PI);
 
   hist_jets_number = book<TH1F>("jets_number", "number of AK4 jets", 11, -0.5, 10.5);
   hist_bjets_number = book<TH1F>("bjets_number", "number of b jets", 11, -0.5, 10.5);
@@ -87,7 +84,6 @@ void DNNHists::fill(const uhh2::Event & event) {
   if(topjet.v4().pt() >= m_MIN_PT && topjet.v4().pt() < m_MAX_PT) {
     
     hist_tlep_mass->Fill(pseudotop.M(), w);
-    hist_tlep_mt->Fill(sqrt(pseudotop.Px() * pseudotop.Px() + pseudotop.Py() * pseudotop.Py()), w);
     hist_tlep_pt->Fill(pseudotop.Pt(), w);
     hist_tlep_eta->Fill(pseudotop.Eta(), w);
     hist_tlep_phi->Fill(pseudotop.Phi(), w);
@@ -95,7 +91,6 @@ void DNNHists::fill(const uhh2::Event & event) {
 
     if(bjets.size() > 0) {
       hist_tlep_mass_guaranteed_b->Fill(pseudotop.M(), w);
-      hist_tlep_mt_guaranteed_b->Fill(sqrt(pseudotop.Px() * pseudotop.Px() + pseudotop.Py() * pseudotop.Py()), w);
       hist_tlep_pt_guaranteed_b->Fill(pseudotop.Pt(), w);
       hist_tlep_eta_guaranteed_b->Fill(pseudotop.Eta(), w);
       hist_tlep_phi_guaranteed_b->Fill(pseudotop.Phi(), w);
@@ -103,8 +98,7 @@ void DNNHists::fill(const uhh2::Event & event) {
     }
 
     hist_wlep_mass->Fill(wboson.M(), w);
-    hist_wlep_mt->Fill(sqrt(wboson.Px() * wboson.Px() + wboson.Py() * wboson.Py()), w);
-    hist_wlep_mt_calc->Fill(calcMTW(primlep, event), w);
+    hist_wlep_mt->Fill(calcMTW(primlep, event), w);
     hist_wlep_pt->Fill(wboson.Pt(), w);
     hist_wlep_eta->Fill(wboson.Eta(), w);
     hist_wlep_phi->Fill(wboson.Phi(), w);
