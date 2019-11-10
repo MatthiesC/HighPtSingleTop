@@ -14,7 +14,7 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, double arg_MIN_PT, dou
   
   h_toptaggedjet = ctx.get_handle<TopJet>("TopTaggedJet");
   h_primlep = ctx.get_handle<FlavorParticle>("PrimaryLepton");
-  h_pseudotop = ctx.get_handle<LorentzVector>("PseudoTopLeptonic");
+  h_pseudotop = ctx.get_handle<LorentzVector>("PseudoTop");
   h_wboson = ctx.get_handle<LorentzVector>("WBosonLeptonic");
   h_bjets = ctx.get_handle<vector<Jet>>("BJets");
 
@@ -34,15 +34,15 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, double arg_MIN_PT, dou
   hist_tlep_mt = book<TH1F>("tlep_mt", "leptonic pseudo t quark m_{T} [GeV]", nBins, 0, 500);
   hist_tlep_pt = book<TH1F>("tlep_pt", "leptonic pseudo t quark p_{T} [GeV]", nBins, 0, 1000);
   hist_tlep_eta = book<TH1F>("tlep_eta", "leptonic pseudo t quark #eta", nBins, -3, 3);
-  hist_tlep_phi = book<TH1F>("tlep_eta", "leptonic pseudo t quark #phi", nBins_dPhi, -M_PI, M_PI);
+  hist_tlep_phi = book<TH1F>("tlep_phi", "leptonic pseudo t quark #phi", nBins_dPhi, -M_PI, M_PI);
   hist_dr_tlep_tjet = book<TH1F>("dr_tlep_tjet", "#DeltaR(leptonic pseudo t quark, t jet)", nBins, 0, 5);
 
-  hist_tlep_mass_guaranteed_b = book<TH1F>("tlep_mass", "leptonic pseudo t quark mass [GeV]", nBins, 0, 500);
-  hist_tlep_mt_guaranteed_b = book<TH1F>("tlep_mt", "leptonic pseudo t quark m_{T} [GeV]", nBins, 0, 500);
-  hist_tlep_pt_guaranteed_b = book<TH1F>("tlep_pt", "leptonic pseudo t quark p_{T} [GeV]", nBins, 0, 1000);
-  hist_tlep_eta_guaranteed_b = book<TH1F>("tlep_eta", "leptonic pseudo t quark #eta", nBins, -3, 3);
-  hist_tlep_phi_guaranteed_b = book<TH1F>("tlep_eta", "leptonic pseudo t quark #phi", nBins_dPhi, -M_PI, M_PI);
-  hist_dr_tlep_tjet_guaranteed_b = book<TH1F>("dr_tlep_tjet", "#DeltaR(leptonic pseudo t quark, t jet)", nBins, 0, 5);
+  hist_tlep_mass_guaranteed_b = book<TH1F>("tlep_mass_guaranteed_b", "leptonic pseudo t quark mass [GeV]", nBins, 0, 500);
+  hist_tlep_mt_guaranteed_b = book<TH1F>("tlep_mt_guaranteed_b", "leptonic pseudo t quark m_{T} [GeV]", nBins, 0, 500);
+  hist_tlep_pt_guaranteed_b = book<TH1F>("tlep_pt_guaranteed_b", "leptonic pseudo t quark p_{T} [GeV]", nBins, 0, 1000);
+  hist_tlep_eta_guaranteed_b = book<TH1F>("tlep_eta_guaranteed_b", "leptonic pseudo t quark #eta", nBins, -3, 3);
+  hist_tlep_phi_guaranteed_b = book<TH1F>("tlep_phi_guaranteed_b", "leptonic pseudo t quark #phi", nBins_dPhi, -M_PI, M_PI);
+  hist_dr_tlep_tjet_guaranteed_b = book<TH1F>("dr_tlep_tjet_guaranteed_b", "#DeltaR(leptonic pseudo t quark, t jet)", nBins, 0, 5);
   
   hist_wlep_mass = book<TH1F>("wlep_mass", "leptonic W boson mass [GeV]", nBins, 0, 200);
   hist_wlep_mt = book<TH1F>("wlep_mt", "leptonic W boson m_{T} [GeV]", nBins, 0, 500);
@@ -55,7 +55,6 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, double arg_MIN_PT, dou
   hist_ptbalance_tlep_tjet = book<TH1F>("ptbalance_tlep_tjet", "[p_{T}(lep. t) - p_{T}(t jet)] / [p_{T}(lep. t) + p_{T}(t jet)]", nBins, 0, 0);
 
   hist_dr_wlep_tjet = book<TH1F>("dr_wlep_tjet", "#DeltaR(lep. W, t jet)", nBins, 0, 5);
-  hist_dr_tlep_tjet = book<TH1F>("dr_tlep_tjet", "#DeltaR(lep. t, t jet)", nBins, 0, 5);
   hist_dphi_wlep_tjet = book<TH1F>("dphi_wlep_tjet", "#Delta#phi(lep. W, t jet)", nBins_dPhi, -M_PI, M_PI);
   hist_dphi_tlep_tjet = book<TH1F>("dphi_tlep_tjet", "#Delta#phi(lep. t, t jet)", nBins_dPhi, -M_PI, M_PI);
 
@@ -64,7 +63,7 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, double arg_MIN_PT, dou
 
   hist_dr_lepton_nextjet = book<TH1F>("dr_lepton_nextjet", "#DeltaR(lepton, closest AK4 jet)", nBins, 0, 5);
   hist_dr_lepton_nextbjet = book<TH1F>("dr_lepton_nextbjet", "#DeltaR(lepton, closest b jet) [if no b jet, closest jet]", nBins, 0, 5);
-  hist_dr_lepton_nextbjet_guaranteed_b = book<TH1F>("dr_lepton_nextbjet", "#DeltaR(lepton, closest b jet)", nBins, 0, 5);
+  hist_dr_lepton_nextbjet_guaranteed_b = book<TH1F>("dr_lepton_nextbjet_guaranteed_b", "#DeltaR(lepton, closest b jet)", nBins, 0, 5);
 
   hist_dr_tjet_lepton = book<TH1F>("dr_tjet_lepton", "#DeltaR(t jet, lepton)", nBins, 0, 5);
   hist_dphi_tjet_lepton = book<TH1F>("dphi_tjet_lepton", "#Delta#phi(t jet, lepton)", nBins_dPhi, 0, M_PI);
