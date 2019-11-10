@@ -88,7 +88,7 @@ void DNNHists::fill(const uhh2::Event & event) {
   if(topjet.v4().pt() >= m_MIN_PT && topjet.v4().pt() < m_MAX_PT) {
     
     hist_tlep_mass->Fill(pseudotop.M(), w);
-    hist_tlep_mt->Fill(sqrt(pseudotop.Px() * pseudotop.Px() + pseudotop.Py() + pseudotop.Py()));
+    hist_tlep_mt->Fill(sqrt(pseudotop.Px() * pseudotop.Px() + pseudotop.Py() + pseudotop.Py()), w);
     hist_tlep_pt->Fill(pseudotop.Pt(), w);
     hist_tlep_eta->Fill(pseudotop.Eta(), w);
     hist_tlep_phi->Fill(pseudotop.Phi(), w);
@@ -96,7 +96,7 @@ void DNNHists::fill(const uhh2::Event & event) {
 
     if(bjets.size() > 0) {
       hist_tlep_mass_guaranteed_b->Fill(pseudotop.M(), w);
-      hist_tlep_mt_guaranteed_b->Fill(sqrt(pseudotop.Px() * pseudotop.Px() + pseudotop.Py() + pseudotop.Py()));
+      hist_tlep_mt_guaranteed_b->Fill(sqrt(pseudotop.Px() * pseudotop.Px() + pseudotop.Py() + pseudotop.Py()), w);
       hist_tlep_pt_guaranteed_b->Fill(pseudotop.Pt(), w);
       hist_tlep_eta_guaranteed_b->Fill(pseudotop.Eta(), w);
       hist_tlep_phi_guaranteed_b->Fill(pseudotop.Phi(), w);
@@ -104,7 +104,7 @@ void DNNHists::fill(const uhh2::Event & event) {
     }
 
     hist_wlep_mass->Fill(wboson.M(), w);
-    hist_wlep_mt->Fill(sqrt(wboson.Px() * wboson.Px() + wboson.Py() + wboson.Py()));
+    hist_wlep_mt->Fill(sqrt(wboson.Px() * wboson.Px() + wboson.Py() + wboson.Py()), w);
     hist_wlep_mt_calc->Fill(calcMTW(primlep, event), w);
     hist_wlep_pt->Fill(wboson.Pt(), w);
     hist_wlep_eta->Fill(wboson.Eta(), w);
