@@ -2,7 +2,7 @@ SteerPlotter(){
   
   // steering for the plotter
   fCycleName     = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/uhh2.AnalysisModuleRunner";
-  fInputFiles    = " DATA.DATA*.root, MC.ST_tW_signal*.root, MC.ST_tW_other*.root, MC.ST_non-tW_t-Ch*.root, MC.ST_non-tW_s-Ch*.root, MC.TTbar*.root, MC.WJets*.root, MC.DYJets*.root, MC.Diboson*.root, MC.QCD*.root, ";
+  fInputFiles    = " DATA.DATA.root, MC.ST_tW_signal.root, MC.ST_tW_other.root, MC.ST_non-tW_t-Ch.root, MC.ST_non-tW_s-Ch.root, MC.TTbar.root, MC.WJets.root, MC.DYJets.root, MC.Diboson.root, MC.QCD.root, ";
   fSampleNames   = " 2016_data, tW_signal, tW_background, tq_t-channel, tb_s-channel, ttbar, W_+_jets, DY_+_jets, VV, QCD, ";
   fSamplesWeight = " 1., 1., 1., 1., 1., 0.7763, 1., 1., 1., 1., ";
   fSamplesUnc    = " 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., ";
@@ -11,7 +11,7 @@ SteerPlotter(){
 
   fSamplesToStack = " ST_tW_signal, ST_tW_other, ST_non-tW_t-Ch, ST_non-tW_s-Ch, TTbar, WJets, DYJets, Diboson, QCD "; // the names of chains which you would like to stack (same as in input filenames)
 
-  fOutputPsFile = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/plots/lin/MainSel2016Muo.ps";	
+  fOutputPsFile = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/plots/ttbarScaled/lin/MainSel2016Muo.ps";
   
   bRatioPlot = true;   // plot ratio histograms?
   bZScoreInRatio = false;   // plot z-score instead of usual ratio

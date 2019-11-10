@@ -1,5 +1,7 @@
 #!/bin/bash
 
+Plots -f MainSel2016MuoLin.steer
+Plots -f MainSel2016MuoLinSingleEPS.steer
 Plots -f MainSel2016MuoLin_ttbarScaled.steer
 Plots -f MainSel2016MuoLinSingleEPS_ttbarScaled.steer
 Plots -f MainSel2016MuoLinNorm.steer
