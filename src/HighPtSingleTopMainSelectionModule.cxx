@@ -20,6 +20,7 @@
 #include "UHH2/HighPtSingleTop/include/MatchHists.h"
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
 #include "UHH2/HighPtSingleTop/include/ReconstructionAlgorithms.h"
+#include "UHH2/HighPtSingleTop/include/DNNHists.h"
 
 #include "UHH2/HOTVR/include/HOTVRHists.h"
 #include "UHH2/HOTVR/include/HOTVRIds.h"
@@ -47,7 +48,7 @@ namespace uhh2 {
     
     unique_ptr<AndHists> hist_noweights, hist_lumipuweights, hist_leptonsf, hist_1toptag, hist_btagsf;
  
-    unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
+    unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf, dnn_hists;
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
     string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag, syst_btag;
@@ -194,6 +195,8 @@ namespace uhh2 {
     hist_decaymatch_Pt300to400.reset(new MatchHists(ctx, "MatchHists_Pt300to400", 300, 400));
     hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
     hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
+
+    dnn_hists.reset(new DNNHists(ctx, "DNNHists_Full"));
 }
 
 
@@ -259,6 +262,7 @@ namespace uhh2 {
     }
 
     // DNN setup
+    dnn_hists->fill(event);
     dnn_setup->process(event);
     event.set(h_event_weight, event.weight);
     TopJet toptaggedjet;
