@@ -15,23 +15,23 @@ using namespace std;
 MyElectronHists::MyElectronHists(Context & ctx, const std::string & dname, bool gen_plots): Hists(ctx, dname){
     number      = book<TH1F>("number",      "electron multiplicity",7,-0.5,6.5);
 
-    pt          = book<TH1F>("pt",          "electron p_{T} [GeV]",           40,0,2000);
-    eta         = book<TH1F>("eta",         "electron #eta",            30,-3,3);
-    phi         = book<TH1F>("phi",         "electron #phi",            50,-M_PI,M_PI);
-    deltaPhiMET = book<TH1F>("deltaPhiMET", "#Delta#phi(e, p_{T}^{miss})", 50, 0, M_PI);
-    isolation   = book<TH1F>("isolation",   "electron isolation",          50,0,0.2);
+    pt          = book<TH1F>("pt",          "electron p_{T} [GeV]",           100,0,1000);
+    eta         = book<TH1F>("eta",         "electron #eta",            100,-3,3);
+    phi         = book<TH1F>("phi",         "electron #phi",            100,-M_PI,M_PI);
+    deltaPhiMET = book<TH1F>("deltaPhiMET", "#Delta#phi(e, p_{T}^{miss})", 100, 0, M_PI);
+    isolation   = book<TH1F>("isolation",   "electron isolation",          100,0,0.2);
     charge      = book<TH1F>("charge",      "electron charge [e]",          3,-1.5,1.5);
-    ptrel       = book<TH1F>("ptrel",       "p_{T}^{rel}(e, jet)",       40, 0, 200.);
-    deltaRmin   = book<TH1F>("deltaRmin",   "#DeltaR(e, jet)",    40, 0, 2.0);
+    ptrel       = book<TH1F>("ptrel",       "p_{T}^{rel}(e, jet)",       100, 0, 500);
+    deltaRmin   = book<TH1F>("deltaRmin",   "#DeltaR(e, jet)",    100, 0, 5);
     deltaRmin_ptrel
                 = book<TH2F>("deltaRmin_ptrel",
                                             "x=#DeltaR(e, jet) y=p_{T}^{rel}(e, jet)",
-                                                                        40, 0, 2.0, 40, 0, 200.);
-    deltaPhimin = book<TH1F>("deltaPhimin", "#Delta#phi(e, jet)", 30, 0, M_PI);
+                                                                        100, 0, 5, 100, 0, 500);
+    deltaPhimin = book<TH1F>("deltaPhimin", "#Delta#phi(e, jet)", 100, 0, M_PI);
     
     if (gen_plots) {
-        eff_sub     = book<TH1F>("eff_sub",     "electron p_{T} [GeV]",                100,0,500);
-        eff_tot     = book<TH1F>("eff_tot",     "electron p_{T} [GeV]",                100,0,500);
+        eff_sub     = book<TH1F>("eff_sub",     "electron p_{T} [GeV]",                100,0,1000);
+        eff_tot     = book<TH1F>("eff_tot",     "electron p_{T} [GeV]",                100,0,1000);
         pt_response = book<TH1F>("pt_response", "electron p_{T} response: (p_{T, gen} - p_{T, reco}) / p_{T, gen}",
                                                                         800,-1.,1.);
     } else {
