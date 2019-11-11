@@ -15,15 +15,15 @@ using namespace std;
 MyMuonHists::MyMuonHists(Context & ctx, const std::string & dname, bool gen_plots): Hists(ctx, dname){
     number = book<TH1F>("number","muon multiplicity",7,-0.5,6.5);
     
-    pt = book<TH1F>("pt","muon p_{T} [GeV]",50,0,1000);
-    eta = book<TH1F>("eta","muon #eta",50,-3,3);
-    phi = book<TH1F>("phi","muon #phi",50,-M_PI,M_PI);
-    deltaPhiMET = book<TH1F>("deltaPhiMET","#Delta#phi(#mu, p_{T}^{miss})", 50, 0, M_PI);
-    isolation = book<TH1F>("isolation","muon isolation",50,0,0.2);
+    pt = book<TH1F>("pt","muon p_{T} [GeV]",100,0,1000);
+    eta = book<TH1F>("eta","muon #eta",100,-3,3);
+    phi = book<TH1F>("phi","muon #phi",100,-M_PI,M_PI);
+    deltaPhiMET = book<TH1F>("deltaPhiMET","#Delta#phi(#mu, p_{T}^{miss})", 100, 0, M_PI);
+    isolation = book<TH1F>("isolation","muon isolation",100,0,0.2);
     charge = book<TH1F>("charge", "muon charge [e]",3,-1.5,1.5);
-    ptrel = book<TH1F>("ptrel", "p_{T}^{rel}(#mu, jet)", 40, 0, 200.);
-    deltaRmin = book<TH1F>("deltaRmin", "#DeltaR(#mu, jet)", 40, 0, 2.0);
-    deltaRmin_ptrel = book<TH2F>("deltaRmin_ptrel", "x=#DeltaR(#mu, jet) y=p_{T}^{rel}(#mu, jet)", 40, 0, 2.0, 40, 0, 200.);
+    ptrel = book<TH1F>("ptrel", "p_{T}^{rel}(#mu, jet)", 100, 0, 500);
+    deltaRmin = book<TH1F>("deltaRmin", "#DeltaR(#mu, jet)", 100, 0, 5);
+    deltaRmin_ptrel = book<TH2F>("deltaRmin_ptrel", "x=#DeltaR(#mu, jet) y=p_{T}^{rel}(#mu, jet)", 100, 0, 5, 100, 0, 500);
     // next-jet hists by Chris
     deltaPhimin = book<TH1F>("deltaPhimin", "#Delta#phi(#mu, jet)", 30, 0, M_PI);
 
