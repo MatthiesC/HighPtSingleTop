@@ -21,6 +21,7 @@
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
 #include "UHH2/HighPtSingleTop/include/SingleTopGen_tWch.h"
+#include "UHH2/HighPtSingleTop/include/METXYCorrections.h"
 
 #include "UHH2/HOTVR/include/HOTVRJetCorrectionModule.h"
 #include "UHH2/HOTVR/include/HOTVRIds.h"
@@ -46,7 +47,8 @@ namespace uhh2 {
     std::unique_ptr<AnalysisModule> clnr_muon, clnr_elec, clnr_hotvr, hotvr_jec_module, clnr_jetLeptonOverlap;
     std::unique_ptr<AnalysisModule> primarylep;
     std::unique_ptr<AnalysisModule> SingleTopGen_tWchProd;
-
+    std::unique_ptr<AnalysisModule> met_xy_correction;
+    
     std::unique_ptr<Selection> slct_mttbarGenCut, slct_tWgenSignal;
     std::unique_ptr<Selection> slct_lumi, slct_trigger;
     std::unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
@@ -197,6 +199,7 @@ namespace uhh2 {
 
     primarylep.reset(new PrimaryLepton(ctx));
     SingleTopGen_tWchProd.reset(new SingleTopGen_tWchProducer(ctx, "h_GENtW"));
+    met_xy_correction.reset(new METXYCorrections(ctx));
   }
 
 
@@ -250,6 +253,7 @@ namespace uhh2 {
     hist_1lepton->fill(event);
 
     // MET selection
+    met_xy_correction->process(event);
     if(!slct_met->passes(event)) return false;
     hist_met->fill(event);
 
