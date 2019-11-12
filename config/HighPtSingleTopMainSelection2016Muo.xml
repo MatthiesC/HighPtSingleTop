@@ -526,7 +526,6 @@
 		<Item Name="SystDirection_MuonTrig" Value="nominal" />
 		<Item Name="SystDirection_MuonId" Value="nominal" />
 		<Item Name="SystDirection_MuonIso" Value="nominal" />
-		<Item Name="SystDirection_MuonTrk" Value="nominal" />
 		<Item Name="SystDirection_HOTVRTopTagSF" Value="nominal" />
 		<Item Name="SystDirection_BTagSF" Value="nominal" />
 

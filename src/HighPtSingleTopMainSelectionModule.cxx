@@ -41,7 +41,7 @@ namespace uhh2 {
     
   private:
     
-    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_muon_trk, sf_toptag, sf_btag;
+    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_btag;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, wboson, pseudotop, SingleTopGen_tWchProd, dnn_setup;
 
     unique_ptr<Selection> slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau;
@@ -84,7 +84,6 @@ namespace uhh2 {
     syst_muon_trigger = ctx.get("SystDirection_MuonTrig", "nominal");
     syst_muon_id = ctx.get("SystDirection_MuonId", "nominal");
     syst_muon_iso = ctx.get("SystDirection_MuonIso", "nominal");
-    syst_muon_trk = ctx.get("SystDirection_MuonTrk", "nominal");
     syst_hotvr_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
     syst_btag = ctx.get("SystDirection_BTagSF", "nominal");
 
@@ -123,10 +122,10 @@ namespace uhh2 {
     sf_lumi.reset(new MCLumiWeight(ctx));
     sf_pileup.reset(new MCPileupReweight(ctx, syst_pileup));
     // only 2016 muon scale factors linked here, TODO later: distinguish between years and ele/muon
-    sf_muon_trig.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MuonTrigger_EfficienciesAndSF_average_RunBtoH.root", "IsoMu24_OR_IsoTkMu24_PtEtaBins", 0.5, "trigger", true, syst_muon_trigger));
-    sf_muon_id.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MuonID_EfficienciesAndSF_average_RunBtoH.root", "MC_NUM_TightID_DEN_genTracks_PAR_pt_eta", 1, "tightID", true, syst_muon_id));
-    sf_muon_iso.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MuonIso_EfficienciesAndSF_average_RunBtoH.root", "TightISO_TightID_pt_eta", 1, "iso", true, syst_muon_iso));
-    sf_muon_trk.reset(new MCMuonTrkScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/Tracking_EfficienciesAndSF_BCDEFGH.root", 1, "track", syst_muon_trk));
+    // checkout Alex' genius: /nfs/dust/cms/user/froehlia/CMSSW_10_2_10/src/UHH2/BstarToTW/src/BstarToTWSystematics.cxx
+    sf_muon_trig.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MuonTrigger_EfficienciesAndSF_average_RunBtoH.root", "IsoMu24_OR_IsoTkMu24_PtEtaBins", 0.5, "muon_trigger", true, syst_muon_trigger));
+    sf_muon_id.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MuonID_EfficienciesAndSF_average_RunBtoH.root", "NUM_TightID_DEN_genTracks_eta_pt", 1, "muon_tightID", true, syst_muon_id));
+    sf_muon_iso.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MuonIso_EfficienciesAndSF_average_RunBtoH.root", "NUM_TightRelIso_DEN_TightIDandIPcut_eta_pt", 1, "muon_isolation", true, syst_muon_iso));
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_hotvr_toptag));
     sf_btag.reset(new MCBTagScaleFactor(ctx, btag_algo, btag_workingpoint, "jets", syst_btag)); // can have more arguments, see MCWeight.h
@@ -221,7 +220,6 @@ namespace uhh2 {
       sf_muon_trig->process(event);
       sf_muon_id->process(event);
       sf_muon_iso->process(event);
-      sf_muon_trk->process(event);
     }
     else if(is_elec) {
       // electron trigger, id, reco
