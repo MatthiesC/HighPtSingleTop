@@ -49,7 +49,7 @@ namespace uhh2 {
     //unique_ptr<AndHists> hist_noweights, hist_lumipuweights;
     unique_ptr<AndHists> hist_leptonsf, hist_1toptag, hist_btagsf;
  
-    unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf, dnn_hists;
+    unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf, hist_dnn, hist_dnn_Pt0to400, hist_dnn_Pt400toInf;
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
     string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag, syst_btag;
@@ -197,7 +197,9 @@ namespace uhh2 {
     hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
     hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
 
-    dnn_hists.reset(new DNNHists(ctx, "DNNHists_Full"));
+    hist_dnn.reset(new DNNHists(ctx, "DNNHists_Full"));
+    hist_dnn_Pt0to400.reset(new DNNHists(ctx, "DNNHists_Pt0to400", 0, 400));
+    hist_dnn_Pt400toInf.reset(new DNNHists(ctx, "DNNHists_Pt400toInf", 400));
 }
 
 
@@ -263,7 +265,9 @@ namespace uhh2 {
     }
 
     // DNN setup
-    dnn_hists->fill(event);
+    hist_dnn->fill(event);
+    hist_dnn_Pt0to400->fill(event);
+    hist_dnn_Pt400toInf->fill(event);
     dnn_setup->process(event);
     event.set(h_event_weight, event.weight);
     TopJet toptaggedjet;
