@@ -18,7 +18,7 @@ METXYCorrections::METXYCorrections(Context & ctx) {
 bool METXYCorrections::process(Event & event) {
 
   if(!init_done) {
-    isMC = event.isRealData;
+    isMC = !(event.isRealData);
     init_done = true;
   }
 
