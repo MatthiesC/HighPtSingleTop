@@ -22,6 +22,7 @@
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
 #include "UHH2/HighPtSingleTop/include/SingleTopGen_tWch.h"
 #include "UHH2/HighPtSingleTop/include/METXYCorrections.h"
+#include "UHH2/HighPtSingleTop/include/MyEventHists.h"
 
 #include "UHH2/HOTVR/include/HOTVRJetCorrectionModule.h"
 #include "UHH2/HOTVR/include/HOTVRIds.h"
@@ -55,6 +56,7 @@ namespace uhh2 {
     std::unique_ptr<Selection> slct_met, slct_1jet, slct_1hotvr;
     
     std::unique_ptr<AndHists> hist_common, hist_trigger, hist_cleaning, hist_1lepton, hist_met, hist_1jet, hist_1hotvr;
+    //std::unique_ptr<Hists> hist_met_xy_uncorr, hist_met_xy_corr;
 
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
@@ -185,6 +187,10 @@ namespace uhh2 {
     // HISTOGRAMS //
     //------------//
 
+    //hist_met_xy_uncorr.reset(new MyEventHists(ctx, "00_MET_uncorr"));
+    //hist_met_xy_corr.reset(new MyEventHists(ctx, "01_MET_corr"));
+
+
     hist_common.reset(new AndHists(ctx, "0_Common"));
     hist_trigger.reset(new AndHists(ctx, "1_Trigger"));
     hist_1lepton.reset(new AndHists(ctx, "2_OneLepton"));
@@ -229,8 +235,12 @@ namespace uhh2 {
     if(dataset_version.find("TTbar_M0to700") == 0 && !slct_mttbarGenCut->passes(event)) return false;
 
     // Initial cleaning, MET+PV filter, and lumi+PU weights
+    //hist_met_xy_uncorr->fill(event);
+    //hist_met_xy_corr->fill(event);
+
     if(!common_modules->process(event)) return false;
     hist_common->fill(event);
+    met_xy_correction->process(event);
 
     // Trigger paths
     if(!slct_trigger->passes(event)) return false;
@@ -253,7 +263,6 @@ namespace uhh2 {
     hist_1lepton->fill(event);
 
     // MET selection
-    met_xy_correction->process(event);
     if(!slct_met->passes(event)) return false;
     hist_met->fill(event);
 
