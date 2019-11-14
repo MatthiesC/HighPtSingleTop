@@ -175,7 +175,7 @@ bool METXYCorrections::process(Event & event) {
   else if(corr_MET_x < 0) {
     if(corr_MET_y > 0) corr_MET_phi = 0.5*TMath::Pi() + TMath::ATan(-corr_MET_x / corr_MET_y);
     else if(corr_MET_y < 0) corr_MET_phi = -0.5*TMath::Pi() - TMath::ATan(corr_MET_x / corr_MET_y);
-    else if(corr_MET_y == 0) corr_MET_phi = TMath::Pi();
+    else if(corr_MET_y == 0) corr_MET_phi = -TMath::Pi();
   }
 
   //XYcorr_MET_METphi.first = corr_MET;
