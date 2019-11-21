@@ -67,7 +67,7 @@
 
 
 	  <!--
-	     <ConfigParse NEventsBreak="0" FileSplit="14" AutoResubmit="5"/>
+	     <ConfigParse NEventsBreak="0" FileSplit="15" AutoResubmit="5"/>
 	     <ConfigSGE RAM ="4" DISK ="3" Mail="christopher.matthies@desy.de" Notification="as" Workdir="workdir_presel2018_muo"/>
 	     -->
 
@@ -158,6 +158,17 @@
 
 	      <InputData Lumi="12339449.8" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_other_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;"> 
 		&SingleTop_tWch_Tbar; 
+		<InputTree Name="AnalysisTree" /> 
+		<OutputTree Name="AnalysisTree" /> 
+	      </InputData>
+
+
+
+
+	      <!-- bb4l -->
+
+	      <InputData Lumi="293442890.8" NEventsMax="&NEVT;" Type="MC" Version="bb4l&YEARsuffix;" Cacheable="&b_Cacheable;"> 
+		&bb4l; 
 		<InputTree Name="AnalysisTree" /> 
 		<OutputTree Name="AnalysisTree" /> 
 	      </InputData>
@@ -405,7 +416,7 @@
 		<Item Name="lumihists_lumi_per_bin" Value="1000."/>
 		
 		<Item Name="pileup_directory" Value="/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2018/MyMCPileupHistogram.root" /> 
-		<Item Name="pileup_directory_data" Value="/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2018/MyDataPileupHistogram.root" />
+		<Item Name="pileup_directory_data" Value="/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2018/MyDataPileupHistogram2018.root" />
 
 		<Item Name="AnalysisModule" Value="HighPtSingleTopPreSelectionModule" />
 		<Item Name="use_sframe_weight" Value="false" />
