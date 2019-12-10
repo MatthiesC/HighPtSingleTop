@@ -6,7 +6,7 @@ SteerPlotter(){
   fSampleNames   = " 2016_data, tW_signal, tW_background, tq_t-channel, tb_s-channel, ttbar, W_+_jets, DY_+_jets, VV, QCD, ";
   fSamplesWeight = " 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., ";
   fSamplesUnc    = " 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., ";
-  fHistColors    = " 1, 596, 590, 807, 635, 633, 418, 400, 879, 390, ";
+  fHistColors    = " 1, 596, 590, 807, 635, 633, 418, 800, 879, 390, ";
   fHistMarkers   = " 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, ";
 
   fSamplesToStack = " ST_tW_signal, ST_tW_other, ST_non-tW_t-Ch, ST_non-tW_s-Ch, TTbar, WJets, DYJets, Diboson, QCD "; // the names of chains which you would like to stack (same as in input filenames)
