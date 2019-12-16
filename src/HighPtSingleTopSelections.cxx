@@ -132,6 +132,9 @@ bool tWgenSelection::passes(const Event & event) {
   else if(m_decay == "WToTau") {
     if(!GENtW.IsAssToTauonDecay()) return false;
   }
+  else if(m_decay == "LO") {
+    if(!GENtW.IsBottomGluonProcess()) return false;
+  }
 
   return true;
 }
