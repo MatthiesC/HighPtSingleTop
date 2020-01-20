@@ -42,7 +42,7 @@ namespace uhh2 {
   private:
     
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_btag;
-    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, wboson, pseudotop, SingleTopGen_tWchProd, dnn_setup;
+    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd, dnn_setup;
 
     unique_ptr<Selection> slct_1toptag, slct_tW_LO, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau;
     
@@ -139,6 +139,7 @@ namespace uhh2 {
     hadronictop.reset(new HadronicTop(ctx));
     toptaggedjet.reset(new TopTaggedJet(ctx, StandardHOTVRTopTagID));
     btaggedjets.reset(new BTaggedJets(ctx, btag_algo, btag_workingpoint));
+    nontopak4jets.reset(new NonTopAK4Jets(ctx, btag_algo, btag_workingpoint));
     wboson.reset(new WBosonLeptonic(ctx));
     pseudotop.reset(new PseudoTopLeptonic(ctx));
     SingleTopGen_tWchProd.reset(new SingleTopGen_tWchProducer(ctx, "h_GENtW"));
@@ -247,6 +248,7 @@ namespace uhh2 {
     hist_btagsf->fill(event);
 
     btaggedjets->process(event);
+    nontopak4jets->process(event);
     wboson->process(event);
     pseudotop->process(event);
 
