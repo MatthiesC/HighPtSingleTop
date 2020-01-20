@@ -141,7 +141,7 @@ namespace uhh2 {
     btaggedjets.reset(new BTaggedJets(ctx, btag_algo, btag_workingpoint));
     nontopak4jets.reset(new NonTopAK4Jets(ctx, btag_algo, btag_workingpoint));
     wboson.reset(new WBosonLeptonic(ctx));
-    pseudotop.reset(new PseudoTopLeptonic(ctx));
+    pseudotop.reset(new PseudoTopLeptonic(ctx, true));
     SingleTopGen_tWchProd.reset(new SingleTopGen_tWchProducer(ctx, "h_GENtW"));
     dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID, 0.));
     h_event_weight = ctx.declare_event_output<float>("DNN_EventWeight");

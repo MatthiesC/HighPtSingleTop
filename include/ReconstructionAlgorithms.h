@@ -24,6 +24,7 @@ class WBosonLeptonic: public uhh2::AnalysisModule {
 class PseudoTopLeptonic: public uhh2::AnalysisModule {
  public:
   explicit PseudoTopLeptonic(uhh2::Context & ctx,
+			     const bool dont_use_btagging_info,
 			     const std::string & h_name_wboson = "WBosonLeptonic",
 			     const std::string & h_name_bjets = "BJets",
 			     const std::string & h_name_pseudotop = "PseudoTop",
@@ -34,6 +35,7 @@ class PseudoTopLeptonic: public uhh2::AnalysisModule {
   virtual ~PseudoTopLeptonic() {};
 
  private:
+  bool m_dont_use_btagging_info;
   uhh2::Event::Handle<LorentzVector> h_wboson;
   uhh2::Event::Handle<std::vector<Jet>> h_bjets;
   uhh2::Event::Handle<LorentzVector> h_pseudotop;

@@ -37,10 +37,12 @@ bool WBosonLeptonic::process(Event & event) {
 
 
 PseudoTopLeptonic::PseudoTopLeptonic(Context & ctx,
+				     const bool dont_use_btagging_info,
 				     const string & h_name_wboson,
 				     const string & h_name_bjets,
 				     const string & h_name_pseudotop,
 				     const double topmassMC):
+  m_dont_use_btagging_info(dont_use_btagging_info),
   h_wboson(ctx.get_handle<LorentzVector>(h_name_wboson)),
   h_bjets(ctx.get_handle<vector<Jet>>(h_name_bjets)),
   h_pseudotop(ctx.get_handle<LorentzVector>(h_name_pseudotop)),
@@ -57,7 +59,7 @@ bool PseudoTopLeptonic::process(Event & event) {
 
   vector<LorentzVector> solutions;
 
-  if(bjets.size() > 0) {
+  if(!m_dont_use_btagging_info && bjets.size() > 0) {
     for(unsigned int i = 0; i < bjets.size(); ++i) {
       solutions.push_back(wboson + bjets.at(i).v4());
     }
