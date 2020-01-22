@@ -8,6 +8,12 @@ using namespace uhh2;
 DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, const unsigned int & numberOfHotvrJets, const unsigned int & numberOfAk4Jets, const TopJetId & topJetId, const JetId & bJetId, const float & zero_padding_value):
   m_h_dnn_inputs(h_dnn_inputs), m_n_hotvr(numberOfHotvrJets), m_n_jets(numberOfAk4Jets), m_topjetid(topJetId), m_bjetid(bJetId), m_zeropadding(zero_padding_value) {
 
+  h_toptaggedjet = ctx.get_handle<TopJet>("TopTaggedJet");
+  h_primlep = ctx.get_handle<FlavorParticle>("PrimaryLepton");
+  h_pseudotop = ctx.get_handle<LorentzVector>("PseudoTop");
+  h_wboson = ctx.get_handle<LorentzVector>("WBosonLeptonic");
+  h_xjets = ctx.get_handle<vector<Jet>>("NonTopJets");
+
   template_event = {
     "n_pv",
     "met_px",
@@ -92,14 +98,40 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
     "dr_jet",
     "dphi_jet",
     "ptrel_jet" };
+  template_custom = {
+    "tjet_tau32",
+    "tjet_tau21",
+    "tjet_tau1",
+    "tjet_tau2",
+    "tjet_tau3",
+    "tjet_fpt",
+    "tjet_mjet",
+    "tjet_mij",
+    "dR_tl",
+    "dPhi_tm",
+    "dPhi_lm",
+    "pTbal_wt",
+    "pTbal_tlepthad",
+    "m_top",
+    "mt_w",
+    "n_xjets",
+    "ht_xjets",
+    "xjet1_m",
+    "xjet1_pt",
+    "xjet1_eta",
+    "xjet1_deepjet",
+    "mass_xjet1_lep",
+    "dr_xjet1_lep" };
 
   // Prepare vector with input name strings:
-  for(auto s : template_event) m_inputs.push_back(string("DNN__")+s);
+  string prefix = "DNN__";
+  for(auto s : template_event) m_inputs.push_back(prefix+string("event_")+s);
   for(unsigned int i = 1; i <= m_n_hotvr; i++) {
-    for(auto s : template_hotvr) m_inputs.push_back(string("DNN__")+string("hotvr")+to_string(i)+string("_")+s); }
+    for(auto s : template_hotvr) m_inputs.push_back(prefix+string("hotvr")+to_string(i)+string("_")+s); }
   for(unsigned int i = 1; i <= m_n_jets; i++) {
-    for(auto s : template_jet) m_inputs.push_back(string("DNN__")+string("jet")+to_string(i)+string("_")+s); }
-  for(auto s : template_lepton) m_inputs.push_back(string("DNN__")+string("lepton_")+s);
+    for(auto s : template_jet) m_inputs.push_back(prefix+string("jet")+to_string(i)+string("_")+s); }
+  for(auto s : template_lepton) m_inputs.push_back(prefix+string("lepton_")+s);
+  for(auto s : template_custom) m_inputs.push_back(prefix+string("custom_")+s);
   cout << "Number of DNN input variables to set:  " << m_inputs.size() << endl;
   cout << "Float value for 'zero padding':        " << m_zeropadding << endl;
 
@@ -113,12 +145,17 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
 
 bool DNNSetup::process(Event & event) {
 
+  const auto & topjet = event.get(h_toptaggedjet);
+  const auto & lepton = event.get(h_primlep);
+  const auto & pseudotop = event.get(h_pseudotop);
+  const auto & wboson = event.get(h_wboson);
+  const auto & xjets = event.get(h_xjets);
+
   const vector<Jet> jets = *event.jets;
   const vector<TopJet> hotvrjets = *event.topjets;
   const vector<Electron> electrons = *event.electrons;
   const vector<Muon> muons = *event.muons;
   MET met = *event.met;
-  const auto lepton = returnPrimaryLepton(event); // member .relIso() not available for FlavorParticle
 
   unsigned int i = 0;
   vector<float> values;
@@ -220,6 +257,34 @@ bool DNNSetup::process(Event & event) {
   values.at(i++) = deltaR(lepton, *nj);
   values.at(i++) = deltaPhi(lepton, *nj);
   values.at(i++) = pTrel(lepton, nj);
+
+  // Custom variables
+  values.at(i++) = topjet.tau3_groomed() / topjet.tau2_groomed();
+  values.at(i++) = topjet.tau2_groomed() / topjet.tau1_groomed();
+  values.at(i++) = topjet.tau1_groomed();
+  values.at(i++) = topjet.tau2_groomed();
+  values.at(i++) = topjet.tau3_groomed();
+  values.at(i++) = topjet.subjets().at(0).v4().Pt() / topjet.v4().Pt();
+  values.at(i++) = topjet.v4().M();
+  values.at(i++) = min((topjet.subjets().at(0).v4() + topjet.subjets().at(1).v4()).M(), min((topjet.subjets().at(0).v4() + topjet.subjets().at(2).v4()).M(), (topjet.subjets().at(1).v4() + topjet.subjets().at(2).v4()).M()));
+  values.at(i++) = deltaR(topjet.v4(), lepton.v4());
+  values.at(i++) = deltaPhi(topjet.v4(), met.v4());
+  values.at(i++) = deltaPhi(lepton.v4(), met.v4());
+  values.at(i++) = (wboson.pt() - topjet.v4().pt()) / (wboson.pt() + topjet.v4().pt());
+  values.at(i++) = (pseudotop.pt() - topjet.v4().pt()) / (pseudotop.pt() + topjet.v4().pt());
+  values.at(i++) = pseudotop.M();
+  values.at(i++) = calcMTW(lepton, event);
+  values.at(i++) = xjets.size();
+  bool no_xjets = xjets.size() == 0;
+  float ht_xjets(0);
+  for(Jet xj : xjets) { ht_xjets += xj.v4().pt(); }
+  values.at(i++) = no_xjets ? m_zeropadding : ht_xjets;
+  values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).v4().M();
+  values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).v4().Pt();
+  values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).v4().Eta();
+  values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).btag_DeepJet();
+  values.at(i++) = no_xjets ? m_zeropadding : (xjets.at(0).v4() + lepton.v4()).M();
+  values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets.at(0).v4(), lepton.v4());
 
   if(values.size() != i) throw runtime_error("DNNSetup::process - Lengths of input and value vectors are not equal! Please check!");
 
