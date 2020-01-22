@@ -112,7 +112,7 @@ bool NonTopAK4Jets::process(uhh2::Event & event) {
   for(auto j : *event.jets) {
     double dR = uhh2::deltaR(j.v4(), toptaggedjet.v4());
     double Reff = min(1.5, max(0.1, m_rho/toptaggedjet.v4().pt()));
-    if(dR > Reff) {
+    if(dR > Reff+0.4) { // need to add AK4 radius of 0.4 here in order to ensure that the AK4 jet is actually outside of HOTVR jet
       nontop_ak4.push_back(j);
       if(loose_id(j, event)) nontop_ak4_bLoose.push_back(j);
       if(medium_id(j, event)) nontop_ak4_bMedium.push_back(j);
