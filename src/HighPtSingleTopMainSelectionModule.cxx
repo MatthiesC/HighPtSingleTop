@@ -28,6 +28,9 @@
 #include "UHH2/HOTVR/include/HOTVRScaleFactor.h"
 #include "UHH2/HOTVR/include/HadronicTop.h"
 
+#include "lwtnn/LightweightNeuralNetwork.hh"
+#include "lwtnn/parse_json.hh"
+
 
 using namespace std;
 using namespace uhh2;
