@@ -50,10 +50,10 @@ namespace uhh2 {
 
     unique_ptr<Selection> slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau;
     
-    //unique_ptr<AndHists> hist_noweights, hist_lumipuweights;
     unique_ptr<AndHists> hist_leptonsf, hist_1toptag, hist_btagsf;
  
     unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf, hist_dnn, hist_dnn_Pt0to400, hist_dnn_Pt400toInf, hist_discriminators, hist_discriminators_Pt0to400, hist_discriminators_Pt400toInf;
+
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
     string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag, syst_btag;
@@ -132,7 +132,7 @@ namespace uhh2 {
     sf_muon_iso.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MuonIso_EfficienciesAndSF_average_RunBtoH.root", "NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt", 1, "muon_isolation", true, syst_muon_iso));
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_hotvr_toptag));
-    sf_btag.reset(new MCBTagScaleFactor(ctx, btag_algo, btag_workingpoint, "jets", syst_btag)); // can have more arguments, see MCWeight.h
+    sf_btag.reset(new MCBTagScaleFactor(ctx, btag_algo, btag_workingpoint, "jets", syst_btag)); 
 
 
     //---------------//
@@ -168,12 +168,6 @@ namespace uhh2 {
     //------------//
     // HISTOGRAMS //
     //------------//
-
-    //hist_noweights.reset(new AndHists(ctx, "0_NoWeights"));
-    //hist_noweights->add_hist(new HighPtSingleTopHists(ctx, "0_NoWeights_CustomHists"));
-
-    //hist_lumipuweights.reset(new AndHists(ctx, "1_LumiAndPileupWeights"));
-    //hist_lumipuweights->add_hist(new HighPtSingleTopHists(ctx, "1_LumiAndPileupWeights_CustomHists"));
 
     hist_leptonsf.reset(new AndHists(ctx, "2_LeptonScaleFactors"));
     hist_leptonsf->add_hist(new HighPtSingleTopHists(ctx, "2_LeptonScaleFactors_CustomHists"));
@@ -221,10 +215,8 @@ namespace uhh2 {
     scale_variation->process(event);
 
     // Apply scale factors
-    //hist_noweights->fill(event);
     sf_lumi->process(event);
     sf_pileup->process(event);
-    //hist_lumipuweights->fill(event);
     if(is_muon) {
       sf_muon_trig->process(event);
       sf_muon_id->process(event);
