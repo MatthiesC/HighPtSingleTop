@@ -22,7 +22,7 @@
 	  <!ENTITY SingleTop_sch_TTbar_leptonic SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_ST_s-channel_4f_leptonDecays.xml">
 	  <!ENTITY SingleTop_sch_TTbar_hadronic SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_ST_s-channel_4f_hadronicDecays.xml">
 
-	  <!ENTITY bb4l SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/HighPtSingleTop/data/b_bbar_4l_TuneCP5_13TeV-powheg-pythia8.xml">
+	  <!--<!ENTITY bb4l SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/HighPtSingleTop/data/b_bbar_4l_TuneCP5_13TeV-powheg-pythia8.xml">-->
 
 	  <!ENTITY TTbar_SemiLeptonic SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_TTToSemiLeptonic.xml">
 	  <!ENTITY TTbar_2L2Nu SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/datasets/RunII_102X_v1/2018/MC_TTTo2L2Nu.xml">
@@ -167,11 +167,11 @@
 
 	      <!-- bb4l -->
 
-	      <InputData Lumi="293442890.8" NEventsMax="&NEVT;" Type="MC" Version="bb4l&YEARsuffix;" Cacheable="&b_Cacheable;"> 
+	      <!--<InputData Lumi="293442890.8" NEventsMax="&NEVT;" Type="MC" Version="bb4l&YEARsuffix;" Cacheable="&b_Cacheable;"> 
 		&bb4l; 
 		<InputTree Name="AnalysisTree" /> 
 		<OutputTree Name="AnalysisTree" /> 
-	      </InputData>
+	      </InputData>-->
 
 
 
