@@ -11,7 +11,7 @@ for v in variables:
 
 result = {
     'inputs': inputs,
-    'class_labels': ['BinaryClassificationOutputName']
+    'class_labels': ['BinaryOutput']
 }
 
 with open('variables.json', 'w') as outfile:
