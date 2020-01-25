@@ -48,7 +48,7 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_btag;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd, dnn_setup;
 
-    unique_ptr<Selection> slct_1toptag, slct_tW_LO, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau;
+    unique_ptr<Selection> slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau;
     
     //unique_ptr<AndHists> hist_noweights, hist_lumipuweights;
     unique_ptr<AndHists> hist_leptonsf, hist_1toptag, hist_btagsf;
@@ -157,7 +157,6 @@ namespace uhh2 {
     //------------//
 
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
-    slct_tW_LO.reset(new tWgenSelection(ctx, "LO", is_muon));
     slct_tW_merged3.reset(new MergeScenarioSelection(ctx, 3));
     slct_tW_merged2.reset(new MergeScenarioSelection(ctx, 2));
     slct_tW_merged1.reset(new MergeScenarioSelection(ctx, 1));
@@ -217,12 +216,6 @@ namespace uhh2 {
   //------------//
 
   bool HighPtSingleTopMainSelectionModule::process(Event & event) {
-
-    // Select a LO-only tW sample for joint usage with bb4l sample which covers NLO tW
-    if(dataset_version.find("ST_LO_tW") == 0) {
-      SingleTopGen_tWchProd->process(event);
-      if(!slct_tW_LO->passes(event)) return false;
-    }
 
     // Scale variations
     scale_variation->process(event);
