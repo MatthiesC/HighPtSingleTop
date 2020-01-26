@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <memory>
 
 #include "UHH2/core/include/AnalysisModule.h"
@@ -65,6 +66,9 @@ namespace uhh2 {
  
     vector<Event::Handle<float>> h_dnn_inputs;
     Event::Handle<float> h_event_weight, h_toptag_pt;
+
+    unique_ptr<lwt::LightweightNeuralNetwork> NeuralNetwork;
+    map<string, double> dnn_input_vars;
   };
 
 
@@ -90,6 +94,8 @@ namespace uhh2 {
     syst_muon_iso = ctx.get("SystDirection_MuonIso", "nominal");
     syst_hotvr_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
     syst_btag = ctx.get("SystDirection_BTagSF", "nominal");
+
+    string neural_net_filepath = ctx.get("NeuralNetFile");
 
 
     //---------------------//
@@ -146,10 +152,16 @@ namespace uhh2 {
     nontopak4jets.reset(new NonTopAK4Jets(ctx, btag_algo, btag_workingpoint));
     wboson.reset(new WBosonLeptonic(ctx));
     pseudotop.reset(new PseudoTopLeptonic(ctx, true));
+
     SingleTopGen_tWchProd.reset(new SingleTopGen_tWchProducer(ctx, "h_GENtW"));
+
     dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID, 0.));
     h_event_weight = ctx.declare_event_output<float>("DNN_EventWeight");
     h_toptag_pt = ctx.declare_event_output<float>("DNN_TopTagPt");
+
+    ifstream neural_net_file(neural_net_filepath);
+    auto dnn_config = lwt::parse_json(neural_net_file);
+    NeuralNetwork.reset(new lwt::LightweightNeuralNetwork(dnn_config.inputs, dnn_config.layers, dnn_config.outputs));
 
 
     //------------//

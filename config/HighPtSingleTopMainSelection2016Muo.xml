@@ -519,6 +519,8 @@
 		<Item Name="use_sframe_weight" Value="false" />
 		<Item Name="analysis_channel" Value="MUON" />
 
+		<Item Name="NeuralNetFile" Value="/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/HighPtSingleTop/data/KerasDNNModels/2016/dnn_20-01-24-12-53-14/neural_net.json" />
+
 		<!-- Keys for uncertainties -->
 		<Item Name="ScaleVariationMuR" Value="none" />
 		<Item Name="ScaleVariationMuF" Value="none" />
@@ -528,7 +530,6 @@
 		<Item Name="SystDirection_MuonIso" Value="nominal" />
 		<Item Name="SystDirection_HOTVRTopTagSF" Value="nominal" />
 		<Item Name="SystDirection_BTagSF" Value="nominal" />
-
 
               </UserConfig>
 	    </Cycle>
