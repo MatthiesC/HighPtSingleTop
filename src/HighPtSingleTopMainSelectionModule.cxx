@@ -71,7 +71,7 @@ namespace uhh2 {
     vector<string> dnn_config_inputNames;
     string dnn_config_outputName;
     vector<Event::Handle<float>> m_input_handles;
-    Event::Handle<float> h_dnn_output_val;
+    Event::Handle<double> h_dnn_output_val;
   };
 
 
@@ -179,7 +179,7 @@ namespace uhh2 {
     for(uint i = 0; i < dnn_config_inputNames.size(); i++) {
       m_input_handles.push_back(ctx.get_handle<float>(dnn_config_inputNames.at(i)));
     }
-    h_dnn_output_val = ctx.declare_event_output<float>("DNN_Output");
+    h_dnn_output_val = ctx.declare_event_output<double>("DNN_Output");
 
 
     //------------//
@@ -312,8 +312,7 @@ namespace uhh2 {
       inputs_map[dnn_config_inputNames.at(i)] = (double)event.get(m_input_handles.at(i));
     }
     auto dnn_output_vals = NeuralNetwork->compute(inputs_map);
-    event.set(h_dnn_output_val, dnn_output_vals[dnn_config_outputName]);
-    cout << dnn_output_vals[dnn_config_outputName] << endl;
+    event.set(h_dnn_output_val, (double)dnn_output_vals[dnn_config_outputName]);
 
     // Histograms of DNN inputs and DNN output
     hist_discriminators->fill(event);
