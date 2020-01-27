@@ -36,9 +36,9 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, double arg_MIN_PT, dou
     nBins_dPhi = nBins_dPhi_lowRes;
   }
 
-  hist_dnn_output = book<TH1F>("dnn_output", "#it{O}(DNN)", nBins, 0, 1);
-  hist_dnn_output_extraLowRes = book<TH1F>("dnn_output_extraLowRes", "#it{O}(DNN)", nBins/2, 0, 1);
-  hist_dnn_output_10bins = book<TH1F>("dnn_output_10bins", "#it{O}(DNN)", 10, 0, 1);
+  hist_dnn_output = book<TH1F>("dnn_output", "NN output", nBins, 0, 1);
+  hist_dnn_output_extraLowRes = book<TH1F>("dnn_output_extraLowRes", "NN output", nBins/2, 0, 1);
+  hist_dnn_output_10bins = book<TH1F>("dnn_output_10bins", "NN output", 10, 0, 1);
 
   hist_tlep_mass = book<TH1F>("tlep_mass", "leptonic pseudo t quark mass [GeV]", nBins, 0, 800);
   hist_wlep_mt = book<TH1F>("wlep_mt", "leptonic W boson m_{T} [GeV]", nBins, 0, 500);
