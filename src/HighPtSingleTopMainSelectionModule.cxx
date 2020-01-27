@@ -227,8 +227,8 @@ namespace uhh2 {
 
     hist_discriminators.reset(new DiscriminatorHists(ctx, "DiscHists_Full"));
     hist_discriminators_Pt0to400.reset(new DiscriminatorHists(ctx, "DiscHists_Pt0to400", 0, 400));
-    hist_discriminators_Pt400to600.reset(new DiscriminatorHists(ctx, "DiscHists_Pt400to600", 0, 400));
-    hist_discriminators_Pt600to800.reset(new DiscriminatorHists(ctx, "DiscHists_Pt600to800", 0, 400));
+    hist_discriminators_Pt400to600.reset(new DiscriminatorHists(ctx, "DiscHists_Pt400to600", 400, 600));
+    hist_discriminators_Pt600to800.reset(new DiscriminatorHists(ctx, "DiscHists_Pt600to800", 600, 800));
     hist_discriminators_Pt400toInf.reset(new DiscriminatorHists(ctx, "DiscHists_Pt400toInf", 400));
     hist_discriminators_Pt600toInf.reset(new DiscriminatorHists(ctx, "DiscHists_Pt600toInf", 600));
     hist_discriminators_Pt800toInf.reset(new DiscriminatorHists(ctx, "DiscHists_Pt800toInf", 800));
