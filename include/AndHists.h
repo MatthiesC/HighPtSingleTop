@@ -26,7 +26,24 @@ namespace uhh2 {
     std::vector<uhh2::Hists*> hists_vector;
 
     TH1F *nevt, *wevt;
+  };
 
+  class BinnedDNNHists: public Hists {
+
+  public:
+    BinnedDNNHists(uhh2::Context &ctx, const std::string & dirname);
+
+    virtual void fill(const uhh2::Event & event);
+    virtual ~BinnedDNNHists();
+
+  private:
+    std::string m_dirname;
+
+  protected:
+    uhh2::Event::Handle<TopJet> handle_tjet;
+    std::vector<uhh2::Hists*> hists_vector;
+
+    TH1F *h_tjet_pt;
   };
 
 }

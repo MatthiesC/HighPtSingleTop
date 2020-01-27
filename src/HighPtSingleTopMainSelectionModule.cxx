@@ -21,7 +21,6 @@
 #include "UHH2/HighPtSingleTop/include/MatchHists.h"
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
 #include "UHH2/HighPtSingleTop/include/ReconstructionAlgorithms.h"
-#include "UHH2/HighPtSingleTop/include/DNNHists.h"
 
 #include "UHH2/HOTVR/include/HOTVRHists.h"
 #include "UHH2/HOTVR/include/HOTVRIds.h"
@@ -49,10 +48,10 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd, dnn_setup;
 
     unique_ptr<Selection> slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau;
-    
-    unique_ptr<AndHists> hist_leptonsf, hist_1toptag, hist_btagsf;
- 
-    unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf, hist_discriminators, hist_discriminators_Pt0to400, hist_discriminators_Pt400to600, hist_discriminators_Pt600to800, hist_discriminators_Pt400toInf, hist_discriminators_Pt600toInf, hist_discriminators_Pt800toInf;
+
+    unique_ptr<AndHists> hist_leptonsf, hist_1toptag, hist_btagsf; 
+    unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
+    unique_ptr<BinnedDNNHists> hist_dnn;
 
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
@@ -62,7 +61,7 @@ namespace uhh2 {
 
     TopJetId StandardHOTVRTopTagID;
     JetId BJetID;
- 
+
     vector<Event::Handle<float>> h_dnn_inputs;
     Event::Handle<float> h_event_weight, h_toptag_pt;
 
@@ -79,7 +78,7 @@ namespace uhh2 {
     //------//
     // KEYS //
     //------//
-    
+
     is_data = ctx.get("dataset_type") == "DATA";
     is_mc   = ctx.get("dataset_type") == "MC";
     is_muon = ctx.get("analysis_channel") == "MUON";
@@ -224,13 +223,7 @@ namespace uhh2 {
     hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
     hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
 
-    hist_discriminators.reset(new DNNHists(ctx, "DNNHists_Full"));
-    hist_discriminators_Pt0to400.reset(new DNNHists(ctx, "DNNHists_Pt0to400", 0, 400));
-    hist_discriminators_Pt400to600.reset(new DNNHists(ctx, "DNNHists_Pt400to600", 400, 600));
-    hist_discriminators_Pt600to800.reset(new DNNHists(ctx, "DNNHists_Pt600to800", 600, 800));
-    hist_discriminators_Pt400toInf.reset(new DNNHists(ctx, "DNNHists_Pt400toInf", 400));
-    hist_discriminators_Pt600toInf.reset(new DNNHists(ctx, "DNNHists_Pt600toInf", 600));
-    hist_discriminators_Pt800toInf.reset(new DNNHists(ctx, "DNNHists_Pt800toInf", 800));
+    hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists"));
 }
 
 
@@ -309,13 +302,7 @@ namespace uhh2 {
     event.set(h_dnn_output_val, (double)dnn_output_vals[dnn_config_outputName]);
 
     // Histograms of DNN inputs and DNN output
-    hist_discriminators->fill(event);
-    hist_discriminators_Pt0to400->fill(event);
-    hist_discriminators_Pt400to600->fill(event);
-    hist_discriminators_Pt600to800->fill(event);
-    hist_discriminators_Pt400toInf->fill(event);
-    hist_discriminators_Pt600toInf->fill(event);
-    hist_discriminators_Pt800toInf->fill(event);
+    hist_dnn->fill(event);
 
     // Place analysis routines into a new Module!!!
     // End of main selection
