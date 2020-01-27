@@ -68,7 +68,10 @@ namespace uhh2 {
     Event::Handle<float> h_event_weight, h_toptag_pt;
 
     unique_ptr<lwt::LightweightNeuralNetwork> NeuralNetwork;
-    map<string, double> dnn_input_vars;
+    vector<string> dnn_config_inputNames;
+    string dnn_config_outputName;
+    vector<Event::Handle<float>> m_input_handles;
+    Event::Handle<float> h_dnn_output_val;
   };
 
 
@@ -162,6 +165,21 @@ namespace uhh2 {
     ifstream neural_net_file(neural_net_filepath);
     auto dnn_config = lwt::parse_json(neural_net_file);
     NeuralNetwork.reset(new lwt::LightweightNeuralNetwork(dnn_config.inputs, dnn_config.layers, dnn_config.outputs));
+    cout << "Number of used DNN inputs: " << dnn_config.inputs.size() << endl;
+    for(uint i = 0; i < dnn_config.inputs.size(); i++) {
+      const auto & input = dnn_config.inputs.at(i);
+      cout << "input.name: " << input.name << endl;
+      dnn_config_inputNames.push_back(input.name);
+    }
+    for(uint i = 0; i < dnn_config.outputs.size(); i++) {
+      const auto & output = dnn_config.outputs.at(i);
+      cout << "output.name: " << output << endl;
+      dnn_config_outputName = output;
+    }
+    for(uint i = 0; i < dnn_config_inputNames.size(); i++) {
+      m_input_handles.push_back(ctx.get_handle<float>(dnn_config_inputNames.at(i)));
+    }
+    h_dnn_output_val = ctx.declare_event_output<float>("DNN_Output");
 
 
     //------------//
@@ -276,18 +294,31 @@ namespace uhh2 {
       hist_decaymatch_Pt400toInf->fill(event);
     }
 
-    // DNN setup
-    hist_discriminators->fill(event);
-    hist_discriminators_Pt0to400->fill(event);
-    hist_discriminators_Pt400toInf->fill(event);
+    // Fill some histograms with potential DNN input variables
     hist_dnn->fill(event);
     hist_dnn_Pt0to400->fill(event);
     hist_dnn_Pt400toInf->fill(event);
+
+    // Set event handles used as input for DNN training
     dnn_setup->process(event);
     event.set(h_event_weight, event.weight);
     TopJet toptaggedjet;
     for(auto t : *event.topjets) { if(StandardHOTVRTopTagID(t, event)) toptaggedjet = t; }
     event.set(h_toptag_pt, toptaggedjet.v4().Pt());
+
+    // Application of a trained DNN
+    map<string, double> inputs_map;
+    for(uint i = 0; i < dnn_config_inputNames.size(); i++) {
+      inputs_map[dnn_config_inputNames.at(i)] = (double)event.get(m_input_handles.at(i));
+    }
+    auto dnn_output_vals = NeuralNetwork->compute(inputs_map);
+    event.set(h_dnn_output_val, dnn_output_vals[dnn_config_outputName]);
+    cout << dnn_output_vals[dnn_config_outputName] << endl;
+
+    // Histograms of DNN inputs and DNN output
+    hist_discriminators->fill(event);
+    hist_discriminators_Pt0to400->fill(event);
+    hist_discriminators_Pt400toInf->fill(event);
 
     // Place analysis routines into a new Module!!!
     // End of main selection
