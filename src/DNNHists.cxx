@@ -1,4 +1,4 @@
-#include "UHH2/HighPtSingleTop/include/DiscriminatorHists.h"
+#include "UHH2/HighPtSingleTop/include/DNNHists.h"
 #include "UHH2/HighPtSingleTop/include/MyUtils.h"
 
 #include "UHH2/common/include/Utils.h"
@@ -9,7 +9,7 @@ using namespace std;
 using namespace uhh2;
 
 
-DiscriminatorHists::DiscriminatorHists(Context & ctx, const string & dirname, double arg_MIN_PT, double arg_MAX_PT):
+DNNHists::DNNHists(Context & ctx, const string & dirname, double arg_MIN_PT, double arg_MAX_PT):
   Hists(ctx, dirname) {
 
   h_dnn_output = ctx.get_handle<double>("DNN_Output");
@@ -98,7 +98,7 @@ DiscriminatorHists::DiscriminatorHists(Context & ctx, const string & dirname, do
 }
 
 
-void DiscriminatorHists::fill(const uhh2::Event & event) {
+void DNNHists::fill(const uhh2::Event & event) {
 
   const double dnn_output = event.get(h_dnn_output);
 

@@ -21,7 +21,7 @@
 #include "UHH2/HighPtSingleTop/include/MatchHists.h"
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
 #include "UHH2/HighPtSingleTop/include/ReconstructionAlgorithms.h"
-#include "UHH2/HighPtSingleTop/include/DiscriminatorHists.h"
+#include "UHH2/HighPtSingleTop/include/DNNHists.h"
 
 #include "UHH2/HOTVR/include/HOTVRHists.h"
 #include "UHH2/HOTVR/include/HOTVRIds.h"
@@ -224,13 +224,13 @@ namespace uhh2 {
     hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
     hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
 
-    hist_discriminators.reset(new DiscriminatorHists(ctx, "DiscHists_Full"));
-    hist_discriminators_Pt0to400.reset(new DiscriminatorHists(ctx, "DiscHists_Pt0to400", 0, 400));
-    hist_discriminators_Pt400to600.reset(new DiscriminatorHists(ctx, "DiscHists_Pt400to600", 400, 600));
-    hist_discriminators_Pt600to800.reset(new DiscriminatorHists(ctx, "DiscHists_Pt600to800", 600, 800));
-    hist_discriminators_Pt400toInf.reset(new DiscriminatorHists(ctx, "DiscHists_Pt400toInf", 400));
-    hist_discriminators_Pt600toInf.reset(new DiscriminatorHists(ctx, "DiscHists_Pt600toInf", 600));
-    hist_discriminators_Pt800toInf.reset(new DiscriminatorHists(ctx, "DiscHists_Pt800toInf", 800));
+    hist_discriminators.reset(new DNNHists(ctx, "DNNHists_Full"));
+    hist_discriminators_Pt0to400.reset(new DNNHists(ctx, "DNNHists_Pt0to400", 0, 400));
+    hist_discriminators_Pt400to600.reset(new DNNHists(ctx, "DNNHists_Pt400to600", 400, 600));
+    hist_discriminators_Pt600to800.reset(new DNNHists(ctx, "DNNHists_Pt600to800", 600, 800));
+    hist_discriminators_Pt400toInf.reset(new DNNHists(ctx, "DNNHists_Pt400toInf", 400));
+    hist_discriminators_Pt600toInf.reset(new DNNHists(ctx, "DNNHists_Pt600toInf", 600));
+    hist_discriminators_Pt800toInf.reset(new DNNHists(ctx, "DNNHists_Pt800toInf", 800));
 }
 
 

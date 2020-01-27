@@ -2,11 +2,11 @@
 #include "UHH2/core/include/Event.h"
 
 
-class DiscriminatorHists: public uhh2::Hists {
+class DNNHists: public uhh2::Hists {
 
  public:
 
-  DiscriminatorHists(uhh2::Context & ctx, const std::string & dirname, double arg_MIN_PT = 0.0, double arg_MAX_PT = 99999.0);
+  DNNHists(uhh2::Context & ctx, const std::string & dirname, double arg_MIN_PT = 0.0, double arg_MAX_PT = 99999.0);
   virtual void fill(const uhh2::Event & event) override;
 
  protected:
