@@ -53,7 +53,7 @@ namespace uhh2 {
     
     unique_ptr<AndHists> hist_leptonsf, hist_1toptag, hist_btagsf;
  
-    unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf, hist_dnn, hist_dnn_Pt0to400, hist_dnn_Pt400toInf, hist_discriminators, hist_discriminators_Pt0to400, hist_discriminators_Pt400toInf;
+    unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf, hist_dnn, hist_dnn_Pt0to400, hist_dnn_Pt400toInf, hist_discriminators, hist_discriminators_Pt0to400, hist_discriminators_Pt400to600, hist_discriminators_Pt600to800, hist_discriminators_Pt400toInf, hist_discriminators_Pt600toInf, hist_discriminators_Pt800toInf;
 
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
@@ -227,7 +227,11 @@ namespace uhh2 {
 
     hist_discriminators.reset(new DiscriminatorHists(ctx, "DiscHists_Full"));
     hist_discriminators_Pt0to400.reset(new DiscriminatorHists(ctx, "DiscHists_Pt0to400", 0, 400));
+    hist_discriminators_Pt400to600.reset(new DiscriminatorHists(ctx, "DiscHists_Pt400to600", 0, 400));
+    hist_discriminators_Pt600to800.reset(new DiscriminatorHists(ctx, "DiscHists_Pt600to800", 0, 400));
     hist_discriminators_Pt400toInf.reset(new DiscriminatorHists(ctx, "DiscHists_Pt400toInf", 400));
+    hist_discriminators_Pt600toInf.reset(new DiscriminatorHists(ctx, "DiscHists_Pt600toInf", 600));
+    hist_discriminators_Pt800toInf.reset(new DiscriminatorHists(ctx, "DiscHists_Pt800toInf", 800));
 
     hist_dnn.reset(new DNNHists(ctx, "DNNHists_Full"));
     hist_dnn_Pt0to400.reset(new DNNHists(ctx, "DNNHists_Pt0to400", 0, 400));
@@ -317,7 +321,11 @@ namespace uhh2 {
     // Histograms of DNN inputs and DNN output
     hist_discriminators->fill(event);
     hist_discriminators_Pt0to400->fill(event);
+    hist_discriminators_Pt400to600->fill(event);
+    hist_discriminators_Pt600to800->fill(event);
     hist_discriminators_Pt400toInf->fill(event);
+    hist_discriminators_Pt600toInf->fill(event);
+    hist_discriminators_Pt800toInf->fill(event);
 
     // Place analysis routines into a new Module!!!
     // End of main selection
