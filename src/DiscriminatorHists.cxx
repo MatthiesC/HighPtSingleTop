@@ -11,6 +11,8 @@ using namespace uhh2;
 
 DiscriminatorHists::DiscriminatorHists(Context & ctx, const string & dirname, double arg_MIN_PT, double arg_MAX_PT):
   Hists(ctx, dirname) {
+
+  h_dnn_output = ctx.get_handle<double>("DNN_Output");
   
   h_toptaggedjet = ctx.get_handle<TopJet>("TopTaggedJet");
   h_primlep = ctx.get_handle<FlavorParticle>("PrimaryLepton");
@@ -33,6 +35,10 @@ DiscriminatorHists::DiscriminatorHists(Context & ctx, const string & dirname, do
     nBins = nBins_lowRes;
     nBins_dPhi = nBins_dPhi_lowRes;
   }
+
+  hist_dnn_output = book<TH1F>("dnn_output", "#it{O}(DNN)", nBins, 0, 1);
+  hist_dnn_output_extraLowRes = book<TH1F>("dnn_output_extraLowRes", "#it{O}(DNN)", nBins/2, 0, 1);
+  hist_dnn_output_10bins = book<TH1F>("dnn_output_10bins", "#it{O}(DNN)", 10, 0, 1);
 
   hist_tlep_mass = book<TH1F>("tlep_mass", "leptonic pseudo t quark mass [GeV]", nBins, 0, 800);
   hist_wlep_mt = book<TH1F>("wlep_mt", "leptonic W boson m_{T} [GeV]", nBins, 0, 500);
@@ -94,6 +100,8 @@ DiscriminatorHists::DiscriminatorHists(Context & ctx, const string & dirname, do
 
 void DiscriminatorHists::fill(const uhh2::Event & event) {
 
+  const double dnn_output = event.get(h_dnn_output);
+
   const auto & topjet = event.get(h_toptaggedjet);
   const auto & primlep = event.get(h_primlep);
   const auto & pseudotop = event.get(h_pseudotop);
@@ -109,6 +117,10 @@ void DiscriminatorHists::fill(const uhh2::Event & event) {
 
 
   if(topjet.v4().pt() >= m_MIN_PT && topjet.v4().pt() < m_MAX_PT) {
+
+    hist_dnn_output->Fill(dnn_output, w);
+    hist_dnn_output_extraLowRes->Fill(dnn_output, w);
+    hist_dnn_output_10bins->Fill(dnn_output, w);
     
     hist_tlep_mass->Fill(pseudotop.M(), w);
     hist_wlep_mt->Fill(calcMTW(primlep, event), w);

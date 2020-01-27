@@ -10,7 +10,11 @@ class DiscriminatorHists: public uhh2::Hists {
   virtual void fill(const uhh2::Event & event) override;
 
  protected:
-  
+
+  TH1F *hist_dnn_output;
+  TH1F *hist_dnn_output_extraLowRes;
+  TH1F *hist_dnn_output_10bins;
+
   TH1F *hist_tlep_mass;
   TH1F *hist_wlep_mt;
   TH1F *hist_ptbalance_wlep_tjet;
@@ -67,6 +71,7 @@ class DiscriminatorHists: public uhh2::Hists {
   TH1F *hist_dr_xjet1l;
   TH1F *hist_dr_xjet2l;
 
+  uhh2::Event::Handle<double> h_dnn_output;
   uhh2::Event::Handle<TopJet> h_toptaggedjet;
   uhh2::Event::Handle<FlavorParticle> h_primlep;
   uhh2::Event::Handle<LorentzVector> h_pseudotop;
