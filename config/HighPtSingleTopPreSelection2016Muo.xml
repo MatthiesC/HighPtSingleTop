@@ -24,7 +24,7 @@
 
 	  <!ENTITY SingleTop_sch_TTbar SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/UHH2-datasets/RunII_102X_v1/2016v3/MC_ST_s-channel_leptonDecays.xml">
 
-	  <!ENTITY TTbar_M0to700 SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/UHH2-datasets/RunII_102X_v1/2016v3/MC_TT_TuneCUETP8M2T4.xml">
+	  <!ENTITY TTbar_Full SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/UHH2-datasets/RunII_102X_v1/2016v3/MC_TT_TuneCUETP8M2T4.xml">
 	  <!ENTITY TTbar_M700to1000 SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/UHH2-datasets/RunII_102X_v1/2016v3/MC_TT_Mtt-700to1000.xml">
 	  <!ENTITY TTbar_M1000toInf SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/UHH2-datasets/RunII_102X_v1/2016v3/MC_TT_Mtt-1000toInf.xml">
 
@@ -181,7 +181,13 @@
 	      <!-- TTbar -->
 
 	      <InputData Lumi="92260.16399" NEventsMax="&NEVT;" Type="MC" Version="TTbar_M0to700&YEARsuffix;" Cacheable="&b_Cacheable;"> 
-		&TTbar_M0to700;
+		&TTbar_Full;
+		<InputTree Name="AnalysisTree" /> 
+		<OutputTree Name="AnalysisTree" /> 
+	      </InputData>
+
+	      <InputData Lumi="92260.16399" NEventsMax="&NEVT;" Type="MC" Version="TTbar_M700toInf&YEARsuffix;" Cacheable="&b_Cacheable;"> 
+		&TTbar_Full;
 		<InputTree Name="AnalysisTree" /> 
 		<OutputTree Name="AnalysisTree" /> 
 	      </InputData>

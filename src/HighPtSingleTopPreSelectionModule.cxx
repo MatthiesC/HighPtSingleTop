@@ -233,6 +233,7 @@ namespace uhh2 {
 
     // Mttbar gencut
     if(dataset_version.find("TTbar_M0to700") == 0 && !slct_mttbarGenCut->passes(event)) return false;
+    if(dataset_version.find("TTbar_M700toInf") == 0 && slct_mttbarGenCut->passes(event)) return false;
 
     // Initial cleaning, MET+PV filter, and lumi+PU weights
     //hist_met_xy_uncorr->fill(event);
