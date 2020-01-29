@@ -47,7 +47,7 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_btag;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd, dnn_setup;
 
-    unique_ptr<Selection> slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau;
+    unique_ptr<Selection> slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy;
 
     unique_ptr<AndHists> hist_leptonsf, hist_1toptag, hist_btagsf; 
     unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
@@ -191,6 +191,7 @@ namespace uhh2 {
     slct_tW_merged0.reset(new MergeScenarioSelection(ctx, 0));
     slct_tW_TopToHad.reset(new tWgenSelection(ctx, "TopToHad", is_muon));
     slct_tW_WToTau.reset(new tWgenSelection(ctx, "WToTau", is_muon));
+    slct_WJetsHeavy.reset(new WJetsGenSelection(ctx, "HF"));
 
 
     //------------//
@@ -232,6 +233,10 @@ namespace uhh2 {
   //------------//
 
   bool HighPtSingleTopMainSelectionModule::process(Event & event) {
+
+    // Split up WJets into heavy flavour and light jets
+    if((dataset_version.find("WJetsHeavy") == 0) && !slct_WJetsHeavy->passes(event)) return false;
+    if((dataset_version.find("WJetsLight") == 0) && slct_WJetsHeavy->passes(event)) return false;
 
     // Scale variations
     scale_variation->process(event);

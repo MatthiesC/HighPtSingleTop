@@ -140,6 +140,41 @@ bool tWgenSelection::passes(const Event & event) {
 }
 
 
+//---------------------------------------//
+// Generator selection for W+jets events //
+//---------------------------------------//
+
+WJetsGenSelection::WJetsGenSelection(Context &ctx, string jets_type):
+  m_jets_type(jets_type) {
+
+  m_is_wjets = ctx.get("dataset_version").find("WJets") == 0;
+}
+
+
+bool WJetsGenSelection::passes(const Event &event) {
+
+  assert(event.genparticles);
+
+  if(!m_is_wjets) return true;
+
+  uint n_cQuarks = 0;
+  uint n_bQuarks = 0;
+
+  for(GenParticle gp : *event.genparticles) {
+    if(gp.index() > 1) { // exclude initial-state partons from consideration
+      if(abs(gp.pdgId()) == 4) ++n_cQuarks;
+      else if(abs(gp.pdgId()) == 5) ++n_bQuarks;
+    }
+  }
+
+  if(m_jets_type == "HF") { // W + heavy flavour (HF)
+    return (n_cQuarks + n_bQuarks > 0);
+  }
+
+  return true;
+}
+
+
 //--------------------------------------------------//
 // Cleaner for jets overlapping with primary lepton //
 //--------------------------------------------------//

@@ -68,7 +68,16 @@ namespace uhh2 {
     std::string m_decay;
     bool m_is_muon;
   };
-  
+
+  class WJetsGenSelection: public uhh2::Selection {
+  public:
+    WJetsGenSelection(uhh2::Context & ctx, std::string jets_type);
+    virtual bool passes(const uhh2::Event & event) override;
+  private:
+    std::string m_jets_type;
+    bool m_is_wjets;
+  };
+
   class JetLeptonOverlapRemoval: public uhh2::AnalysisModule {
   public:
     explicit JetLeptonOverlapRemoval(uhh2::Context & ctx, double & deltaR_min_, std::string primlep_name_ = "PrimaryLepton");
