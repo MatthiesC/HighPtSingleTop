@@ -51,7 +51,7 @@ namespace uhh2 {
     std::unique_ptr<AnalysisModule> met_xy_correction;
     
     std::unique_ptr<Selection> slct_mttbarGenCut, slct_tWgenSignal;
-    std::unique_ptr<Selection> slct_lumi, slct_trigger;
+    std::unique_ptr<Selection> slct_lumi;//, slct_trigger;
     std::unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
     std::unique_ptr<Selection> slct_met, slct_1jet, slct_1hotvr;
     
@@ -59,7 +59,7 @@ namespace uhh2 {
     //std::unique_ptr<Hists> hist_met_xy_uncorr, hist_met_xy_corr;
 
     bool is_data, is_mc, is_muon, is_elec;
-    string dataset_version;
+    string dataset_version, met_name;
 
     double muonPt_min, muonEta_max, muonPt_min_veto, muonEta_max_veto, muonIso_max;
     double elecPt_min, elecEta_max, elecPt_min_veto, elecEta_max_veto;
@@ -85,6 +85,7 @@ namespace uhh2 {
     if(!(is_muon || is_elec)) throw runtime_error("HighPtSingleTopPreSelectionModule: Analysis channel ( ELECTRON / MUON ) not correctly given. Please check the XML config file!");
 
     dataset_version = ctx.get("dataset_version");
+    met_name = ctx.get("METName");
 
 
     //---------------------//
@@ -134,6 +135,7 @@ namespace uhh2 {
 	elecID_veto = AndId<Electron>(ElectronID_Fall17_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
 	elecID = AndId<Electron>(ElectronID_Fall17_tight, PtEtaCut(elecPt_min, elecEta_max));
       }
+    JetPFID::wp jetPFID = JetPFID::WP_TIGHT_PUPPI;
     JetId jetID = PtEtaCut(jetPt_min, jetEta_max);
     TopJetId hotvrID = AndId<TopJet>(PtEtaCut(hotvrPt_min, hotvrEta_max), DeltaRCut(ctx, hotvrDeltaRToLepton_min)); // // through away all HOTVR jets with lepton close by <-- Roman's recommendation from October 16, 2019
 
@@ -143,12 +145,13 @@ namespace uhh2 {
     //----------------//
 
     common_modules.reset(new CommonModules());
-    common_modules->switch_jetlepcleaner(false); // switch off jet lepton cleaning <-- Roman's recommendation from October 16, 2019
-    common_modules->switch_jetPtSorter(true);
-    common_modules->switch_metcorrection(true);
+    common_modules->change_pf_id(jetPFID);
     common_modules->set_jet_id(jetID);
     common_modules->set_muon_id(muonID_veto);
     common_modules->set_electron_id(elecID_veto);
+    common_modules->switch_metcorrection(true);
+    common_modules->switch_jetlepcleaner(false); // switch off jet lepton cleaning <-- Roman's recommendation from October 16, 2019
+    common_modules->switch_jetPtSorter(true);
     common_modules->init(ctx);
 
     hotvr_jec_module.reset(new HOTVRJetCorrectionModule(ctx));
@@ -172,7 +175,7 @@ namespace uhh2 {
     // https://twiki.cern.ch/twiki/bin/view/CMS/MuonHLT2016
     // https://twiki.cern.ch/twiki/bin/view/CMS/EgHLTRunIISummary
     // https://indico.cern.ch/event/662745/   Approval of SFs for one of the previously used trigger combinations (see git commit history)
-    slct_trigger.reset(new HighPtSingleTopTriggerSelection(ctx));
+    //slct_trigger.reset(new HighPtSingleTopTriggerSelection(ctx));
 
     slct_1muon.reset(new NMuonSelection(1, 1));
     slct_0muon.reset(new NMuonSelection(0, 0));
@@ -192,7 +195,7 @@ namespace uhh2 {
 
 
     hist_common.reset(new AndHists(ctx, "0_Common"));
-    hist_trigger.reset(new AndHists(ctx, "1_Trigger"));
+    //hist_trigger.reset(new AndHists(ctx, "1_Trigger"));
     hist_1lepton.reset(new AndHists(ctx, "2_OneLepton"));
     hist_met.reset(new AndHists(ctx, "3_MET"));
     hist_1jet.reset(new AndHists(ctx, "4_OneJet"));
@@ -241,11 +244,11 @@ namespace uhh2 {
 
     if(!common_modules->process(event)) return false;
     hist_common->fill(event);
-    met_xy_correction->process(event);
+    if(met_name == "slimmedMETs") met_xy_correction->process(event); // only apply XY corrections if using PF MET
 
     // Trigger paths
-    if(!slct_trigger->passes(event)) return false;
-    hist_trigger->fill(event);
+    //if(!slct_trigger->passes(event)) return false;
+    //hist_trigger->fill(event);
 
     // Single-lepton selection and veto on additional leptons
     if(is_muon)
