@@ -47,9 +47,9 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_btag;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd, dnn_setup;
 
-    unique_ptr<Selection> slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy;
+    unique_ptr<Selection> slct_trigger, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy;
 
-    unique_ptr<AndHists> hist_leptonsf, hist_1toptag, hist_btagsf; 
+    unique_ptr<AndHists> hist_presel, hist_trigger, hist_1toptag, hist_btagsf; 
     unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
     unique_ptr<BinnedDNNHists> hist_dnn;
 
@@ -115,7 +115,7 @@ namespace uhh2 {
     // IDENTIFICATIONS //
     //-----------------//
 
-    StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));//, PtEtaCut(600, 2.5)); // ATTENTION!!!!!!!!!!! Cut on pT!!!!!!
+    StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
     BTag::algo btag_algo = BTag::DEEPJET;
     BTag::wp btag_workingpoint = BTag::WP_MEDIUM;
     BJetID = BTag(btag_algo, btag_workingpoint);
@@ -184,6 +184,7 @@ namespace uhh2 {
     // SELECTIONS //
     //------------//
 
+    slct_trigger.reset(new HighPtSingleTopTriggerSelection(ctx));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
     slct_tW_merged3.reset(new MergeScenarioSelection(ctx, 3));
     slct_tW_merged2.reset(new MergeScenarioSelection(ctx, 2));
@@ -198,24 +199,21 @@ namespace uhh2 {
     // HISTOGRAMS //
     //------------//
 
-    hist_leptonsf.reset(new AndHists(ctx, "2_LeptonScaleFactors"));
-    hist_leptonsf->add_hist(new HighPtSingleTopHists(ctx, "2_LeptonScaleFactors_CustomHists"));
+    hist_presel.reset(new AndHists(ctx, "1_PreSel"));
+
+    hist_trigger.reset(new AndHists(ctx, "2_Trigger"));
 
     hist_1toptag.reset(new AndHists(ctx, "3_OneTopTag"));
-    hist_1toptag->add_hist(new HighPtSingleTopHists(ctx, "3_OneTopTag_CustomHists"));
-    hist_1toptag->add_hist(new HOTVRHists(ctx, "3_OneTopTag_HOTVRTopTag", StandardHOTVRTopTagID));
     hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Full"));
     hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Pt0to300", 0, 300));
     hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Pt300toInf", 300));
 
     hist_btag_mc_efficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", BJetID, "jets"));
 
-    hist_btagsf.reset(new AndHists(ctx, "4_BTagScaleFactors"));
-    hist_btagsf->add_hist(new HighPtSingleTopHists(ctx, "4_BTagScaleFactors_CustomHists"));
-    hist_btagsf->add_hist(new HOTVRHists(ctx, "4_BTagScaleFactors_HOTVRTopTag", StandardHOTVRTopTagID));
-    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagScaleFactors_TopTagHists_Full"));
-    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagScaleFactors_TopTagHists_Pt0to300", 0, 300));
-    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagScaleFactors_TopTagHists_Pt300toInf", 300));
+    hist_btagsf.reset(new AndHists(ctx, "4_BTagSF"));
+    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Full"));
+    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Pt0to300", 0, 300));
+    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Pt300toInf", 300));
 
     hist_decaymatch.reset(new MatchHists(ctx, "MatchHists_Full"));
     hist_decaymatch_Pt0to300.reset(new MatchHists(ctx, "MatchHists_Pt0to300", 0, 300));
@@ -246,22 +244,31 @@ namespace uhh2 {
       if(dataset_version.find("ST_tW_bkg_Else") == 0 && is_TopToHadAndWToTau) return false;
     }
 
-    // Scale variations
-    scale_variation->process(event);
+    // Identify primary lepton
+    primarylep->process(event);
 
-    // Apply scale factors
+    // After preselection
+    scale_variation->process(event);
     sf_lumi->process(event);
     sf_pileup->process(event);
     if(is_muon) {
-      sf_muon_trig->process(event);
       sf_muon_id->process(event);
       sf_muon_iso->process(event);
     }
     else if(is_elec) {
-      // electron trigger, id, reco
+      // electron id, reco
+    }    
+    hist_presel->fill(event);
+
+    // Trigger paths
+    if(!slct_trigger->passes(event)) return false;
+    if(is_muon) {
+      sf_muon_trig->process(event);
     }
-    hist_leptonsf->fill(event);
-    primarylep->process(event);
+    else if(is_elec) {
+      // electron trigger sf
+    }
+    hist_trigger->fill(event);
 
     // Require exactly one HOTVR t-tag
     if(!slct_1toptag->passes(event)) return false;
@@ -275,6 +282,7 @@ namespace uhh2 {
     sf_btag->process(event);
     hist_btagsf->fill(event);
 
+    // Tag some objects
     btaggedjets->process(event);
     nontopak4jets->process(event);
     wboson->process(event);
