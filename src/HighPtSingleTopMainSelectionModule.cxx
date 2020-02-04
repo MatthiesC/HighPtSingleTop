@@ -257,7 +257,7 @@ namespace uhh2 {
     }
     else if(is_elec) {
       // electron id, reco
-    }    
+    }
     hist_presel->fill(event);
 
     // Trigger paths
