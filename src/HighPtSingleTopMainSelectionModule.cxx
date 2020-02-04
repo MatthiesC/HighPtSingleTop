@@ -238,6 +238,14 @@ namespace uhh2 {
     if((dataset_version.find("WJetsHeavy") == 0) && !slct_WJetsHeavy->passes(event)) return false;
     if((dataset_version.find("WJetsLight") == 0) && slct_WJetsHeavy->passes(event)) return false;
 
+    // Split up tW background into TopToHadAndWToTau and Else
+    if(dataset_version.find("ST_tW") == 0) {
+      SingleTopGen_tWchProd->process(event);
+      bool is_TopToHadAndWToTau = slct_tW_TopToHad->passes(event) && slct_tW_WToTau->passes(event);
+      if(dataset_version.find("ST_tW_bkg_TopToHadAndWToTau") == 0 && !is_TopToHadAndWToTau) return false;
+      if(dataset_version.find("ST_tW_bkg_Else") == 0 && is_TopToHadAndWToTau) return false;
+    }
+
     // Scale variations
     scale_variation->process(event);
 
@@ -274,15 +282,11 @@ namespace uhh2 {
 
     // Split tW signal into 3-merged, 2-merged, 1-merged, 0-merged (== how many top decay products ended up inside t-tagged HOTVR jet)
     if(dataset_version.find("ST_tW") == 0) {
-      SingleTopGen_tWchProd->process(event);
+      // GenProducer already processed at beginning of module!
       if(dataset_version.find("ST_tW_merged3") == 0 && !slct_tW_merged3->passes(event)) return false;
       if(dataset_version.find("ST_tW_merged2") == 0 && !slct_tW_merged2->passes(event)) return false;
       if(dataset_version.find("ST_tW_merged1") == 0 && !slct_tW_merged1->passes(event)) return false;
       if(dataset_version.find("ST_tW_merged0") == 0 && !slct_tW_merged0->passes(event)) return false;
-      // now, also check if we have signal-like decay but with intermediate tau leptons (however, not sure if tau actually decays into required lepton)
-      bool is_TopToHadAndWToTau = slct_tW_TopToHad->passes(event) && slct_tW_WToTau->passes(event);
-      if(dataset_version.find("ST_tW_bkg_TopToHadAndWToTau") == 0 && !is_TopToHadAndWToTau) return false;
-      if(dataset_version.find("ST_tW_bkg_Else") == 0 && is_TopToHadAndWToTau) return false;
       hist_decaymatch->fill(event);
       hist_decaymatch_Pt0to300->fill(event);
       hist_decaymatch_Pt300toInf->fill(event);
