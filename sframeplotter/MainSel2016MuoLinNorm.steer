@@ -2,14 +2,12 @@ SteerPlotter(){
   
   // steering for the plotter
   fCycleName     = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/uhh2.AnalysisModuleRunner";
-  fInputFiles    = " MC.DYJets.root, MC.WJets.root, MC.TTbar.root, MC.ST_tW_other.root, MC.ST_tW_signal.root, ";
-  fSampleNames   = " DY_+_jets, W_+_jets, ttbar, tW_background, tW_signal, ";
-  fSamplesWeight = " 1., 1., 1., 1., 1., ";
-  fSamplesUnc    = " 0., 0., 0., 0., 0., ";
-  fHistColors    = " 800, 418, 633, 432, 596, ";
-  fHistMarkers   = " 0, 0, 0, 0, 0, ";
-
-  //fSamplesToStack = " ST_tW_signal, ST_tW_other, ST_non-tW_t-Ch, ST_non-tW_s-Ch, TTbar, WJets, DYJets, Diboson, QCD "; // the names of chains which you would like to stack (same as in input filenames)
+  fInputFiles    = " MC.DYJets.root, MC.WJets.root, MC.TTbar.root, MC.ST_tW_bkg_Else.root, MC.ST_tW_bkg_TopToHadAndWToTau.root, MC.ST_tW_signal.root, ";
+  fSampleNames   = " DY_+_jets, W_+_jets, ttbar, Other_tW_background, t(h)W(#tau)_background, tW_signal, ";
+  fSamplesWeight = " 1., 1., 1., 1., 1., 1., ";
+  fSamplesUnc    = " 0., 0., 0., 0., 0., 0., ";
+  fHistColors    = " 602, 418, 800, 618, 617, 609, ";
+  fHistMarkers   = " 0, 0, 0, 0, 0, 0, ";
 
   fOutputPsFile = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/plots/linnorm/MainSel2016Muo.ps";	
   

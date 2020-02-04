@@ -2,7 +2,7 @@ SteerPlotter(){
   
   // steering for the plotter
   fCycleName     = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/uhh2.AnalysisModuleRunner";
-  fInputFiles    = " MC.ST_tW_merged3*.root, MC.ST_tW_merged2*.root, MC.ST_tW_merged1*.root, MC.ST_tW_merged0*.root, MC.ST_tW_bkg_TopToHadAndWToTau*.root, MC.ST_tW_bkg_Else*.root, ";
+  fInputFiles    = " MC.ST_tW_merged3.root, MC.ST_tW_merged2.root, MC.ST_tW_merged1.root, MC.ST_tW_merged0.root, MC.ST_tW_bkg_TopToHadAndWToTau.root, MC.ST_tW_bkg_Else.root, ";
   fSampleNames   = " tW_signal_(fully_merged), tW_signal_(2/3_merged), tW_signal_(1/3_merged), tW_signal_(not_merged), t(h)W(#tau)_background, other_tW_background, ";
   fSamplesWeight = " 1., 1., 1., 1., 1., 1., ";
   fSamplesUnc    = " 0., 0., 0., 0., 0., 0., ";
