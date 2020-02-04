@@ -223,8 +223,8 @@ bool MergeScenarioSelection::passes(const Event & event) {
   top_decays.push_back(GENtW.WTopDecay1());
   top_decays.push_back(GENtW.WTopDecay2());
 
-  // assume that HOTVR jets are circular
-  double jet_radius = sqrt(topjet.jetArea()/M_PI);
+  // Definition of HOTVR radius
+  double jet_radius = min(1.5, max(0.1, 600.0 / (topjet.pt() * topjet.JEC_factor_raw()) ));
 
   unsigned int mergedQuarks = 0;
 
