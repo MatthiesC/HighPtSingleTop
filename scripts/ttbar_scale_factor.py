@@ -60,7 +60,7 @@ for p in processes.keys():
 
     rootFile = root.TFile.Open(directory+'/'+filename_prefix+processes[p]['file']+'.root', 'READ')
 
-    countingHist = rootFile.Get('4_BTagScaleFactors_TopTagHists_Full/top_pt_1GeV')
+    countingHist = rootFile.Get('3_OneTopTag_TopTagHists_Full/top_pt_1GeV')
 
     sum_of_weights = get_contents(pt_threshold, countingHist)
 
