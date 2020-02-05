@@ -43,14 +43,14 @@ namespace uhh2 {
     virtual bool process(Event & event) override;
     
   private:
-    
-    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_btag;
+
+    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag; //, sf_btag;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd, dnn_setup;
 
     unique_ptr<Selection> slct_trigger, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy;
 
-    unique_ptr<AndHists> hist_presel, hist_trigger, hist_1toptag, hist_btagsf; 
-    unique_ptr<Hists> hist_btag_mc_efficiency, hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
+    unique_ptr<AndHists> hist_presel, hist_trigger, hist_1toptag; //, hist_btagsf; 
+    unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf; //hist_btag_mc_efficiency;
     unique_ptr<BinnedDNNHists> hist_dnn;
 
     bool is_data, is_mc, is_muon, is_elec;
@@ -139,7 +139,7 @@ namespace uhh2 {
     sf_muon_iso.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MuonIso_EfficienciesAndSF_average_RunBtoH.root", "NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt", 1, "muon_isolation", true, syst_muon_iso));
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_hotvr_toptag));
-    sf_btag.reset(new MCBTagScaleFactor(ctx, btag_algo, btag_workingpoint, "jets", syst_btag)); 
+    //sf_btag.reset(new MCBTagScaleFactor(ctx, btag_algo, btag_workingpoint, "jets", syst_btag)); 
 
 
     //---------------//
@@ -208,12 +208,12 @@ namespace uhh2 {
     hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Pt0to300", 0, 300));
     hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Pt300toInf", 300));
 
-    hist_btag_mc_efficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", BJetID, "jets"));
+    //hist_btag_mc_efficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", BJetID, "jets"));
 
-    hist_btagsf.reset(new AndHists(ctx, "4_BTagSF"));
-    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Full"));
-    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Pt0to300", 0, 300));
-    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Pt300toInf", 300));
+    //hist_btagsf.reset(new AndHists(ctx, "4_BTagSF"));
+    //hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Full"));
+    //hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Pt0to300", 0, 300));
+    //hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Pt300toInf", 300));
 
     hist_decaymatch.reset(new MatchHists(ctx, "MatchHists_Full"));
     hist_decaymatch_Pt0to300.reset(new MatchHists(ctx, "MatchHists_Pt0to300", 0, 300));
@@ -274,19 +274,20 @@ namespace uhh2 {
     if(!slct_1toptag->passes(event)) return false;
     hadronictop->process(event);
     sf_toptag->process(event);
-    toptaggedjet->process(event);
-    hist_1toptag->fill(event);
-
-    // Apply b-tag scale factors
-    hist_btag_mc_efficiency->fill(event);
-    sf_btag->process(event);
-    hist_btagsf->fill(event);
 
     // Tag some objects
+    toptaggedjet->process(event);
     btaggedjets->process(event);
     nontopak4jets->process(event);
     wboson->process(event);
     pseudotop->process(event);
+
+    hist_1toptag->fill(event);
+
+    // Apply b-tag scale factors
+    //hist_btag_mc_efficiency->fill(event);
+    //sf_btag->process(event);
+    //hist_btagsf->fill(event);
 
     // Split tW signal into 3-merged, 2-merged, 1-merged, 0-merged (== how many top decay products ended up inside t-tagged HOTVR jet)
     if(dataset_version.find("ST_tW") == 0) {
