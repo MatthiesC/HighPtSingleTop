@@ -3,12 +3,13 @@
 #include "UHH2/common/include/LuminosityHists.h"
 #include "UHH2/common/include/JetHists.h"
 
+#include "UHH2/HOTVR/include/HOTVRHists.h"
+
 #include "UHH2/HighPtSingleTop/include/Constants.h"
 #include "UHH2/HighPtSingleTop/include/DNNHists.h"
 #include "UHH2/HighPtSingleTop/include/MyEventHists.h"
 #include "UHH2/HighPtSingleTop/include/MyElectronHists.h"
 #include "UHH2/HighPtSingleTop/include/MyMuonHists.h"
-#include "UHH2/HOTVR/include/HOTVRHists.h"
 
 
 using namespace std;

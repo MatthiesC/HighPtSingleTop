@@ -17,15 +17,15 @@
 #include "UHH2/common/include/PrimaryLepton.h"
 #include "UHH2/common/include/Utils.h"
 
+#include "UHH2/HOTVR/include/HOTVRJetCorrectionModule.h"
+#include "UHH2/HOTVR/include/HOTVRIds.h"
+
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
 #include "UHH2/HighPtSingleTop/include/SingleTopGen_tWch.h"
 #include "UHH2/HighPtSingleTop/include/METXYCorrections.h"
 #include "UHH2/HighPtSingleTop/include/MyEventHists.h"
-
-#include "UHH2/HOTVR/include/HOTVRJetCorrectionModule.h"
-#include "UHH2/HOTVR/include/HOTVRIds.h"
 
 
 using namespace std;
