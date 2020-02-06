@@ -236,7 +236,27 @@ bool MergeScenarioSelection::passes(const Event & event) {
 }
 
 
+NObjectsSelection::NObjectsSelection(Context & ctx, int n_min, int n_max, string objects_handle_name):
+  h_objects(ctx.get_handle<vector<Jet>>(objects_handle_name)),
+  m_n_min(n_min),
+  m_n_max(n_max) {
 
+  if(m_n_max < -1) throw runtime_error("NObjectsSelection: n_max must be an integer >= -1");
+  if(m_n_min < 0) throw runtime_error("NObjectsSelection: n_min must be an integer >= 0");
+  if(m_n_max < m_n_min) throw runtime_error("NObjectsSelection: n_max >= n_min must be fulfilled");
+}
+
+bool NObjectsSelection::passes(const Event & event) {
+
+  const auto objects = event.get(h_objects);
+
+  if(m_n_max == -1) {
+    return objects.size() >= (uint)m_n_min;
+  }
+  else {
+    return objects.size() >= (uint)m_n_min && objects.size() <= (uint)m_n_max;
+  }
+}
 
 
 // copied from Alex

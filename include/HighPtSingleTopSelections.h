@@ -97,6 +97,16 @@ namespace uhh2 {
     unsigned int m_mergedQuarks;
   };
 
+  class NObjectsSelection: public uhh2::Selection {
+  public:
+    NObjectsSelection(uhh2::Context & ctx, int n_min, int n_max, std::string objects_handle_name);
+    virtual bool passes(const uhh2::Event & event) override;
+  private:
+    uhh2::Event::Handle<std::vector<Jet>> h_objects;
+    int m_n_min;
+    int m_n_max;
+  };
+
   
   // copied from Alex
   class HighPtSingleTopTriggerSelection : public uhh2::Selection {
