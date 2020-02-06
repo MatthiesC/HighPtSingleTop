@@ -18,11 +18,16 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, double arg_MIN_PT, dou
   h_primlep = ctx.get_handle<FlavorParticle>("PrimaryLepton");
   h_pseudotop = ctx.get_handle<LorentzVector>("PseudoTop");
   h_wboson = ctx.get_handle<LorentzVector>("WBosonLeptonic");
-  h_xjets = ctx.get_handle<vector<Jet>>("NonTopJets"); // xjets = eXtra jets (i.e. jets not from single top quark hypothesis)
-  h_bxjets = ctx.get_handle<vector<Jet>>("NonTopBJets");
-  h_bxjets_loose = ctx.get_handle<vector<Jet>>("NonTopBJetsLoose");
-  h_bxjets_medium = ctx.get_handle<vector<Jet>>("NonTopBJetsMedium");
-  h_bxjets_tight = ctx.get_handle<vector<Jet>>("NonTopBJetsTight");
+  h_xjets = ctx.get_handle<vector<Jet>>("TopExJets"); // xjets = eXtra jets (i.e. jets not from single top quark hypothesis)
+  h_bxjets = ctx.get_handle<vector<Jet>>("TopExBJets");
+  h_bxjets_loose = ctx.get_handle<vector<Jet>>("TopExBJetsLoose");
+  h_bxjets_medium = ctx.get_handle<vector<Jet>>("TopExBJetsMedium");
+  h_bxjets_tight = ctx.get_handle<vector<Jet>>("TopExBJetsTight");
+  h_ijets = ctx.get_handle<vector<Jet>>("TopInJets"); // ijets = jets Inside top tag (i.e. jets likely from single top quark hypothesis)
+  h_bijets = ctx.get_handle<vector<Jet>>("TopInBJets");
+  h_bijets_loose = ctx.get_handle<vector<Jet>>("TopInBJetsLoose");
+  h_bijets_medium = ctx.get_handle<vector<Jet>>("TopInBJetsMedium");
+  h_bijets_tight = ctx.get_handle<vector<Jet>>("TopInBJetsTight");
 
   m_MIN_PT = arg_MIN_PT;
   m_MAX_PT = arg_MAX_PT;
@@ -63,6 +68,17 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, double arg_MIN_PT, dou
   hist_bxjets_loose_number = book<TH1F>("bxjets_loose_number", "number of loose b xjets", 11, -0.5, 10.5);
   hist_bxjets_medium_number = book<TH1F>("bxjets_medium_number", "number of medium b xjets", 11, -0.5, 10.5);
   hist_bxjets_tight_number = book<TH1F>("bxjets_tight_number", "number of tight b xjets", 11, -0.5, 10.5);
+
+  hist_ijets_number = book<TH1F>("ijets_number", "number of ijets", 11, -0.5, 10.5);
+  hist_bijets_number = book<TH1F>("bijets_number", "number of b ijets", 11, -0.5, 10.5);
+  hist_bijets_loose_number = book<TH1F>("bijets_loose_number", "number of loose b ijets", 11, -0.5, 10.5);
+  hist_bijets_medium_number = book<TH1F>("bijets_medium_number", "number of medium b ijets", 11, -0.5, 10.5);
+  hist_bijets_tight_number = book<TH1F>("bijets_tight_number", "number of tight b ijets", 11, -0.5, 10.5);
+
+  hist_ht_ijets = book<TH1F>("ht_ijets", "H_{T} [GeV] of ijets", nBins, 0, 1000);
+  hist_pt_ijets = book<TH1F>("pt_ijets", "p_{T} [GeV] of ijets", nBins, 0, 1000);
+  hist_pt_ijets_over_pt_topjet = book<TH1F>("pt_ijets_over_pt_topjet", "p_{T}(ijets) / p_{T}(t jet)", nBins, 0, 2);
+  hist_dr_ijets_topjet = book<TH1F>("dr_ijets_topjet", "#DeltaR(ijets axis, t jet axis)", nBins, 0, 2);
 
   hist_dr_lepton_nextxjet = book<TH1F>("dr_lepton_nextxjet", "#DeltaR(lepton, closest xjet)", nBins, 0, 5);
   hist_dr_lepton_nextbxjet = book<TH1F>("dr_lepton_nextbxjet", "#DeltaR(lepton, closest b xjet) [if no b xjet, closest xjet]", nBins, 0, 5);
@@ -111,6 +127,11 @@ void DNNHists::fill(const uhh2::Event & event) {
   const auto & bxjets_loose = event.get(h_bxjets_loose);
   const auto & bxjets_medium = event.get(h_bxjets_medium);
   const auto & bxjets_tight = event.get(h_bxjets_tight);
+  const auto & ijets = event.get(h_ijets);
+  const auto & bijets = event.get(h_bijets);
+  const auto & bijets_loose = event.get(h_bijets_loose);
+  const auto & bijets_medium = event.get(h_bijets_medium);
+  const auto & bijets_tight = event.get(h_bijets_tight);
   const vector<Jet> jets = *event.jets;
 
   const double w = event.weight;
@@ -121,7 +142,7 @@ void DNNHists::fill(const uhh2::Event & event) {
     hist_dnn_output->Fill(dnn_output, w);
     hist_dnn_output_extraLowRes->Fill(dnn_output, w);
     hist_dnn_output_10bins->Fill(dnn_output, w);
-    
+
     hist_tlep_mass->Fill(pseudotop.M(), w);
     hist_wlep_mt->Fill(calcMTW(primlep, event), w);
     hist_ptbalance_wlep_tjet->Fill((wboson.Pt() - topjet.v4().Pt())/(wboson.Pt() + topjet.v4().Pt()), w);
@@ -145,6 +166,26 @@ void DNNHists::fill(const uhh2::Event & event) {
     hist_bxjets_loose_number->Fill(bxjets_loose.size(), w);
     hist_bxjets_medium_number->Fill(bxjets_medium.size(), w);
     hist_bxjets_tight_number->Fill(bxjets_tight.size(), w);
+
+    hist_ijets_number->Fill(ijets.size(), w);
+    hist_bijets_number->Fill(bijets.size(), w);
+    hist_bijets_loose_number->Fill(bijets_loose.size(), w);
+    hist_bijets_medium_number->Fill(bijets_medium.size(), w);
+    hist_bijets_tight_number->Fill(bijets_tight.size(), w);
+
+    double ht_ijets(0);
+    LorentzVector ak4_topjet(0, 0, 0, 0);
+    for(const auto jet : ijets) {
+      ht_ijets += jet.v4().Pt();
+      ak4_topjet += jet.v4();
+    }
+
+    if(ijets.size() > 0) {
+      hist_ht_ijets->Fill(ht_ijets, w);
+      hist_pt_ijets->Fill(ak4_topjet.pt(), w);
+      hist_pt_ijets_over_pt_topjet->Fill(ak4_topjet.pt() / topjet.v4().pt(), w);
+      hist_dr_ijets_topjet->Fill(uhh2::deltaR(ak4_topjet, topjet.v4()), w);
+    }
 
     if(xjets.size() > 0) {
       hist_dr_lepton_nextxjet->Fill(uhh2::deltaR(primlep.v4(), nextJet(primlep, xjets)->v4()), w);

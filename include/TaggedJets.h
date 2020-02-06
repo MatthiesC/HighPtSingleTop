@@ -48,31 +48,41 @@ class BTaggedJets: public uhh2::AnalysisModule {
 };
 
 
-// creates event handles for ak4 jets which have been filtered not to be inside the t-tagged jet
+// creates event handles for ak4 jets which have been filtered not to be inside/outside the t-tagged jet
 
 class NonTopAK4Jets: public uhh2::AnalysisModule {
  public:
   explicit NonTopAK4Jets(uhh2::Context & ctx,
 			 BTag::algo btagalgo,
 			 BTag::wp workingpoint,
-			 const std::string & h_name_nontopjets="NonTopJets",
-			 const std::string & h_name_bAnalysis="NonTopBJets",
-			 const std::string & h_name_bLoose="NonTopBJetsLoose",
-			 const std::string & h_name_bMedium="NonTopBJetsMedium",
-			 const std::string & h_name_bTight="NonTopBJetsTight",
+			 const std::string & h_name_topEx_jets="TopExJets",
+			 const std::string & h_name_topEx_bAnalysis="TopExBJets",
+			 const std::string & h_name_topEx_bLoose="TopExBJetsLoose",
+			 const std::string & h_name_topEx_bMedium="TopExBJetsMedium",
+			 const std::string & h_name_topEx_bTight="TopExBJetsTight",
+			 const std::string & h_name_topIn_jets="TopInJets",
+			 const std::string & h_name_topIn_bAnalysis="TopInBJets",
+			 const std::string & h_name_topIn_bLoose="TopInBJetsLoose",
+			 const std::string & h_name_topIn_bMedium="TopInBJetsMedium",
+			 const std::string & h_name_topIn_bTight="TopInBJetsTight",
 			 const std::string & h_name_TopTag="TopTaggedJet",
 			 const double rho = 600);
-  
+
   virtual bool process(uhh2::Event & event) override;
 
   virtual ~NonTopAK4Jets();
 
  private:
-  uhh2::Event::Handle<std::vector<Jet>> h_nontopak4;
-  uhh2::Event::Handle<std::vector<Jet>> h_nontopak4_bLoose;
-  uhh2::Event::Handle<std::vector<Jet>> h_nontopak4_bMedium;
-  uhh2::Event::Handle<std::vector<Jet>> h_nontopak4_bTight;
-  uhh2::Event::Handle<std::vector<Jet>> h_nontopak4_bAnalysis;
+  uhh2::Event::Handle<std::vector<Jet>> h_topEx_ak4;
+  uhh2::Event::Handle<std::vector<Jet>> h_topEx_ak4_bLoose;
+  uhh2::Event::Handle<std::vector<Jet>> h_topEx_ak4_bMedium;
+  uhh2::Event::Handle<std::vector<Jet>> h_topEx_ak4_bTight;
+  uhh2::Event::Handle<std::vector<Jet>> h_topEx_ak4_bAnalysis;
+  uhh2::Event::Handle<std::vector<Jet>> h_topIn_ak4;
+  uhh2::Event::Handle<std::vector<Jet>> h_topIn_ak4_bLoose;
+  uhh2::Event::Handle<std::vector<Jet>> h_topIn_ak4_bMedium;
+  uhh2::Event::Handle<std::vector<Jet>> h_topIn_ak4_bTight;
+  uhh2::Event::Handle<std::vector<Jet>> h_topIn_ak4_bAnalysis;
   uhh2::Event::Handle<TopJet> h_toptaggedjet;
 
   double m_rho;

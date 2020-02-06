@@ -79,18 +79,28 @@ BTaggedJets::~BTaggedJets() {}
 NonTopAK4Jets::NonTopAK4Jets(Context & ctx,
 			     BTag::algo btagalgo,
 			     BTag::wp workingpoint,
-			     const std::string & h_name_nontopjets,
-			     const std::string & h_name_bAnalysis,
-			     const std::string & h_name_bLoose,
-			     const std::string & h_name_bMedium,
-			     const std::string & h_name_bTight,
+			     const std::string & h_name_topEx_jets, // jets outside top tag
+			     const std::string & h_name_topEx_bAnalysis,
+			     const std::string & h_name_topEx_bLoose,
+			     const std::string & h_name_topEx_bMedium,
+			     const std::string & h_name_topEx_bTight,
+			     const std::string & h_name_topIn_jets, // jets inside top tag (or rather jets that have an overlap with top tag)
+			     const std::string & h_name_topIn_bAnalysis,
+			     const std::string & h_name_topIn_bLoose,
+			     const std::string & h_name_topIn_bMedium,
+			     const std::string & h_name_topIn_bTight,
 			     const std::string & h_name_TopTag,
 			     const double rho):
-  h_nontopak4(ctx.get_handle<vector<Jet>>(h_name_nontopjets)),
-  h_nontopak4_bLoose(ctx.get_handle<vector<Jet>>(h_name_bLoose)),
-  h_nontopak4_bMedium(ctx.get_handle<vector<Jet>>(h_name_bMedium)),
-  h_nontopak4_bTight(ctx.get_handle<vector<Jet>>(h_name_bTight)),
-  h_nontopak4_bAnalysis(ctx.get_handle<vector<Jet>>(h_name_bAnalysis)),
+  h_topEx_ak4(ctx.get_handle<vector<Jet>>(h_name_topEx_jets)),
+  h_topEx_ak4_bLoose(ctx.get_handle<vector<Jet>>(h_name_topEx_bLoose)),
+  h_topEx_ak4_bMedium(ctx.get_handle<vector<Jet>>(h_name_topEx_bMedium)),
+  h_topEx_ak4_bTight(ctx.get_handle<vector<Jet>>(h_name_topEx_bTight)),
+  h_topEx_ak4_bAnalysis(ctx.get_handle<vector<Jet>>(h_name_topEx_bAnalysis)),
+  h_topIn_ak4(ctx.get_handle<vector<Jet>>(h_name_topIn_jets)),
+  h_topIn_ak4_bLoose(ctx.get_handle<vector<Jet>>(h_name_topIn_bLoose)),
+  h_topIn_ak4_bMedium(ctx.get_handle<vector<Jet>>(h_name_topIn_bMedium)),
+  h_topIn_ak4_bTight(ctx.get_handle<vector<Jet>>(h_name_topIn_bTight)),
+  h_topIn_ak4_bAnalysis(ctx.get_handle<vector<Jet>>(h_name_topIn_bAnalysis)),
   h_toptaggedjet(ctx.get_handle<TopJet>(h_name_TopTag)),
   m_rho(rho),
   m_btagalgo(btagalgo),
@@ -101,7 +111,8 @@ NonTopAK4Jets::NonTopAK4Jets(Context & ctx,
 bool NonTopAK4Jets::process(uhh2::Event & event) {
   assert(event.jets);
 
-  vector<Jet> nontop_ak4, nontop_ak4_bLoose, nontop_ak4_bMedium, nontop_ak4_bTight;
+  vector<Jet> topEx_ak4, topEx_ak4_bLoose, topEx_ak4_bMedium, topEx_ak4_bTight;
+  vector<Jet> topIn_ak4, topIn_ak4_bLoose, topIn_ak4_bMedium, topIn_ak4_bTight;
 
   JetId loose_id = BTag(m_btagalgo, BTag::WP_LOOSE);
   JetId medium_id = BTag(m_btagalgo, BTag::WP_MEDIUM);
@@ -111,23 +122,43 @@ bool NonTopAK4Jets::process(uhh2::Event & event) {
 
   for(auto j : *event.jets) {
     double dR = uhh2::deltaR(j.v4(), toptaggedjet.v4());
-    double Reff = min(1.5, max(0.1, m_rho/toptaggedjet.v4().pt()));
+    double Reff = min(1.5, max(0.1, m_rho / ( toptaggedjet.v4().pt() * toptaggedjet.JEC_factor_raw() ) ));
     if(dR > Reff+0.4) { // need to add AK4 radius of 0.4 here in order to ensure that the AK4 jet is actually outside of HOTVR jet
-      nontop_ak4.push_back(j);
-      if(loose_id(j, event)) nontop_ak4_bLoose.push_back(j);
-      if(medium_id(j, event)) nontop_ak4_bMedium.push_back(j);
-      if(tight_id(j, event)) nontop_ak4_bTight.push_back(j);
+      topEx_ak4.push_back(j);
+      if(loose_id(j, event)) topEx_ak4_bLoose.push_back(j);
+      if(medium_id(j, event)) topEx_ak4_bMedium.push_back(j);
+      if(tight_id(j, event)) topEx_ak4_bTight.push_back(j);
+    }
+    else {
+      topIn_ak4.push_back(j);
+      if(loose_id(j, event)) topIn_ak4_bLoose.push_back(j);
+      if(medium_id(j, event)) topIn_ak4_bMedium.push_back(j);
+      if(tight_id(j, event)) topIn_ak4_bTight.push_back(j);
     }
   }
 
-  if (m_workingpoint == BTag::WP_LOOSE) { event.set(h_nontopak4_bAnalysis, nontop_ak4_bLoose); }
-  else if (m_workingpoint == BTag::WP_MEDIUM) { event.set(h_nontopak4_bAnalysis, nontop_ak4_bMedium); }
-  else if (m_workingpoint == BTag::WP_TIGHT) { event.set(h_nontopak4_bAnalysis, nontop_ak4_bTight); }
+  if (m_workingpoint == BTag::WP_LOOSE) {
+    event.set(h_topEx_ak4_bAnalysis, topEx_ak4_bLoose);
+    event.set(h_topIn_ak4_bAnalysis, topIn_ak4_bLoose);
+  }
+  else if (m_workingpoint == BTag::WP_MEDIUM) {
+    event.set(h_topEx_ak4_bAnalysis, topEx_ak4_bMedium);
+    event.set(h_topIn_ak4_bAnalysis, topIn_ak4_bMedium);
+  }
+  else if (m_workingpoint == BTag::WP_TIGHT) {
+    event.set(h_topEx_ak4_bAnalysis, topEx_ak4_bTight);
+    event.set(h_topIn_ak4_bAnalysis, topIn_ak4_bTight);
+  }
 
-  event.set(h_nontopak4, std::move(nontop_ak4));
-  event.set(h_nontopak4_bLoose, std::move(nontop_ak4_bLoose));
-  event.set(h_nontopak4_bMedium, std::move(nontop_ak4_bMedium));
-  event.set(h_nontopak4_bTight, std::move(nontop_ak4_bTight));
+  event.set(h_topEx_ak4, std::move(topEx_ak4));
+  event.set(h_topEx_ak4_bLoose, std::move(topEx_ak4_bLoose));
+  event.set(h_topEx_ak4_bMedium, std::move(topEx_ak4_bMedium));
+  event.set(h_topEx_ak4_bTight, std::move(topEx_ak4_bTight));
+
+  event.set(h_topIn_ak4, std::move(topIn_ak4));
+  event.set(h_topIn_ak4_bLoose, std::move(topIn_ak4_bLoose));
+  event.set(h_topIn_ak4_bMedium, std::move(topIn_ak4_bMedium));
+  event.set(h_topIn_ak4_bTight, std::move(topIn_ak4_bTight));
 
   return true;
 }

@@ -39,6 +39,17 @@ class DNNHists: public uhh2::Hists {
   TH1F *hist_bxjets_medium_number;
   TH1F *hist_bxjets_tight_number;
 
+  TH1F *hist_ijets_number;
+  TH1F *hist_bijets_number;
+  TH1F *hist_bijets_loose_number;
+  TH1F *hist_bijets_medium_number;
+  TH1F *hist_bijets_tight_number;
+
+  TH1F *hist_ht_ijets;
+  TH1F *hist_pt_ijets;
+  TH1F *hist_pt_ijets_over_pt_topjet;
+  TH1F *hist_dr_ijets_topjet;
+
   TH1F *hist_dr_lepton_nextxjet;
   TH1F *hist_dr_lepton_nextbxjet;
   TH1F *hist_dr_lepton_nextbxjet_guaranteed_b;
@@ -81,6 +92,11 @@ class DNNHists: public uhh2::Hists {
   uhh2::Event::Handle<std::vector<Jet>> h_bxjets_loose;
   uhh2::Event::Handle<std::vector<Jet>> h_bxjets_medium;
   uhh2::Event::Handle<std::vector<Jet>> h_bxjets_tight;
+  uhh2::Event::Handle<std::vector<Jet>> h_ijets;
+  uhh2::Event::Handle<std::vector<Jet>> h_bijets;
+  uhh2::Event::Handle<std::vector<Jet>> h_bijets_loose;
+  uhh2::Event::Handle<std::vector<Jet>> h_bijets_medium;
+  uhh2::Event::Handle<std::vector<Jet>> h_bijets_tight;
 
   double m_MIN_PT, m_MAX_PT;
 };
