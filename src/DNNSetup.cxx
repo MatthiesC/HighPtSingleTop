@@ -12,7 +12,7 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
   h_primlep = ctx.get_handle<FlavorParticle>("PrimaryLepton");
   h_pseudotop = ctx.get_handle<LorentzVector>("PseudoTop");
   h_wboson = ctx.get_handle<LorentzVector>("WBosonLeptonic");
-  h_xjets = ctx.get_handle<vector<Jet>>("NonTopJets");
+  h_xjets = ctx.get_handle<vector<Jet>>("TopExJets");
 
   template_event = {
     "n_pv",
