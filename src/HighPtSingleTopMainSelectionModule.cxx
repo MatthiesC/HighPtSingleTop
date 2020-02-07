@@ -55,9 +55,6 @@ namespace uhh2 {
 
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
-    string syst_pileup, syst_muon_trigger, syst_muon_id, syst_muon_iso, syst_muon_trk, syst_hotvr_toptag, syst_btag;
-
-    double hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min, hotvr_tau32_max;
 
     TopJetId StandardHOTVRTopTagID;
     JetId BJetID;
@@ -84,17 +81,14 @@ namespace uhh2 {
     is_muon = ctx.get("analysis_channel") == "MUON";
     is_elec = ctx.get("analysis_channel") == "ELECTRON";
 
-    if(!(is_data || is_mc)) throw runtime_error("HighPtSingleTopPreSelectionModule: Dataset is labeled as neither DATA nor MC. Please check the XML config file!");
-    if(!(is_muon || is_elec)) throw runtime_error("HighPtSingleTopPreSelectionModule: Analysis channel ( ELECTRON / MUON ) not correctly given. Please check the XML config file!");
-
     dataset_version = ctx.get("dataset_version");
 
-    syst_pileup = ctx.get("SystDirection_Pileup", "nominal");
-    syst_muon_trigger = ctx.get("SystDirection_MuonTrig", "nominal");
-    syst_muon_id = ctx.get("SystDirection_MuonId", "nominal");
-    syst_muon_iso = ctx.get("SystDirection_MuonIso", "nominal");
-    syst_hotvr_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
-    syst_btag = ctx.get("SystDirection_BTagSF", "nominal");
+    string syst_pileup       = ctx.get("SystDirection_Pileup",        "nominal");
+    string syst_muon_trigger = ctx.get("SystDirection_MuonTrig",      "nominal");
+    string syst_muon_id      = ctx.get("SystDirection_MuonId",        "nominal");
+    string syst_muon_iso     = ctx.get("SystDirection_MuonIso",       "nominal");
+    string syst_hotvr_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
+    string syst_btag         = ctx.get("SystDirection_BTagSF",        "nominal");
 
     string neural_net_filepath = ctx.get("NeuralNetFile");
 
@@ -104,11 +98,11 @@ namespace uhh2 {
     //---------------------//
 
     // t-tagging criteria
-    hotvr_fpt_max     = 0.8;
-    hotvr_jetmass_min = 140;
-    hotvr_jetmass_max = 220;
-    hotvr_mpair_min   = 50;
-    hotvr_tau32_max   = 0.56;
+    double hotvr_fpt_max     = 0.8;
+    double hotvr_jetmass_min = 140;
+    double hotvr_jetmass_max = 220;
+    double hotvr_mpair_min   = 50;
+    double hotvr_tau32_max   = 0.56;
 
 
     //-----------------//
@@ -257,7 +251,7 @@ namespace uhh2 {
       sf_muon_iso->process(event);
     }
     else if(is_elec) {
-      // electron id, reco
+      // TODO: electron id, reco
     }
     hist_presel->fill(event);
 
@@ -267,7 +261,7 @@ namespace uhh2 {
       sf_muon_trig->process(event);
     }
     else if(is_elec) {
-      // electron trigger sf
+      // TODO: electron trigger sf
     }
     hist_trigger->fill(event);
 
