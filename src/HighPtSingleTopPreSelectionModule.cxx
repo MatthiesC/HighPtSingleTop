@@ -59,7 +59,7 @@ namespace uhh2 {
     //std::unique_ptr<Hists> hist_met_xy_uncorr, hist_met_xy_corr;
 
     bool is_data, is_mc, is_muon, is_elec;
-    string dataset_version, met_name;
+    string dataset_version, met_name, jet_collection;
 
     double muonPt_min, muonEta_max, muonPt_min_veto, muonEta_max_veto, muonIso_max;
     double elecPt_min, elecEta_max, elecPt_min_veto, elecEta_max_veto;
@@ -86,6 +86,7 @@ namespace uhh2 {
 
     dataset_version = ctx.get("dataset_version");
     met_name = ctx.get("METName");
+    jet_collection = ctx.get("JetCollection");
 
 
     //---------------------//
@@ -135,7 +136,10 @@ namespace uhh2 {
 	elecID_veto = AndId<Electron>(ElectronID_Fall17_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
 	elecID = AndId<Electron>(ElectronID_Fall17_tight, PtEtaCut(elecPt_min, elecEta_max));
       }
-    JetPFID::wp jetPFID = JetPFID::WP_TIGHT_PUPPI;
+    JetPFID::wp jetPFID;
+    if(jet_collection == "jetsAk4CHS") jetPFID = JetPFID::WP_TIGHT_CHS;
+    else if(jet_collection == "jetsAk4Puppi") jetPFID = JetPFID::WP_TIGHT_PUPPI;
+    else throw runtime_error("HighPtSingleTopPreSelectionModule: Please check jet PF ID");
     JetId jetID = PtEtaCut(jetPt_min, jetEta_max);
     TopJetId hotvrID = AndId<TopJet>(PtEtaCut(hotvrPt_min, hotvrEta_max), DeltaRCut(ctx, hotvrDeltaRToLepton_min)); // // through away all HOTVR jets with lepton close by <-- Roman's recommendation from October 16, 2019
 
