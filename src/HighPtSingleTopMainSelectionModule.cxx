@@ -44,20 +44,19 @@ namespace uhh2 {
     
   private:
 
-    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag; //, sf_btag;
+    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_deepjet;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd, dnn_setup;
 
     unique_ptr<Selection> slct_trigger, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet;
 
-    unique_ptr<AndHists> hist_presel, hist_trigger, hist_1toptag; //, hist_btagsf; 
-    unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf; //hist_btag_mc_efficiency;
+    unique_ptr<AndHists> hist_presel, hist_trigger, hist_1toptag, hist_btagsf;
+    unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
     unique_ptr<BinnedDNNHists> hist_dnn;
 
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
 
     TopJetId StandardHOTVRTopTagID;
-    JetId BJetID;
 
     vector<Event::Handle<float>> h_dnn_inputs;
     Event::Handle<float> h_event_weight, h_toptag_pt;
@@ -111,13 +110,8 @@ namespace uhh2 {
 
     StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
     BTag::algo btag_algo = BTag::DEEPJET;
-    BTag::wp btag_workingpoint = BTag::WP_MEDIUM;
-    BJetID = BTag(btag_algo, btag_workingpoint);
-
-
-    //----------------//
-    // EVENT CLEANING //
-    //----------------//
+    BTag::wp btag_workingpoint = BTag::WP_MEDIUM; // working point needed by some histogram classes ("analysis b-tag workingpoint"); should be removed at some point
+    JetId BJetID = BTag(btag_algo, btag_workingpoint);
 
 
     //---------------//
@@ -134,6 +128,7 @@ namespace uhh2 {
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_hotvr_toptag));
     //sf_btag.reset(new MCBTagScaleFactor(ctx, btag_algo, btag_workingpoint, "jets", syst_btag)); 
+    sf_deepjet.reset(new MCBTagDiscriminantReweighting(ctx, btag_algo, "jets", syst_btag));
 
 
     //---------------//
@@ -200,20 +195,15 @@ namespace uhh2 {
 
     hist_1toptag.reset(new AndHists(ctx, "3_OneTopTag"));
     hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Full"));
-    hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Pt0to300", 0, 300));
-    hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Pt300toInf", 300));
+    hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Pt0to400", 0, 400));
+    hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Pt400toInf", 400));
 
-    //hist_btag_mc_efficiency.reset(new BTagMCEfficiencyHists(ctx, "BTagMCEfficiency", BJetID, "jets"));
-
-    //hist_btagsf.reset(new AndHists(ctx, "4_BTagSF"));
-    //hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Full"));
-    //hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Pt0to300", 0, 300));
-    //hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Pt300toInf", 300));
+    hist_btagsf.reset(new AndHists(ctx, "4_BTagSF"));
+    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Full"));
+    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Pt0to400", 0, 400));
+    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Pt400toInf", 400));
 
     hist_decaymatch.reset(new MatchHists(ctx, "MatchHists_Full"));
-    hist_decaymatch_Pt0to300.reset(new MatchHists(ctx, "MatchHists_Pt0to300", 0, 300));
-    hist_decaymatch_Pt300toInf.reset(new MatchHists(ctx, "MatchHists_Pt300toInf", 300));
-    hist_decaymatch_Pt300to400.reset(new MatchHists(ctx, "MatchHists_Pt300to400", 300, 400));
     hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
     hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
 
@@ -279,10 +269,9 @@ namespace uhh2 {
     if(!slct_oneijet->passes(event)) return false; // filter very few events which do not have one AK4 jet overlapping with t jet
     hist_1toptag->fill(event);
 
-    // Apply b-tag scale factors
-    //hist_btag_mc_efficiency->fill(event);
-    //sf_btag->process(event);
-    //hist_btagsf->fill(event);
+    // Apply reweighting of DeepJet distributions
+    sf_deepjet->process(event);
+    hist_btagsf->fill(event);
 
     // Split tW signal into 3-merged, 2-merged, 1-merged, 0-merged (== how many top decay products ended up inside t-tagged HOTVR jet)
     if(dataset_version.find("ST_tW") == 0) {
@@ -292,9 +281,6 @@ namespace uhh2 {
       if(dataset_version.find("ST_tW_merged1") == 0 && !slct_tW_merged1->passes(event)) return false;
       if(dataset_version.find("ST_tW_merged0") == 0 && !slct_tW_merged0->passes(event)) return false;
       hist_decaymatch->fill(event);
-      hist_decaymatch_Pt0to300->fill(event);
-      hist_decaymatch_Pt300toInf->fill(event);
-      hist_decaymatch_Pt300to400->fill(event);
       hist_decaymatch_Pt0to400->fill(event);
       hist_decaymatch_Pt400toInf->fill(event);
     }
