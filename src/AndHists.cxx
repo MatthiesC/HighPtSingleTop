@@ -25,7 +25,7 @@ AndHists::AndHists(Context & ctx, const string & dirname):
   wevt = book<TH1F>("WEvt", "Event weights (entries are unweighted)", 400, -2, 2);
 
   // Add common histogram classes
-  hists_vector.push_back(new LuminosityHists(ctx, dirname + "_PerLumiBin"));
+  hists_vector.push_back(new LuminosityHists(ctx, dirname + "_Lumi"));
   hists_vector.push_back(new MyEventHists(ctx, dirname + "_Event"));
   hists_vector.push_back(new MyElectronHists(ctx, dirname + "_Electron"));
   hists_vector.push_back(new MyMuonHists(ctx, dirname + "_Muon"));
