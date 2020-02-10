@@ -4,7 +4,7 @@ SteerPlotter(){
   fCycleName     = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/uhh2.AnalysisModuleRunner";
   fInputFiles    = " DATA.DATA.root, MC.ST_tW_signal.root, MC.ST_tW_bkg_TopToHadAndWToTau.root, MC.ST_tW_bkg_Else.root, MC.ST_non-tW.root, MC.TTbar.root, MC.WJetsHeavy.root, MC.WJetsLight.root, MC.DYJets.root, MC.Diboson.root, MC.QCD.root, ";
   fSampleNames   = " 2016_data, tW_signal, t(h)W(#tau)_background, Other_tW_background, Other_single_t, ttbar, W_+_heavy_flavor, W_+_light_jets, DY_+_jets, VV, Multijets";
-  fSamplesWeight = " 1., 1., 1., 1., 1., 0.8473, 1., 1., 1., 1., 1., ";
+  fSamplesWeight = " 1., 1., 1., 1., 1., 0.8315, 1., 1., 1., 1., 1., ";
   fSamplesUnc    = " 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,  ";
   fHistColors    = " 1, 609, 617, 618, 400, 800, 418, 811, 602, 856, 390, ";
   fHistMarkers   = " 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "; // 24 for circle, 8 for black dot
