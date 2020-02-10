@@ -138,7 +138,7 @@ namespace uhh2 {
     hadronictop.reset(new HadronicTop(ctx));
     toptaggedjet.reset(new TopTaggedJet(ctx, StandardHOTVRTopTagID));
     btaggedjets.reset(new BTaggedJets(ctx, btag_algo, btag_workingpoint));
-    nontopak4jets.reset(new NonTopAK4Jets(ctx, btag_algo, btag_workingpoint));
+    nontopak4jets.reset(new NonTopAK4Jets(ctx, btag_algo, btag_workingpoint, true));
     wboson.reset(new WBosonLeptonic(ctx));
     pseudotop.reset(new PseudoTopLeptonic(ctx, true));
 

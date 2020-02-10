@@ -55,6 +55,7 @@ class NonTopAK4Jets: public uhh2::AnalysisModule {
   explicit NonTopAK4Jets(uhh2::Context & ctx,
 			 BTag::algo btagalgo,
 			 BTag::wp workingpoint,
+			 bool use_const_hotvr_radius,
 			 const std::string & h_name_topEx_jets="TopExJets",
 			 const std::string & h_name_topEx_bAnalysis="TopExBJets",
 			 const std::string & h_name_topEx_bLoose="TopExBJetsLoose",
@@ -89,4 +90,5 @@ class NonTopAK4Jets: public uhh2::AnalysisModule {
 
   BTag::algo m_btagalgo;
   BTag::wp m_workingpoint;
+  bool m_use_const_hotvr_radius;
 };
