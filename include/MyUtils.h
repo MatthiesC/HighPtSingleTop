@@ -3,6 +3,7 @@
 #include "UHH2/core/include/Event.h"
 #include "UHH2/core/include/AnalysisModule.h"
 #include "UHH2/core/include/FlavorParticle.h"
+#include "UHH2/core/include/Jet.h"
 #include "UHH2/common/include/JetCorrections.h"
 #include "UHH2/common/include/Utils.h"
 
@@ -51,3 +52,9 @@ FlavorParticle returnPrimaryLepton(const uhh2::Event&);
 const Jet * nextJetToMET(const uhh2::Event&, const std::vector<Jet>&);
 
 void it_works();
+
+
+// Sort jets by DeepJet discriminant
+inline void sort_by_deepjet(std::vector<Jet> & jets) {
+  std::sort(jets.begin(), jets.end(), [](const Jet & j1, const Jet & j2){return j1.btag_DeepJet() > j2.btag_DeepJet();});
+}
