@@ -243,7 +243,7 @@ NObjectsSelection::NObjectsSelection(Context & ctx, int n_min, int n_max, string
 
   if(m_n_max < -1) throw runtime_error("NObjectsSelection: n_max must be an integer >= -1");
   if(m_n_min < 0) throw runtime_error("NObjectsSelection: n_min must be an integer >= 0");
-  if(m_n_max < m_n_min) throw runtime_error("NObjectsSelection: n_max >= n_min must be fulfilled");
+  if(m_n_max < m_n_min && m_n_max != -1) throw runtime_error("NObjectsSelection: n_max >= n_min must be fulfilled");
 }
 
 bool NObjectsSelection::passes(const Event & event) {

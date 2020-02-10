@@ -127,7 +127,6 @@ namespace uhh2 {
     sf_muon_iso.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MuonIso_EfficienciesAndSF_average_RunBtoH.root", "NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt", 1, "muon_isolation", true, syst_muon_iso));
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_hotvr_toptag));
-    //sf_btag.reset(new MCBTagScaleFactor(ctx, btag_algo, btag_workingpoint, "jets", syst_btag)); 
     sf_deepjet.reset(new MCBTagDiscriminantReweighting(ctx, btag_algo, "jets", syst_btag));
 
 
@@ -182,7 +181,7 @@ namespace uhh2 {
     slct_tW_TopToHad.reset(new tWgenSelection(ctx, "TopToHad", is_muon));
     slct_tW_WToTau.reset(new tWgenSelection(ctx, "WToTau", is_muon));
     slct_WJetsHeavy.reset(new WJetsGenSelection(ctx, "HF"));
-    slct_oneijet.reset(new NObjectsSelection(ctx, 1, 1, "TopInJets"));
+    slct_oneijet.reset(new NObjectsSelection(ctx, 1, -1, "TopInJets"));
 
 
     //------------//
