@@ -52,15 +52,15 @@ class DNNHists: public uhh2::Hists {
 
   TH1F *hist_dr_lepton_nextxjet;
   TH1F *hist_dr_lepton_nextbxjet;
-  TH1F *hist_dr_lepton_nextbxjet_guaranteed_b;
+  //TH1F *hist_dr_lepton_nextbxjet_guaranteed_b;
 
   // sphericity tensor of ak4 jets outside t-tagged jet
-  TH1F *hist_s11_xjets;
-  TH1F *hist_s12_xjets;
-  TH1F *hist_s13_xjets;
-  TH1F *hist_s22_xjets;
-  TH1F *hist_s23_xjets;
-  TH1F *hist_s33_xjets;
+  //TH1F *hist_s11_xjets;
+  //TH1F *hist_s12_xjets;
+  //TH1F *hist_s13_xjets;
+  //TH1F *hist_s22_xjets;
+  //TH1F *hist_s23_xjets;
+  //TH1F *hist_s33_xjets;
 
   TH1F *hist_ht_xjets;
 
@@ -80,7 +80,26 @@ class DNNHists: public uhh2::Hists {
   TH1F *hist_dr_xjet12;
   TH1F *hist_pt_xjet12;
   TH1F *hist_dr_xjet1l;
+  TH1F *hist_dr_xjet1t;
   TH1F *hist_dr_xjet2l;
+
+  TH1F *hist_deepjet_ijet1;
+  TH1F *hist_deepjet_ijet2;
+
+  TH1F *hist_ijets_deepjet1_deepjet;
+  TH1F *hist_ijets_deepjet2_deepjet;
+  TH1F *hist_ijets_deepjetNot1_deepjet;
+
+  TH1F *hist_xjets_deepjet1_deepjet;
+  TH1F *hist_xjets_deepjet1_pt;
+  TH1F *hist_xjets_deepjet1_eta;
+  TH1F *hist_xjets_deepjet1_mjet;
+  TH1F *hist_xjets_deepjet1_mass_lepton;
+  TH1F *hist_xjets_deepjet1_dr_lepton;
+  TH1F *hist_xjets_deepjet1_dr_topjet;
+
+  TH1F *hist_xjets_deepjet2_deepjet;
+  TH1F *hist_xjets_deepjetNot1_deepjet;
 
   uhh2::Event::Handle<double> h_dnn_output;
   uhh2::Event::Handle<TopJet> h_toptaggedjet;

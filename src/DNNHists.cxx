@@ -82,15 +82,15 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, double arg_MIN_PT, dou
 
   hist_dr_lepton_nextxjet = book<TH1F>("dr_lepton_nextxjet", "#DeltaR(lepton, closest xjet)", nBins, 0, 5);
   hist_dr_lepton_nextbxjet = book<TH1F>("dr_lepton_nextbxjet", "#DeltaR(lepton, closest b xjet) [if no b xjet, closest xjet]", nBins, 0, 5);
-  hist_dr_lepton_nextbxjet_guaranteed_b = book<TH1F>("dr_lepton_nextbxjet_guaranteed_b", "#DeltaR(lepton, closest b xjet)", nBins, 0, 5);
+  //hist_dr_lepton_nextbxjet_guaranteed_b = book<TH1F>("dr_lepton_nextbxjet_guaranteed_b", "#DeltaR(lepton, closest b xjet)", nBins, 0, 5);
 
   // sphericity tensor of ak4 jets outside t-tagged jet
-  hist_s11_xjets = book<TH1F>("s11_xjets", "S_{11} of xjets", nBins, -1, 1);
-  hist_s12_xjets = book<TH1F>("s12_xjets", "S_{12} of xjets", nBins, -1, 1);
-  hist_s13_xjets = book<TH1F>("s13_xjets", "S_{13} of xjets", nBins, -1, 1);
-  hist_s22_xjets = book<TH1F>("s22_xjets", "S_{22} of xjets", nBins, -1, 1);
-  hist_s23_xjets = book<TH1F>("s23_xjets", "S_{23} of xjets", nBins, -1, 1);
-  hist_s33_xjets = book<TH1F>("s33_xjets", "S_{33} of xjets", nBins, -1, 1);
+  //hist_s11_xjets = book<TH1F>("s11_xjets", "S_{11} of xjets", nBins, -1, 1);
+  //hist_s12_xjets = book<TH1F>("s12_xjets", "S_{12} of xjets", nBins, -1, 1);
+  //hist_s13_xjets = book<TH1F>("s13_xjets", "S_{13} of xjets", nBins, -1, 1);
+  //hist_s22_xjets = book<TH1F>("s22_xjets", "S_{22} of xjets", nBins, -1, 1);
+  //hist_s23_xjets = book<TH1F>("s23_xjets", "S_{23} of xjets", nBins, -1, 1);
+  //hist_s33_xjets = book<TH1F>("s33_xjets", "S_{33} of xjets", nBins, -1, 1);
 
   hist_ht_xjets = book<TH1F>("ht_xjets", "H_{T} [GeV] of xjets", nBins, 0, 1000);
 
@@ -110,7 +110,26 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, double arg_MIN_PT, dou
   hist_dr_xjet12 = book<TH1F>("dR_xjet12", "#DeltaR betw. lead./sublead. xjet", nBins, 0, 5);
   hist_pt_xjet12 = book<TH1F>("pt_xjet12", "p_{T} [GeV] of system of lead.+sublead. xjet", nBins, 0, 1000);
   hist_dr_xjet1l = book<TH1F>("dR_xjet1l", "#DeltaR betw. lepton/lead. xjet", nBins, 0, 5);
+  hist_dr_xjet1t = book<TH1F>("dR_xjet1t", "#DeltaR betw. t jet / DeepJet-leading xjet", nBins, 0, 5);
   hist_dr_xjet2l = book<TH1F>("dR_xjet2l", "#DeltaR betw. lepton/sublead. xjet", nBins, 0, 5);
+
+  hist_deepjet_ijet1 = book<TH1F>("deepjet_ijet1", "DeepJet ijet 1", nBins, 0, 1);
+  hist_deepjet_ijet2 = book<TH1F>("deepjet_ijet2", "DeepJet ijet 2", nBins, 0, 1);
+
+  hist_ijets_deepjet1_deepjet = book<TH1F>("ijets_deepjet1_deepjet", "DeepJet of ijet with rank 1 in DeepJet", nBins, 0, 1);
+  hist_ijets_deepjet2_deepjet = book<TH1F>("ijets_deepjet2_deepjet", "DeepJet of ijet with rank 2 in DeepJet", nBins, 0, 1);
+  hist_ijets_deepjetNot1_deepjet = book<TH1F>("ijets_deepjetNot1_deepjet", "DeepJet of ijets NOT rank 1 in DeepJet", nBins, 0, 1);
+
+  hist_xjets_deepjet1_deepjet = book<TH1F>("xjets_deepjet1_deepjet", "DeepJet of xjet with rank 1 in DeepJet", nBins, 0, 1);
+  hist_xjets_deepjet1_pt = book<TH1F>("xjets_deepjet1_pt", "p_{T} [GeV] of xjet with rank 1 in DeepJet", nBins, 0, 1000);
+  hist_xjets_deepjet1_eta = book<TH1F>("xjets_deepjet1_eta", "#eta of xjet with rank 1 in DeepJet", nBins, -3, 3);
+  hist_xjets_deepjet1_mjet = book<TH1F>("xjets_deepjet1_mjet", "m_{jet} [GeV] of xjet with rank 1 in DeepJet", nBins, 0, 100);
+  hist_xjets_deepjet1_mass_lepton = book<TH1F>("xjets_deepjet1_mass_lepton", "Mass [GeV] of lepton and xjet with rank 1 in DeepJet", nBins, 0, 500);
+  hist_xjets_deepjet1_dr_lepton = book<TH1F>("xjets_deepjet1_dr_lepton", "#DeltaR lepton to xjet with rank 1 in DeepJet", nBins, 0, 5);
+  hist_xjets_deepjet1_dr_topjet = book<TH1F>("xjets_deepjet1_dr_topjet", "#DeltaR t-jet axis to xjet with rank 1 in DeepJet", nBins, 0, 5);
+
+  hist_xjets_deepjet2_deepjet = book<TH1F>("xjets_deepjet2_deepjet", "DeepJet of xjet with rank 2 in DeepJet", nBins, 0, 1);
+  hist_xjets_deepjetNot1_deepjet = book<TH1F>("xjets_deepjetNot1_deepjet", "DeepJet of xjets NOT rank 1 in DeepJet", nBins, 0, 1);
 }
 
 
@@ -133,6 +152,11 @@ void DNNHists::fill(const uhh2::Event & event) {
   const auto & bijets_medium = event.get(h_bijets_medium);
   const auto & bijets_tight = event.get(h_bijets_tight);
   const vector<Jet> jets = *event.jets;
+
+  vector<Jet> xjets_sortedByDj = xjets;
+  sort_by_deepjet(xjets_sortedByDj);
+  vector<Jet> ijets_sortedByDj = ijets;
+  sort_by_deepjet(ijets_sortedByDj);
 
   const double w = event.weight;
 
@@ -191,40 +215,40 @@ void DNNHists::fill(const uhh2::Event & event) {
       hist_dr_lepton_nextxjet->Fill(uhh2::deltaR(primlep.v4(), nextJet(primlep, xjets)->v4()), w);
       if(bxjets.size() > 0) {
 	hist_dr_lepton_nextbxjet->Fill(uhh2::deltaR(primlep.v4(), nextJet(primlep, bxjets)->v4()), w);
-	hist_dr_lepton_nextbxjet_guaranteed_b->Fill(uhh2::deltaR(primlep.v4(), nextJet(primlep, bxjets)->v4()), w);
+	//hist_dr_lepton_nextbxjet_guaranteed_b->Fill(uhh2::deltaR(primlep.v4(), nextJet(primlep, bxjets)->v4()), w);
       } else {
 	hist_dr_lepton_nextbxjet->Fill(uhh2::deltaR(primlep.v4(), nextJet(primlep, xjets)->v4()), w);
       }
     }
 
     // xjets sphericity tensor s_ij
-    double s11_xjets(0), s12_xjets(0), s13_xjets(0), s22_xjets(0), s23_xjets(0), s33_xjets(0), mag_xjets(0);
+    //double s11_xjets(0), s12_xjets(0), s13_xjets(0), s22_xjets(0), s23_xjets(0), s33_xjets(0), mag_xjets(0);
     double ht_xjets(0);
     for(const auto jet : xjets) {
-      mag_xjets += (jet.v4().Px()*jet.v4().Px()+jet.v4().Py()*jet.v4().Py()+jet.v4().Pz()*jet.v4().Pz());
-      s11_xjets += jet.v4().Px()*jet.v4().Px();
-      s12_xjets += jet.v4().Px()*jet.v4().Py();
-      s13_xjets += jet.v4().Px()*jet.v4().Pz();
-      s22_xjets += jet.v4().Py()*jet.v4().Py();
-      s23_xjets += jet.v4().Py()*jet.v4().Pz();
-      s33_xjets += jet.v4().Pz()*jet.v4().Pz();
+      //mag_xjets += (jet.v4().Px()*jet.v4().Px()+jet.v4().Py()*jet.v4().Py()+jet.v4().Pz()*jet.v4().Pz());
+      //s11_xjets += jet.v4().Px()*jet.v4().Px();
+      //s12_xjets += jet.v4().Px()*jet.v4().Py();
+      //s13_xjets += jet.v4().Px()*jet.v4().Pz();
+      //s22_xjets += jet.v4().Py()*jet.v4().Py();
+      //s23_xjets += jet.v4().Py()*jet.v4().Pz();
+      //s33_xjets += jet.v4().Pz()*jet.v4().Pz();
 
       ht_xjets += jet.v4().Pt();
     }
 
-    s11_xjets = s11_xjets / mag_xjets;
-    s12_xjets = s12_xjets / mag_xjets;
-    s13_xjets = s13_xjets / mag_xjets;
-    s22_xjets = s22_xjets / mag_xjets;
-    s23_xjets = s23_xjets / mag_xjets;
-    s33_xjets = s33_xjets / mag_xjets;
+    //s11_xjets = s11_xjets / mag_xjets;
+    //s12_xjets = s12_xjets / mag_xjets;
+    //s13_xjets = s13_xjets / mag_xjets;
+    //s22_xjets = s22_xjets / mag_xjets;
+    //s23_xjets = s23_xjets / mag_xjets;
+    //s33_xjets = s33_xjets / mag_xjets;
 
-    hist_s11_xjets->Fill(s11_xjets, w);
-    hist_s12_xjets->Fill(s12_xjets, w);
-    hist_s13_xjets->Fill(s13_xjets, w);
-    hist_s22_xjets->Fill(s22_xjets, w);
-    hist_s23_xjets->Fill(s23_xjets, w);
-    hist_s33_xjets->Fill(s33_xjets, w);
+    //hist_s11_xjets->Fill(s11_xjets, w);
+    //hist_s12_xjets->Fill(s12_xjets, w);
+    //hist_s13_xjets->Fill(s13_xjets, w);
+    //hist_s22_xjets->Fill(s22_xjets, w);
+    //hist_s23_xjets->Fill(s23_xjets, w);
+    //hist_s33_xjets->Fill(s33_xjets, w);
 
     hist_ht_xjets->Fill(ht_xjets, w);
 
@@ -246,7 +270,40 @@ void DNNHists::fill(const uhh2::Event & event) {
       hist_dr_xjet12->Fill(uhh2::deltaR(xjets.at(0).v4(), xjets.at(1).v4()), w);
       hist_pt_xjet12->Fill((xjets.at(0).v4() + xjets.at(1).v4()).Pt(), w);
       hist_dr_xjet1l->Fill(uhh2::deltaR(xjets.at(0).v4(), primlep.v4()), w);
+      hist_dr_xjet1t->Fill(uhh2::deltaR(xjets.at(0).v4(), topjet.v4()), w);
       hist_dr_xjet2l->Fill(uhh2::deltaR(xjets.at(1).v4(), primlep.v4()), w);
+    }
+
+
+
+    // ijet deepjet
+    if(ijets.size() >= 1) {
+      hist_ijets_deepjet1_deepjet->Fill(ijets_sortedByDj.at(0).btag_DeepJet(), w);
+    }
+    if(ijets.size() >= 2) {
+      hist_ijets_deepjet2_deepjet->Fill(ijets_sortedByDj.at(1).btag_DeepJet(), w);
+      for(uint i = 1; i < ijets_sortedByDj.size(); i++) {
+	hist_ijets_deepjetNot1_deepjet->Fill(ijets_sortedByDj.at(i).btag_DeepJet(), w);
+      }
+    }
+
+
+
+    // xjet deepjet
+    if(xjets.size() >= 1) {
+      hist_xjets_deepjet1_deepjet->Fill(xjets_sortedByDj.at(0).btag_DeepJet(), w);
+      hist_xjets_deepjet1_pt->Fill(xjets_sortedByDj.at(0).v4().pt(), w);
+      hist_xjets_deepjet1_eta->Fill(xjets_sortedByDj.at(0).v4().eta(), w);
+      hist_xjets_deepjet1_mjet->Fill(xjets_sortedByDj.at(0).v4().M(), w);
+      hist_xjets_deepjet1_mass_lepton->Fill((xjets_sortedByDj.at(0).v4() + primlep.v4()).M(), w);
+      hist_xjets_deepjet1_dr_lepton->Fill(uhh2::deltaR(primlep.v4(), xjets_sortedByDj.at(0).v4()), w);
+      hist_xjets_deepjet1_dr_topjet->Fill(uhh2::deltaR(topjet.v4(), xjets_sortedByDj.at(0).v4()), w);
+    }
+    if(xjets.size() >= 2) {
+      hist_xjets_deepjet2_deepjet->Fill(xjets_sortedByDj.at(1).btag_DeepJet(), w);
+      for(uint i = 1; i < xjets_sortedByDj.size(); i++) {
+	hist_xjets_deepjetNot1_deepjet->Fill(xjets_sortedByDj.at(i).btag_DeepJet(), w);
+      }
     }
 
   }

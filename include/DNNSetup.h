@@ -22,6 +22,7 @@ class DNNSetup: public uhh2::AnalysisModule {
   uhh2::Event::Handle<LorentzVector> h_pseudotop;
   uhh2::Event::Handle<LorentzVector> h_wboson;
   uhh2::Event::Handle<std::vector<Jet>> h_xjets;
+  uhh2::Event::Handle<std::vector<Jet>> h_ijets;
 
   const unsigned int m_n_hotvr, m_n_jets; // How many HOTVR/AK4 jets shall be considered?
   const TopJetId m_topjetid;

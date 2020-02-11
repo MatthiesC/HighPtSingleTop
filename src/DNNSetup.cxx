@@ -13,6 +13,7 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
   h_pseudotop = ctx.get_handle<LorentzVector>("PseudoTop");
   h_wboson = ctx.get_handle<LorentzVector>("WBosonLeptonic");
   h_xjets = ctx.get_handle<vector<Jet>>("TopExJets");
+  h_ijets = ctx.get_handle<vector<Jet>>("TopInJets");
 
   template_event = {
     "n_pv",
@@ -116,12 +117,23 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
     "mt_w",
     "n_xjets",
     "ht_xjets",
-    "xjet1_m",
-    "xjet1_pt",
-    "xjet1_eta",
-    "xjet1_deepjet",
-    "mass_xjet1_lep",
-    "dr_xjet1_lep" };
+    "xjet1pt_m",
+    "xjet1pt_pt",
+    "xjet1pt_eta",
+    "xjet1pt_deepjet",
+    "mass_xjet1pt_lep",
+    "dr_xjet1pt_lep",
+    "dr_xjet1pt_tjet",
+    "xjet1dj_m",
+    "xjet1dj_pt",
+    "xjet1dj_eta",
+    "xjet1dj_deepjet",
+    "mass_xjet1dj_lep",
+    "dr_xjet1dj_lep",
+    "dr_xjet1dj_tjet",
+    "xjet2dj_deepjet",
+    "ijet1dj_deepjet",
+    "ijet2dj_deepjet" };
 
   // Prepare vector with input name strings:
   string prefix = "DNN__";
@@ -150,6 +162,12 @@ bool DNNSetup::process(Event & event) {
   const auto & pseudotop = event.get(h_pseudotop);
   const auto & wboson = event.get(h_wboson);
   const auto & xjets = event.get(h_xjets);
+  const auto & ijets = event.get(h_ijets);
+
+  vector<Jet> xjets_sortedByDj = xjets;
+  sort_by_deepjet(xjets_sortedByDj);
+  vector<Jet> ijets_sortedByDj = ijets;
+  sort_by_deepjet(ijets_sortedByDj);
 
   const vector<Jet> jets = *event.jets;
   const vector<TopJet> hotvrjets = *event.topjets;
@@ -285,6 +303,17 @@ bool DNNSetup::process(Event & event) {
   values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).btag_DeepJet();
   values.at(i++) = no_xjets ? m_zeropadding : (xjets.at(0).v4() + lepton.v4()).M();
   values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets.at(0).v4(), lepton.v4());
+  values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets.at(0).v4(), topjet.v4());
+  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).v4().M();
+  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).v4().Pt();
+  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).v4().Eta();
+  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).btag_DeepJet();
+  values.at(i++) = no_xjets ? m_zeropadding : (xjets_sortedByDj.at(0).v4() + lepton.v4()).M();
+  values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByDj.at(0).v4(), lepton.v4());
+  values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByDj.at(0).v4(), topjet.v4());
+  values.at(i++) = (xjets.size() < 2) ? m_zeropadding : xjets_sortedByDj.at(1).btag_DeepJet();
+  values.at(i++) = (ijets.size() < 1) ? m_zeropadding : ijets_sortedByDj.at(0).btag_DeepJet();
+  values.at(i++) = (ijets.size() < 2) ? m_zeropadding : ijets_sortedByDj.at(1).btag_DeepJet();
 
   if(values.size() != i) throw runtime_error("DNNSetup::process - Lengths of input and value vectors are not equal! Please check!");
 
