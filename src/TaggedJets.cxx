@@ -79,7 +79,7 @@ BTaggedJets::~BTaggedJets() {}
 NonTopAK4Jets::NonTopAK4Jets(Context & ctx,
 			     BTag::algo btagalgo,
 			     BTag::wp workingpoint,
-			     bool use_const_hotvr_radius,
+			     double toptag_radius,
 			     const std::string & h_name_topEx_jets, // jets outside top tag
 			     const std::string & h_name_topEx_bAnalysis,
 			     const std::string & h_name_topEx_bLoose,
@@ -106,7 +106,7 @@ NonTopAK4Jets::NonTopAK4Jets(Context & ctx,
   m_rho(rho),
   m_btagalgo(btagalgo),
   m_workingpoint(workingpoint),
-  m_use_const_hotvr_radius(use_const_hotvr_radius)
+  m_toptag_radius(toptag_radius)
 {}
 
 
@@ -125,8 +125,8 @@ bool NonTopAK4Jets::process(uhh2::Event & event) {
   for(auto j : *event.jets) {
     double dR = uhh2::deltaR(j.v4(), toptaggedjet.v4());
     double Reff = min(1.5, max(0.1, m_rho / ( toptaggedjet.v4().pt() * toptaggedjet.JEC_factor_raw() ) ));
-    if(m_use_const_hotvr_radius) Reff = 1.5;
-    if(dR > Reff+0.4) { // need to add AK4 radius of 0.4 here in order to ensure that the AK4 jet is actually outside of HOTVR jet
+    if(m_toptag_radius >= 0) Reff = m_toptag_radius;
+    if(dR > Reff+0.4) { // need to add AK4 radius of 0.4 here in order to ensure that the AK4 jet is actually outside of t jet
       topEx_ak4.push_back(j);
       if(loose_id(j, event)) topEx_ak4_bLoose.push_back(j);
       if(medium_id(j, event)) topEx_ak4_bMedium.push_back(j);
