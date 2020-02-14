@@ -15,6 +15,9 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
   h_xjets = ctx.get_handle<vector<Jet>>("TopExJets");
   h_ijets = ctx.get_handle<vector<Jet>>("TopInJets");
 
+  h_event_weight = ctx.declare_event_output<float>("DNN_EventWeight");
+  h_toptag_pt = ctx.declare_event_output<float>("DNN_TopTagPt");
+
   template_event = {
     "n_pv",
     "met_px",
@@ -319,6 +322,9 @@ bool DNNSetup::process(Event & event) {
 
   for(unsigned int j = 0; j < i; j++) {
     event.set(m_h_dnn_inputs.at(j), values.at(j)); }
+
+  event.set(h_event_weight, event.weight);
+  event.set(h_toptag_pt, topjet.v4().Pt());
 
   return true;
 }
