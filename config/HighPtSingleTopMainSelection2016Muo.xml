@@ -13,6 +13,7 @@
 
 
 	  <!ENTITY TTbar_M0to700     "&PRESELdir;/&PRESELfilename;.MC.TTbar_M0to700&YEARsuffix;.root">
+	  <!--<!ENTITY TTbar_M700toInf   "&PRESELdir;/&PRESELfilename;.MC.TTbar_M700toInf&YEARsuffix;.root">-->
 	  <!ENTITY TTbar_M700to1000  "&PRESELdir;/&PRESELfilename;.MC.TTbar_M700to1000&YEARsuffix;.root">
 	  <!ENTITY TTbar_M1000toInf  "&PRESELdir;/&PRESELfilename;.MC.TTbar_M1000toInf&YEARsuffix;.root">
 
@@ -166,19 +167,6 @@
 		<OutputTree Name="AnalysisTree" /> 
 	      </InputData>
 	      
-	      <!-- tW other -->
-	      <InputData Lumi="442296.4019" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_other_T&YEARsuffix;" Cacheable="&b_Cacheable;"> 
-		<In FileName="&SingleTop_tW_other_T;" Lumi="0.0"/>
-		<InputTree Name="AnalysisTree" /> 
-		<OutputTree Name="AnalysisTree" /> 
-	      </InputData> 
-
-	      <InputData Lumi="442297.3725" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_other_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;"> 
-		<In FileName="&SingleTop_tW_other_Tbar;" Lumi="0.0"/>
-		<InputTree Name="AnalysisTree" /> 
-		<OutputTree Name="AnalysisTree" /> 
-	      </InputData>
-
 	      <!-- tW signal - 3 merged quarks -->
 	      <InputData Lumi="442296.4019" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_merged3_T&YEARsuffix;" Cacheable="&b_Cacheable;"> 
 		<In FileName="&SingleTop_tW_signal_T;" Lumi="0.0"/>
@@ -267,6 +255,12 @@
 		<InputTree Name="AnalysisTree" /> 
 		<OutputTree Name="AnalysisTree" /> 
 	      </InputData>
+
+	      <!--<InputData Lumi="92260.16399" NEventsMax="&NEVT;" Type="MC" Version="TTbar_backup_M700toInf&YEARsuffix;" Cacheable="&b_Cacheable;"> 
+		<In FileName="&TTbar_M700toInf;" Lumi="0.0"/>
+		<InputTree Name="AnalysisTree" /> 
+		<OutputTree Name="AnalysisTree" /> 
+	      </InputData>-->
 
 	      <InputData Lumi="501742.7061" NEventsMax="&NEVT;" Type="MC" Version="TTbar_M700to1000&YEARsuffix;" Cacheable="&b_Cacheable;"> 
 		<In FileName="&TTbar_M700to1000;" Lumi="0.0"/>
@@ -570,7 +564,7 @@
 		<Item Name="use_sframe_weight" Value="false" />
 		<Item Name="analysis_channel" Value="MUON" />
 
-		<Item Name="NeuralNetFile" Value="/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/HighPtSingleTop/data/KerasDNNModels/2016/dnn_20-01-24-12-53-14/neural_net.json" />
+		<Item Name="NeuralNetFile" Value="/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/HighPtSingleTop/data/KerasDNNModels/2016/dnn_20-02-11-14-50-22/neural_net.json" />
 
 		<!-- Keys for uncertainties -->
 		<Item Name="ScaleVariationMuR" Value="none" />
