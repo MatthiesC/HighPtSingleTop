@@ -53,13 +53,12 @@ namespace uhh2 {
     unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
     unique_ptr<BinnedDNNHists> hist_dnn;//, hist_dnn_ixbjets_YES, hist_dnn_ixbjets_NO;
 
-    bool is_data, is_mc, is_muon, is_elec;
+    bool is_data, is_mc, is_muon, is_elec, using_hotvr;
     string dataset_version;
 
     TopJetId StandardHOTVRTopTagID;
 
     vector<Event::Handle<float>> h_dnn_inputs;
-    Event::Handle<float> h_event_weight, h_toptag_pt;
 
     unique_ptr<lwt::LightweightNeuralNetwork> NeuralNetwork;
     vector<string> dnn_config_inputNames;
@@ -81,13 +80,14 @@ namespace uhh2 {
     is_elec = ctx.get("analysis_channel") == "ELECTRON";
 
     dataset_version = ctx.get("dataset_version");
+    using_hotvr = ctx.get("TopJetCollection") == "hotvrPuppi"; // if false, we use AK8 Puppi
 
-    string syst_pileup       = ctx.get("SystDirection_Pileup",        "nominal");
-    string syst_muon_trigger = ctx.get("SystDirection_MuonTrig",      "nominal");
-    string syst_muon_id      = ctx.get("SystDirection_MuonId",        "nominal");
-    string syst_muon_iso     = ctx.get("SystDirection_MuonIso",       "nominal");
-    string syst_hotvr_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
-    string syst_btag         = ctx.get("SystDirection_BTagSF",        "nominal");
+    string syst_pileup       = ctx.get("SystDirection_Pileup", "nominal");
+    string syst_muon_trigger = ctx.get("SystDirection_MuonTrig", "nominal");
+    string syst_muon_id      = ctx.get("SystDirection_MuonId", "nominal");
+    string syst_muon_iso     = ctx.get("SystDirection_MuonIso", "nominal");
+    string syst_toptag       = ctx.get("SystDirection_TopTagSF", "nominal");
+    string syst_btag         = ctx.get("SystDirection_BTagSF", "nominal");
 
     string neural_net_filepath = ctx.get("NeuralNetFile");
 
@@ -96,7 +96,7 @@ namespace uhh2 {
     // KINEMATIC VARIABLES //
     //---------------------//
 
-    // t-tagging criteria
+    // HOTVR t-tagging criteria
     double hotvr_fpt_max     = 0.8;
     double hotvr_jetmass_min = 140;
     double hotvr_jetmass_max = 220;
@@ -126,7 +126,7 @@ namespace uhh2 {
     sf_muon_id.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MuonID_EfficienciesAndSF_average_RunBtoH.root", "NUM_TightID_DEN_genTracks_eta_pt", 1, "muon_tightID", true, syst_muon_id));
     sf_muon_iso.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/data/2016/MuonIso_EfficienciesAndSF_average_RunBtoH.root", "NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt", 1, "muon_isolation", true, syst_muon_iso));
     scale_variation.reset(new MCScaleVariation(ctx));
-    sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_hotvr_toptag));
+    sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_toptag));
     sf_deepjet.reset(new MCBTagDiscriminantReweighting(ctx, btag_algo, "jets", syst_btag));
 
 
@@ -138,15 +138,13 @@ namespace uhh2 {
     hadronictop.reset(new HadronicTop(ctx));
     toptaggedjet.reset(new TopTaggedJet(ctx, StandardHOTVRTopTagID));
     btaggedjets.reset(new BTaggedJets(ctx, btag_algo, btag_workingpoint));
-    nontopak4jets.reset(new NonTopAK4Jets(ctx, btag_algo, btag_workingpoint, true));
+    nontopak4jets.reset(new NonTopAK4Jets(ctx, btag_algo, btag_workingpoint, (using_hotvr ? 1.5 : 0.8)));
     wboson.reset(new WBosonLeptonic(ctx));
     pseudotop.reset(new PseudoTopLeptonic(ctx, true));
 
     SingleTopGen_tWchProd.reset(new SingleTopGen_tWchProducer(ctx, "h_GENtW"));
 
     dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID, 0.));
-    h_event_weight = ctx.declare_event_output<float>("DNN_EventWeight");
-    h_toptag_pt = ctx.declare_event_output<float>("DNN_TopTagPt");
 
     ifstream neural_net_file(neural_net_filepath);
     auto dnn_config = lwt::parse_json(neural_net_file);
@@ -290,10 +288,6 @@ namespace uhh2 {
 
     // Set event handles used as input for DNN training
     dnn_setup->process(event);
-    event.set(h_event_weight, event.weight);
-    TopJet toptaggedjet;
-    for(auto t : *event.topjets) { if(StandardHOTVRTopTagID(t, event)) toptaggedjet = t; }
-    event.set(h_toptag_pt, toptaggedjet.v4().Pt());
 
     // Application of a trained DNN
     map<string, double> inputs_map;
