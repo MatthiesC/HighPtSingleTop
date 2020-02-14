@@ -47,11 +47,11 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_deepjet;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd, dnn_setup;
 
-    unique_ptr<Selection> slct_trigger, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet;
+    unique_ptr<Selection> slct_trigger, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet;//, slct_OneLooseIJet, slct_NoTightXJet;
 
     unique_ptr<AndHists> hist_presel, hist_trigger, hist_1toptag, hist_btagsf;
     unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
-    unique_ptr<BinnedDNNHists> hist_dnn;
+    unique_ptr<BinnedDNNHists> hist_dnn;//, hist_dnn_ixbjets_YES, hist_dnn_ixbjets_NO;
 
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
@@ -182,6 +182,8 @@ namespace uhh2 {
     slct_tW_WToTau.reset(new tWgenSelection(ctx, "WToTau", is_muon));
     slct_WJetsHeavy.reset(new WJetsGenSelection(ctx, "HF"));
     slct_oneijet.reset(new NObjectsSelection(ctx, 1, -1, "TopInJets"));
+    //slct_OneLooseIJet.reset(new NObjectsSelection(ctx, 1, -1, "TopInBJetsLoose"));
+    //slct_NoTightXJet.reset(new NObjectsSelection(ctx, 0, 0, "TopExJets")); // TopExBJetsTight
 
 
     //------------//
@@ -207,6 +209,8 @@ namespace uhh2 {
     hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
 
     hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists"));
+    //hist_dnn_ixbjets_YES.reset(new BinnedDNNHists(ctx, "IXBJetsDNNHists_YES"));
+    //hist_dnn_ixbjets_NO.reset(new BinnedDNNHists(ctx, "IXBJetsDNNHists_NO"));
 }
 
 
@@ -301,6 +305,9 @@ namespace uhh2 {
 
     // Histograms of DNN inputs and DNN output
     hist_dnn->fill(event);
+
+    //if(slct_OneLooseIJet->passes(event) && slct_NoTightXJet->passes(event)) hist_dnn_ixbjets_YES->fill(event); // require >= 1 loose b ijets, == 0 tight b xjets
+    //else hist_dnn_ixbjets_NO->fill(event);
 
     // Place analysis routines into a new Module!!!
     // End of main selection
