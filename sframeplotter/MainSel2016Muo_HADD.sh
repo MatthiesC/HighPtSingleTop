@@ -10,7 +10,7 @@ declare -a arr=( \
     MC.ST_tW_merged2 \
     MC.ST_tW_merged1 \
     MC.ST_tW_merged0 \
-    MC.ST_tW_other \
+    MC.ST_tW_bkg \
     MC.ST_tW_bkg_TopToHadAndWToTau \
     MC.ST_tW_bkg_Else \
     MC.ST_non-tW \
