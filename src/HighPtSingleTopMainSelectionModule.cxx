@@ -58,12 +58,12 @@ namespace uhh2 {
 
     TopJetId StandardHOTVRTopTagID;
 
-    vector<Event::Handle<float>> h_dnn_inputs;
+    vector<Event::Handle<double>> h_dnn_inputs;
 
     unique_ptr<lwt::LightweightNeuralNetwork> NeuralNetwork;
     vector<string> dnn_config_inputNames;
     string dnn_config_outputName;
-    vector<Event::Handle<float>> m_input_handles;
+    vector<Event::Handle<double>> m_input_handles;
     Event::Handle<double> h_dnn_output_val;
   };
 
@@ -161,7 +161,7 @@ namespace uhh2 {
       dnn_config_outputName = output;
     }
     for(uint i = 0; i < dnn_config_inputNames.size(); i++) {
-      m_input_handles.push_back(ctx.get_handle<float>(dnn_config_inputNames.at(i)));
+      m_input_handles.push_back(ctx.get_handle<double>(dnn_config_inputNames.at(i)));
     }
     h_dnn_output_val = ctx.declare_event_output<double>("DNN_Output");
 
@@ -206,7 +206,7 @@ namespace uhh2 {
     hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
     hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
 
-    hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists"));
+    hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists", dnn_config_inputNames));
     //hist_dnn_ixbjets_YES.reset(new BinnedDNNHists(ctx, "IXBJetsDNNHists_YES"));
     //hist_dnn_ixbjets_NO.reset(new BinnedDNNHists(ctx, "IXBJetsDNNHists_NO"));
 }

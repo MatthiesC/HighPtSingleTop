@@ -65,25 +65,25 @@ AndHists::~AndHists() {
 }
 
 
-BinnedDNNHists::BinnedDNNHists(Context & ctx, const string & dirname):
+BinnedDNNHists::BinnedDNNHists(Context & ctx, const string & dirname, const vector<string> inputs):
   Hists(ctx, dirname+"_Binning"), m_dirname(dirname) {
 
-  handle_tjet = ctx.get_handle<TopJet>("TopTaggedJet");
+  h_toptag_pt = ctx.get_handle<double>("DNN_TopTagPt");
 
-  h_tjet_pt = book<TH1F>("tjet_pt", "t jet p_{T} [GeV]", MyConstants::pt_binning.size(), MyConstants::pt_binning_edges);
+  hist_toptag_pt = book<TH1F>("toptag_pt", "t jet p_{T} [GeV]", MyConstants::pt_binning.size(), MyConstants::pt_binning_edges);
 
-  hists_vector.push_back(new DNNHists(ctx, dirname+"_Full"));
+  hists_vector.push_back(new DNNHists(ctx, dirname+"_Full", inputs, "DNN_TopTagPt"));
   for(auto i : MyConstants::pt_binning) {
-    hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), i.first, i.second));
+    hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, "DNN_TopTagPt", i.first, i.second));
   }
 }
 
 
 void BinnedDNNHists::fill(const Event & event) {
 
-  TopJet tjet = event.get(handle_tjet);
+  double toptag_pt = event.get(h_toptag_pt);
 
-  h_tjet_pt->Fill(tjet.v4().Pt(), event.weight);
+  hist_toptag_pt->Fill(toptag_pt, event.weight);
 
   for(Hists *hist: hists_vector) {
     hist->fill(event);

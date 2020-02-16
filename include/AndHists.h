@@ -31,7 +31,7 @@ namespace uhh2 {
   class BinnedDNNHists: public Hists {
 
   public:
-    BinnedDNNHists(uhh2::Context &ctx, const std::string & dirname);
+    BinnedDNNHists(uhh2::Context &ctx, const std::string & dirname, const std::vector<std::string> inputs);
 
     virtual void fill(const uhh2::Event & event);
     virtual ~BinnedDNNHists();
@@ -40,10 +40,10 @@ namespace uhh2 {
     std::string m_dirname;
 
   protected:
-    uhh2::Event::Handle<TopJet> handle_tjet;
+    uhh2::Event::Handle<double> h_toptag_pt;
     std::vector<uhh2::Hists*> hists_vector;
 
-    TH1F *h_tjet_pt;
+    TH1F *hist_toptag_pt;
   };
 
 }

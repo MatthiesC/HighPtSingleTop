@@ -5,7 +5,7 @@ using namespace std;
 using namespace uhh2;
 
 
-DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, const unsigned int & numberOfHotvrJets, const unsigned int & numberOfAk4Jets, const TopJetId & topJetId, const JetId & bJetId, const float & zero_padding_value):
+DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<double>> & h_dnn_inputs, const unsigned int & numberOfHotvrJets, const unsigned int & numberOfAk4Jets, const TopJetId & topJetId, const JetId & bJetId, const double & zero_padding_value):
   m_h_dnn_inputs(h_dnn_inputs), m_n_hotvr(numberOfHotvrJets), m_n_jets(numberOfAk4Jets), m_topjetid(topJetId), m_bjetid(bJetId), m_zeropadding(zero_padding_value) {
 
   h_toptaggedjet = ctx.get_handle<TopJet>("TopTaggedJet");
@@ -15,8 +15,8 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
   h_xjets = ctx.get_handle<vector<Jet>>("TopExJets");
   h_ijets = ctx.get_handle<vector<Jet>>("TopInJets");
 
-  h_event_weight = ctx.declare_event_output<float>("DNN_EventWeight");
-  h_toptag_pt = ctx.declare_event_output<float>("DNN_TopTagPt");
+  h_event_weight = ctx.declare_event_output<double>("DNN_EventWeight");
+  h_toptag_pt = ctx.declare_event_output<double>("DNN_TopTagPt");
 
   template_event = {
     "n_pv",
@@ -148,11 +148,11 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<float>> & h_dnn_inputs, c
   for(auto s : template_lepton) m_inputs.push_back(prefix+string("lepton_")+s);
   for(auto s : template_custom) m_inputs.push_back(prefix+string("custom_")+s);
   cout << "Number of DNN input variables to set:  " << m_inputs.size() << endl;
-  cout << "Float value for 'zero padding':        " << m_zeropadding << endl;
+  cout << "Double value for 'zero padding':        " << m_zeropadding << endl;
 
   // Fill the event handle vector with the variable names:
   for(unsigned int i = 0; i < m_inputs.size(); i++) {
-    m_h_dnn_inputs.push_back(ctx.declare_event_output<float>(m_inputs.at(i))); }
+    m_h_dnn_inputs.push_back(ctx.declare_event_output<double>(m_inputs.at(i))); }
 
   it_works();
 }
@@ -179,7 +179,7 @@ bool DNNSetup::process(Event & event) {
   MET met = *event.met;
 
   unsigned int i = 0;
-  vector<float> values;
+  vector<double> values;
   values.resize(m_inputs.size(), m_zeropadding);
 
   // Event
@@ -188,11 +188,11 @@ bool DNNSetup::process(Event & event) {
   values.at(i++) = (met.v4()).py();
   values.at(i++) = met.pt();
   values.at(i++) = met.phi();
-  float ht_had = 0;
+  double ht_had = 0;
   for(auto j : jets) {
     ht_had += j.v4().Pt(); }
   values.at(i++) = ht_had;
-  float ht_lep = met.pt();
+  double ht_lep = met.pt();
   for(auto e : electrons) {
     ht_lep += e.v4().Pt(); }
   for(auto m : muons) {
@@ -297,7 +297,7 @@ bool DNNSetup::process(Event & event) {
   values.at(i++) = calcMTW(lepton, event);
   values.at(i++) = xjets.size();
   bool no_xjets = xjets.size() == 0;
-  float ht_xjets(0);
+  double ht_xjets(0);
   for(Jet xj : xjets) { ht_xjets += xj.v4().pt(); }
   values.at(i++) = no_xjets ? m_zeropadding : ht_xjets;
   values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).v4().M();
