@@ -39,7 +39,7 @@ void DNNHists::fill(const Event & event) {
 
   const double binning_var = event.get(_h_binning_var);
 
-  if(binning_var >= _MIN_VAL && binning_var < _MAX_VAL) return;
+  if(binning_var <= _MIN_VAL && binning_var > _MAX_VAL) return;
 
   const double w = event.get(_h_event_weight);
   const double dnn_val = event.get(_h_dnn_output);
