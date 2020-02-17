@@ -53,9 +53,9 @@ namespace uhh2 {
     unique_ptr<Selection> slct_mttbarGenCut, slct_tWgenSignal;
     unique_ptr<Selection> slct_lumi;
     unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
-    unique_ptr<Selection> slct_met, slct_1topjet;//, slct_1jet,;
+    unique_ptr<Selection> slct_met, slct_1topjet;
 
-    unique_ptr<AndHists> hist_common, hist_trigger, hist_cleaning, hist_1lepton, hist_met, hist_1topjet;//, hist_1jet;
+    unique_ptr<AndHists> hist_common, hist_trigger, hist_cleaning, hist_1lepton, hist_met, hist_1topjet;
 
     bool is_data, is_mc, is_muon, is_elec, using_hotvr;
     string dataset_version, met_name, jet_collection;
@@ -180,7 +180,6 @@ namespace uhh2 {
     slct_1elec.reset(new NElectronSelection(1, 1));
     slct_0elec.reset(new NElectronSelection(0, 0));
     slct_met.reset(new METSelection(met_min));
-    //slct_1jet.reset(new NJetSelection(1, -1));
     slct_1topjet.reset(new NTopJetSelection(1, -1));
 
 
@@ -191,7 +190,6 @@ namespace uhh2 {
     hist_common.reset(new AndHists(ctx, "0_Common"));
     hist_1lepton.reset(new AndHists(ctx, "1_OneLepton"));
     hist_met.reset(new AndHists(ctx, "2_MET"));
-    //hist_1jet.reset(new AndHists(ctx, "4_OneJet"));
     hist_1topjet.reset(new AndHists(ctx, "3_OneTopJet"));
 
 
@@ -223,8 +221,8 @@ namespace uhh2 {
     // Split up tW samples into SIGNAL and OTHER depending on MC truth info
     if(dataset_version.find("ST_tW") == 0) {
       SingleTopGen_tWchProd->process(event);
-      if(dataset_version.find("ST_tW_signal") == 0 && !slct_tWgenSignal->passes(event)) return false;
-      else if(dataset_version.find("ST_tW_other") == 0 && slct_tWgenSignal->passes(event)) return false;
+      if( (dataset_version.find("ST_tW_signal") == 0 || dataset_version.find("ST_tW_DS_signal") == 0) && !slct_tWgenSignal->passes(event) ) return false;
+      else if( (dataset_version.find("ST_tW_other") == 0 || dataset_version.find("ST_tW_DS_other") == 0) && slct_tWgenSignal->passes(event) ) return false;
     }
 
     // Mttbar gencut
@@ -256,10 +254,6 @@ namespace uhh2 {
     // MET selection
     if(!slct_met->passes(event)) return false;
     hist_met->fill(event);
-
-    // At least one AK4 jet
-    //if(!slct_1jet->passes(event)) return false;
-    //hist_1jet->fill(event);
 
     // At least one TOP jet
     if(using_hotvr) hotvr_jec_module->process(event);

@@ -19,6 +19,9 @@
           <!ENTITY SingleTop_tWch_T SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/UHH2-datasets/RunII_102X_v1/2016v3/MC_ST_tW_top_NoFullyHadronicDecays_P8M1_PUMoriond17.xml">
           <!ENTITY SingleTop_tWch_Tbar SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/UHH2-datasets/RunII_102X_v1/2016v3/MC_ST_tW_antitop_NoFullyHadronicDecays_P8M1_PUMoriond17.xml">
 
+          <!ENTITY SingleTop_tWch_DS_T SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/UHH2-datasets/RunII_102X_v1/2016v3/MC_ST_tW_top_DS_NoFullyHadronicDecays_P8M1_PUMoriond17.xml">
+          <!ENTITY SingleTop_tWch_DS_Tbar SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/UHH2-datasets/RunII_102X_v1/2016v3/MC_ST_tW_antitop_DS_NoFullyHadronicDecays_P8M1_PUMoriond17.xml">
+
           <!ENTITY SingleTop_tch_T SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/UHH2-datasets/RunII_102X_v1/2016v3/MC_ST_t-channel_top_inclusiveDecays.xml">
           <!ENTITY SingleTop_tch_Tbar SYSTEM "/nfs/dust/cms/user/matthies/102X/CMSSW_10_2_10/src/UHH2/common/UHH2-datasets/RunII_102X_v1/2016v3/MC_ST_t-channel_antitop_inclusiveDecays.xml">
 
@@ -170,6 +173,32 @@
 
     <InputData Lumi="442297.3725" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_other_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;">
       &SingleTop_tWch_Tbar;
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <!-- tW DS signal -->
+    <InputData Lumi="153348.7108" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_signal_T&YEARsuffix;" Cacheable="&b_Cacheable;">
+      &SingleTop_tWch_DS_T;
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <InputData Lumi="163766.9676" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_signal_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;">
+      &SingleTop_tWch_DS_Tbar;
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <!-- tW DS other -->
+    <InputData Lumi="153348.7108" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_other_T&YEARsuffix;" Cacheable="&b_Cacheable;">
+      &SingleTop_tWch_DS_T;
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <InputData Lumi="163766.9676" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_other_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;">
+      &SingleTop_tWch_DS_Tbar;
       <InputTree Name="AnalysisTree" />
       <OutputTree Name="AnalysisTree" />
     </InputData>

@@ -38,6 +38,10 @@
           <!ENTITY SingleTop_tW_signal_Tbar "&PRESELdir;/&PRESELfilename;.MC.ST_tW_signal_Tbar&YEARsuffix;.root">
           <!ENTITY SingleTop_tW_other_T "&PRESELdir;/&PRESELfilename;.MC.ST_tW_other_T&YEARsuffix;.root">
           <!ENTITY SingleTop_tW_other_Tbar "&PRESELdir;/&PRESELfilename;.MC.ST_tW_other_Tbar&YEARsuffix;.root">
+          <!ENTITY SingleTop_tW_DS_signal_T "&PRESELdir;/&PRESELfilename;.MC.ST_tW_DS_signal_T&YEARsuffix;.root">
+          <!ENTITY SingleTop_tW_DS_signal_Tbar "&PRESELdir;/&PRESELfilename;.MC.ST_tW_DS_signal_Tbar&YEARsuffix;.root">
+          <!ENTITY SingleTop_tW_DS_other_T "&PRESELdir;/&PRESELfilename;.MC.ST_tW_DS_other_T&YEARsuffix;.root">
+          <!ENTITY SingleTop_tW_DS_other_Tbar "&PRESELdir;/&PRESELfilename;.MC.ST_tW_DS_other_Tbar&YEARsuffix;.root">
           <!ENTITY SingleTop_tChannel_T "&PRESELdir;/&PRESELfilename;.MC.ST_non-tW_t-Ch_T&YEARsuffix;.root">
           <!ENTITY SingleTop_tChannel_Tbar "&PRESELdir;/&PRESELfilename;.MC.ST_non-tW_t-Ch_Tbar&YEARsuffix;.root">
           <!ENTITY SingleTop_sChannel_TTbar "&PRESELdir;/&PRESELfilename;.MC.ST_non-tW_s-Ch&YEARsuffix;.root">
@@ -240,6 +244,97 @@
 
     <InputData Lumi="442297.3725" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_bkg_Else_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;">
       <In FileName="&SingleTop_tW_other_Tbar;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <!-- tW DS signal -->
+    <InputData Lumi="153348.7108" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_signal_T&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_signal_T;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <InputData Lumi="163766.9676" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_signal_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_signal_Tbar;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <!-- tW DS signal - 3 merged quarks -->
+    <InputData Lumi="153348.7108" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_merged3_T&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_signal_T;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <InputData Lumi="163766.9676" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_merged3_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_signal_Tbar;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <!-- tW DS signal - 2 merged quarks -->
+    <InputData Lumi="153348.7108" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_merged2_T&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_signal_T;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <InputData Lumi="163766.9676" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_merged2_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_signal_Tbar;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <!-- tW DS signal - 1 merged quark -->
+    <InputData Lumi="153348.7108" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_merged1_T&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_signal_T;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <InputData Lumi="163766.9676" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_merged1_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_signal_Tbar;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <!-- tW DS signal - 0 merged quarks -->
+    <InputData Lumi="153348.7108" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_merged0_T&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_signal_T;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <InputData Lumi="163766.9676" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_merged0_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_signal_Tbar;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <!-- tW DS background - t(had) W(tau) -->
+    <InputData Lumi="153348.7108" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_bkg_TopToHadAndWToTau_T&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_other_T;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <InputData Lumi="163766.9676" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_bkg_TopToHadAndWToTau_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_other_Tbar;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <!-- tW DS background - everything else -->
+    <InputData Lumi="153348.7108" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_bkg_Else_T&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_other_T;" Lumi="0.0"/>
+      <InputTree Name="AnalysisTree" />
+      <OutputTree Name="AnalysisTree" />
+    </InputData>
+
+    <InputData Lumi="163766.9676" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DS_bkg_Else_Tbar&YEARsuffix;" Cacheable="&b_Cacheable;">
+      <In FileName="&SingleTop_tW_DS_other_Tbar;" Lumi="0.0"/>
       <InputTree Name="AnalysisTree" />
       <OutputTree Name="AnalysisTree" />
     </InputData>
