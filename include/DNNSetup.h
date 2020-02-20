@@ -6,6 +6,28 @@
 #include "UHH2/common/include/TopJetIds.h"
 
 
+class DNNInput {
+
+ public:
+
+  DNNInput(std::string arg_input_name, std::string arg_plot_label = "NO PLOT LABEL SET", double arg_xlow = 0, double arg_xhigh = 1, uint arg_nbins = 100);
+  std::string name() const { return _input_name; };
+  void set_name(std::string new_name) { _input_name = new_name; };
+  std::string label() const { return _plot_label; };
+  double xlow() const { return _xlow; };
+  double xhigh() const { return _xhigh; };
+  uint nbins() const { return _nbins; };
+
+ private:
+
+  std::string _input_name;
+  std::string _plot_label;
+  double _xlow;
+  double _xhigh;
+  uint _nbins;
+};
+
+
 class DNNSetup: public uhh2::AnalysisModule {
 
  public:
@@ -13,7 +35,8 @@ class DNNSetup: public uhh2::AnalysisModule {
   explicit DNNSetup(uhh2::Context & ctx, std::vector<uhh2::Event::Handle<double>> & h_dnn_inputs, const unsigned int & n_hotvr, const unsigned int & n_jets, const TopJetId & topJetId, const JetId & bJetId, const double & zero_padding_value = -10);
   virtual bool process(uhh2::Event & event) override;
 
-  std::vector<std::string> inputs() { return m_inputs; };
+  std::vector<std::string> inputs() { return m_input_names; };
+  std::vector<DNNInput> inputs_info() { return m_inputs_info; };
 
  private:
 
@@ -34,6 +57,6 @@ class DNNSetup: public uhh2::AnalysisModule {
   const JetId m_bjetid;
   const double m_zeropadding;
 
-  std::vector<std::string> template_event, template_hotvr, template_jet, template_lepton, template_custom;
-  std::vector<std::string> m_inputs;
+  std::vector<DNNInput> template_event, template_hotvr, template_jet, template_lepton, template_custom, m_inputs_info;
+  std::vector<std::string> m_input_names;
 };

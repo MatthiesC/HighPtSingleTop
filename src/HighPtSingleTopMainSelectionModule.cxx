@@ -45,13 +45,14 @@ namespace uhh2 {
   private:
 
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_deepjet;
-    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd, dnn_setup;
+    unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd;
+    unique_ptr<DNNSetup> dnn_setup;
 
-    unique_ptr<Selection> slct_trigger, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet;//, slct_OneLooseIJet, slct_NoTightXJet;
+    unique_ptr<Selection> slct_trigger, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet, slct_noxjet;
 
     unique_ptr<AndHists> hist_presel, hist_trigger, hist_1toptag, hist_btagsf;
     unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
-    unique_ptr<BinnedDNNHists> hist_dnn;//, hist_dnn_ixbjets_YES, hist_dnn_ixbjets_NO;
+    unique_ptr<BinnedDNNHists> hist_dnn, hist_dnn_noxjet_YES, hist_dnn_noxjet_NO;
 
     bool is_data, is_mc, is_muon, is_elec, using_hotvr;
     string dataset_version;
@@ -65,6 +66,12 @@ namespace uhh2 {
     string dnn_config_outputName;
     vector<Event::Handle<double>> m_input_handles;
     Event::Handle<double> h_dnn_output_val;
+
+    unique_ptr<lwt::LightweightNeuralNetwork> NeuralNetwork__HighBoost;
+    vector<string> dnn_config_inputNames__HighBoost;
+    string dnn_config_outputName__HighBoost;
+    vector<Event::Handle<double>> m_input_handles__HighBoost;
+    Event::Handle<double> h_dnn_output_val__HighBoost;
   };
 
 
@@ -90,6 +97,7 @@ namespace uhh2 {
     string syst_btag         = ctx.get("SystDirection_BTagSF", "nominal");
 
     string neural_net_filepath = ctx.get("NeuralNetFile");
+    string neural_net_filepath__HighBoost = ctx.get("NeuralNetFile__HighBoost");
 
 
     //---------------------//
@@ -146,6 +154,7 @@ namespace uhh2 {
 
     dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID, 0.));
 
+    // Low boost NN
     ifstream neural_net_file(neural_net_filepath);
     auto dnn_config = lwt::parse_json(neural_net_file);
     NeuralNetwork.reset(new lwt::LightweightNeuralNetwork(dnn_config.inputs, dnn_config.layers, dnn_config.outputs));
@@ -165,6 +174,26 @@ namespace uhh2 {
     }
     h_dnn_output_val = ctx.declare_event_output<double>("DNN_Output");
 
+    // High boost NN
+    ifstream neural_net_file__HighBoost(neural_net_filepath__HighBoost);
+    auto dnn_config__HighBoost = lwt::parse_json(neural_net_file__HighBoost);
+    NeuralNetwork__HighBoost.reset(new lwt::LightweightNeuralNetwork(dnn_config__HighBoost.inputs, dnn_config__HighBoost.layers, dnn_config__HighBoost.outputs));
+    cout << "Number of used DNN inputs: " << dnn_config__HighBoost.inputs.size() << endl;
+    for(uint i = 0; i < dnn_config__HighBoost.inputs.size(); i++) {
+      const auto & input = dnn_config__HighBoost.inputs.at(i);
+      cout << "input.name: " << input.name << endl;
+      dnn_config_inputNames__HighBoost.push_back(input.name);
+    }
+    for(uint i = 0; i < dnn_config__HighBoost.outputs.size(); i++) {
+      const auto & output = dnn_config__HighBoost.outputs.at(i);
+      cout << "output.name: " << output << endl;
+      dnn_config_outputName__HighBoost = output;
+    }
+    for(uint i = 0; i < dnn_config_inputNames__HighBoost.size(); i++) {
+      m_input_handles__HighBoost.push_back(ctx.get_handle<double>(dnn_config_inputNames__HighBoost.at(i)));
+    }
+    h_dnn_output_val__HighBoost = ctx.declare_event_output<double>("DNN_Output__HighBoost");
+
 
     //------------//
     // SELECTIONS //
@@ -180,8 +209,7 @@ namespace uhh2 {
     slct_tW_WToTau.reset(new tWgenSelection(ctx, "WToTau", is_muon));
     slct_WJetsHeavy.reset(new WJetsGenSelection(ctx, "HF"));
     slct_oneijet.reset(new NObjectsSelection(ctx, 1, -1, "TopInJets"));
-    //slct_OneLooseIJet.reset(new NObjectsSelection(ctx, 1, -1, "TopInBJetsLoose"));
-    //slct_NoTightXJet.reset(new NObjectsSelection(ctx, 0, 0, "TopExJets")); // TopExBJetsTight
+    slct_noxjet.reset(new NObjectsSelection(ctx, 0, 0, "TopExJets"));
 
 
     //------------//
@@ -206,9 +234,9 @@ namespace uhh2 {
     hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
     hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
 
-    hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists", dnn_config_inputNames));
-    //hist_dnn_ixbjets_YES.reset(new BinnedDNNHists(ctx, "IXBJetsDNNHists_YES"));
-    //hist_dnn_ixbjets_NO.reset(new BinnedDNNHists(ctx, "IXBJetsDNNHists_NO"));
+    hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists", dnn_config_inputNames, dnn_setup->inputs_info()));
+    hist_dnn_noxjet_YES.reset(new BinnedDNNHists(ctx, "NoXJet_YES_DNNHists", dnn_config_inputNames, dnn_setup->inputs_info()));
+    hist_dnn_noxjet_NO.reset(new BinnedDNNHists(ctx, "NoXJet_NO_DNNHists", dnn_config_inputNames, dnn_setup->inputs_info()));
 }
 
 
@@ -289,19 +317,25 @@ namespace uhh2 {
     // Set event handles used as input for DNN training
     dnn_setup->process(event);
 
-    // Application of a trained DNN
+    // Application of a trained DNN -- low boost
     map<string, double> inputs_map;
     for(uint i = 0; i < dnn_config_inputNames.size(); i++) {
       inputs_map[dnn_config_inputNames.at(i)] = (double)event.get(m_input_handles.at(i));
     }
     auto dnn_output_vals = NeuralNetwork->compute(inputs_map);
     event.set(h_dnn_output_val, (double)dnn_output_vals[dnn_config_outputName]);
+    // Application of a trained DNN -- high boost
+    map<string, double> inputs_map__HighBoost;
+    for(uint i = 0; i < dnn_config_inputNames__HighBoost.size(); i++) {
+      inputs_map__HighBoost[dnn_config_inputNames__HighBoost.at(i)] = (double)event.get(m_input_handles__HighBoost.at(i));
+    }
+    auto dnn_output_vals__HighBoost = NeuralNetwork__HighBoost->compute(inputs_map__HighBoost);
+    event.set(h_dnn_output_val__HighBoost, (double)dnn_output_vals__HighBoost[dnn_config_outputName__HighBoost]);
 
     // Histograms of DNN inputs and DNN output
     hist_dnn->fill(event);
-
-    //if(slct_OneLooseIJet->passes(event) && slct_NoTightXJet->passes(event)) hist_dnn_ixbjets_YES->fill(event); // require >= 1 loose b ijets, == 0 tight b xjets
-    //else hist_dnn_ixbjets_NO->fill(event);
+    if(slct_noxjet->passes(event)) hist_dnn_noxjet_YES->fill(event); // well-defined tW LO, suppressing interference effects of tW NLO / ttbar LO
+    else hist_dnn_noxjet_NO->fill(event);
 
     // Place analysis routines into a new Module!!!
     // End of main selection

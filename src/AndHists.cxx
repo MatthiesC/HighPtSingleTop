@@ -65,16 +65,18 @@ AndHists::~AndHists() {
 }
 
 
-BinnedDNNHists::BinnedDNNHists(Context & ctx, const string & dirname, const vector<string> inputs):
+BinnedDNNHists::BinnedDNNHists(Context & ctx, const string & dirname, const vector<string> inputs, const vector<DNNInput> inputs_info):
   Hists(ctx, dirname+"_Binning"), m_dirname(dirname) {
 
   h_toptag_pt = ctx.get_handle<double>("DNN_TopTagPt");
 
   hist_toptag_pt = book<TH1F>("toptag_pt", "t jet p_{T} [GeV]", MyConstants::pt_binning.size(), MyConstants::pt_binning_edges);
 
-  hists_vector.push_back(new DNNHists(ctx, dirname+"_Full", inputs, "DNN_TopTagPt"));
+  hists_vector.push_back(new DNNHists(ctx, dirname+"_Full", inputs, inputs_info, "DNN_TopTagPt"));
+  hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt200to350", inputs, inputs_info, "DNN_TopTagPt", 0, 350));
+  hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt350toInf", inputs, inputs_info, "DNN_TopTagPt", 350));
   for(auto i : MyConstants::pt_binning) {
-    hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, "DNN_TopTagPt", i.first, i.second));
+    hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, "DNN_TopTagPt", i.first, i.second));
   }
 }
 

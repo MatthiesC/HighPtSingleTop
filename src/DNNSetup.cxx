@@ -18,141 +18,167 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<double>> & h_dnn_inputs, 
   h_event_weight = ctx.declare_event_output<double>("DNN_EventWeight");
   h_toptag_pt = ctx.declare_event_output<double>("DNN_TopTagPt");
 
-  template_event = {
-    "n_pv",
-    "met_px",
-    "met_py",
-    "met_pt",
-    "met_phi",
-    "ht_had",
-    "ht_lep",
-    "st",
-    "n_hotvr",
-    "n_jets",
-    "n_btags" };
-  template_hotvr = {
-    "toptagged",
-    "px",
-    "py",
-    "pz",
-    "e",
-    "pt",
-    "eta",
-    "phi",
-    "v4mass",
-    "area",
-    "nsubjets",
-    "sub1_px",
-    "sub1_py",
-    "sub1_pz",
-    "sub1_e",
-    "sub1_pt",
-    "sub1_eta",
-    "sub1_phi",
-    "sub1_v4mass",
-    "sub1_area",
-    "sub2_px",
-    "sub2_py",
-    "sub2_pz",
-    "sub2_e",
-    "sub2_pt",
-    "sub2_eta",
-    "sub2_phi",
-    "sub2_v4mass",
-    "sub2_area",
-    "sub3_px",
-    "sub3_py",
-    "sub3_pz",
-    "sub3_e",
-    "sub3_pt",
-    "sub3_eta",
-    "sub3_phi",
-    "sub3_v4mass",
-    "sub3_area",
-    "fpt",
-    "mpair",
-    "tau1",
-    "tau2",
-    "tau3",
-    "tau21",
-    "tau32" };
-  template_jet = {
-    "btagged",
-    "DeepJet",
-    "px",
-    "py",
-    "pz",
-    "e",
-    "pt",
-    "eta",
-    "phi",
-    "v4mass",
-    "area" };
-  template_lepton = {
-    "px",
-    "py",
-    "pz",
-    "e",
-    "pt",
-    "eta",
-    "phi",
-    "v4mass",
-    "reliso",
-    "charge",
-    "dr_jet",
-    "dphi_jet",
-    "ptrel_jet" };
-  template_custom = {
-    "tjet_tau32",
-    "tjet_tau21",
-    "tjet_tau1",
-    "tjet_tau2",
-    "tjet_tau3",
-    "tjet_fpt",
-    "tjet_mjet",
-    "tjet_mij",
-    "dR_tl",
-    "dPhi_tm",
-    "dPhi_lm",
-    "pTbal_wt",
-    "pTbal_tlepthad",
-    "m_top",
-    "mt_w",
-    "n_xjets",
-    "ht_xjets",
-    "xjet1pt_m",
-    "xjet1pt_pt",
-    "xjet1pt_eta",
-    "xjet1pt_deepjet",
-    "mass_xjet1pt_lep",
-    "dr_xjet1pt_lep",
-    "dr_xjet1pt_tjet",
-    "xjet1dj_m",
-    "xjet1dj_pt",
-    "xjet1dj_eta",
-    "xjet1dj_deepjet",
-    "mass_xjet1dj_lep",
-    "dr_xjet1dj_lep",
-    "dr_xjet1dj_tjet",
-    "xjet2dj_deepjet",
-    "ijet1dj_deepjet",
-    "ijet2dj_deepjet" };
+  template_event.push_back(DNNInput("n_pv", "Number of primary vertices", 0, 100));
+  template_event.push_back(DNNInput("met_px", "Missing p_{x} [GeV]", 0, 2000));
+  template_event.push_back(DNNInput("met_py", "Missing p_{y} [GeV]", 0, 2000));
+  template_event.push_back(DNNInput("met_pt", "Missing p_{T} [GeV]", 0, 1000));
+  template_event.push_back(DNNInput("met_phi", "MET #phi", -M_PI, M_PI));
+  template_event.push_back(DNNInput("ht_had", "Hadronic H_{T} [GeV]", 0, 2000));
+  template_event.push_back(DNNInput("ht_lep", "Leptonic H_{T} [GeV]", 0, 2000));
+  template_event.push_back(DNNInput("st", "Transverse activity [GeV]", 0, 2000));
+  template_event.push_back(DNNInput("n_hotvr", "Number of HOTVR jets", -0.5, 10.5, 11));
+  template_event.push_back(DNNInput("n_jets", "Number of AK4 jets", -0.5, 10.5, 11));
+  template_event.push_back(DNNInput("n_btags", "Number of b-tagged AK4 jets", -0.5, 10.5, 11));
+
+  template_hotvr.push_back(DNNInput("toptagged")); // all these inputs are not used right now. When/if the times comes, you have to insert meaningful arguments for xlow, xhigh, nbins, and label here
+  template_hotvr.push_back(DNNInput("px"));
+  template_hotvr.push_back(DNNInput("py"));
+  template_hotvr.push_back(DNNInput("pz"));
+  template_hotvr.push_back(DNNInput("e"));
+  template_hotvr.push_back(DNNInput("pt"));
+  template_hotvr.push_back(DNNInput("eta"));
+  template_hotvr.push_back(DNNInput("phi"));
+  template_hotvr.push_back(DNNInput("v4mass"));
+  template_hotvr.push_back(DNNInput("area"));
+  template_hotvr.push_back(DNNInput("nsubjets"));
+  template_hotvr.push_back(DNNInput("sub1_px"));
+  template_hotvr.push_back(DNNInput("sub1_py"));
+  template_hotvr.push_back(DNNInput("sub1_pz"));
+  template_hotvr.push_back(DNNInput("sub1_e"));
+  template_hotvr.push_back(DNNInput("sub1_pt"));
+  template_hotvr.push_back(DNNInput("sub1_eta"));
+  template_hotvr.push_back(DNNInput("sub1_phi"));
+  template_hotvr.push_back(DNNInput("sub1_v4mass"));
+  template_hotvr.push_back(DNNInput("sub1_area"));
+  template_hotvr.push_back(DNNInput("sub2_px"));
+  template_hotvr.push_back(DNNInput("sub2_py"));
+  template_hotvr.push_back(DNNInput("sub2_pz"));
+  template_hotvr.push_back(DNNInput("sub2_e"));
+  template_hotvr.push_back(DNNInput("sub2_pt"));
+  template_hotvr.push_back(DNNInput("sub2_eta"));
+  template_hotvr.push_back(DNNInput("sub2_phi"));
+  template_hotvr.push_back(DNNInput("sub2_v4mass"));
+  template_hotvr.push_back(DNNInput("sub2_area"));
+  template_hotvr.push_back(DNNInput("sub3_px"));
+  template_hotvr.push_back(DNNInput("sub3_py"));
+  template_hotvr.push_back(DNNInput("sub3_pz"));
+  template_hotvr.push_back(DNNInput("sub3_e"));
+  template_hotvr.push_back(DNNInput("sub3_pt"));
+  template_hotvr.push_back(DNNInput("sub3_eta"));
+  template_hotvr.push_back(DNNInput("sub3_phi"));
+  template_hotvr.push_back(DNNInput("sub3_v4mass"));
+  template_hotvr.push_back(DNNInput("sub3_area"));
+  template_hotvr.push_back(DNNInput("fpt"));
+  template_hotvr.push_back(DNNInput("mpair"));
+  template_hotvr.push_back(DNNInput("tau1"));
+  template_hotvr.push_back(DNNInput("tau2"));
+  template_hotvr.push_back(DNNInput("tau3"));
+  template_hotvr.push_back(DNNInput("tau21"));
+  template_hotvr.push_back(DNNInput("tau32"));
+
+  template_jet.push_back(DNNInput("btagged"));
+  template_jet.push_back(DNNInput("DeepJet"));
+  template_jet.push_back(DNNInput("px"));
+  template_jet.push_back(DNNInput("py"));
+  template_jet.push_back(DNNInput("pz"));
+  template_jet.push_back(DNNInput("e"));
+  template_jet.push_back(DNNInput("pt"));
+  template_jet.push_back(DNNInput("eta"));
+  template_jet.push_back(DNNInput("phi"));
+  template_jet.push_back(DNNInput("v4mass"));
+  template_jet.push_back(DNNInput("area"));
+
+  template_lepton.push_back(DNNInput("px", "Lepton p_{x} [GeV]", 0, 2000));
+  template_lepton.push_back(DNNInput("py", "Lepton p_{y} [GeV]", 0, 2000));
+  template_lepton.push_back(DNNInput("pz", "Lepton p_{z} [GeV]", 0, 2000));
+  template_lepton.push_back(DNNInput("e", "Lepton energy [GeV]", 0, 2000));
+  template_lepton.push_back(DNNInput("pt", "Lepton p_{T} [GeV]", 0, 1000));
+  template_lepton.push_back(DNNInput("eta", "Lepton #eta", -3, 3));
+  template_lepton.push_back(DNNInput("phi", "Lepton #phi", -M_PI, M_PI));
+  template_lepton.push_back(DNNInput("v4mass", "Lepton mass [GeV]", -0.1, 0.2));
+  template_lepton.push_back(DNNInput("reliso", "Rel. lepton isolation", 0, 0.2));
+  template_lepton.push_back(DNNInput("charge", "Lepton charge [e]", -2.5, 2.5, 5));
+  template_lepton.push_back(DNNInput("dr_jet", "#DeltaR(lepton, AK4 jet)", 0, 5));
+  template_lepton.push_back(DNNInput("dphi_jet", "#Delta#phi(lepton, AK4 jet)", 0, M_PI));
+  template_lepton.push_back(DNNInput("ptrel_jet", "Rel. p_{T}(lepton, AK4 jet)", 0, 500));
+
+  template_custom.push_back(DNNInput("tjet_tau32", "t jet #tau_{3}/#tau_{2}", 0, 1));
+  template_custom.push_back(DNNInput("tjet_tau21", "t jet #tau_{2}/#tau_{1}", 0, 1));
+  template_custom.push_back(DNNInput("tjet_tau1", "t jet #tau_{1}", 0, 1));
+  template_custom.push_back(DNNInput("tjet_tau2", "t jet #tau_{2}", 0, 1));
+  template_custom.push_back(DNNInput("tjet_tau3", "t jet #tau_{3}", 0, 1));
+  template_custom.push_back(DNNInput("tjet_fpt", "t jet f_{p_{T}}^{sub1}", 0, 1));
+  template_custom.push_back(DNNInput("tjet_mjet", "t jet m_{jet}", 130, 230));
+  template_custom.push_back(DNNInput("tjet_mij", "t jet m_{ij}^{min}", 0, 200));
+  template_custom.push_back(DNNInput("dR_tl", "#DeltaR(lepton, t jet)", 0, 5));
+  template_custom.push_back(DNNInput("dPhi_tm", "#Delta#phi(#vec{p}_{T}^{miss}, t jet)", 0, M_PI));
+  template_custom.push_back(DNNInput("dPhi_lm", "#Delta#phi(#vec{p}_{T}^{miss}, lepton)", 0, M_PI));
+  template_custom.push_back(DNNInput("pTbal_wt", "[p_{T}(lep. W) #minus p_{T}(t jet)] / [p_{T}(lep. W) + p_{T}(t jet)]", -1.2, 0.8));
+  template_custom.push_back(DNNInput("pTbal_tlepthad", "[p_{T}(lep. t) #minus p_{T}(t jet)] / [p_{T}(lep. t) + p_{T}(t jet)]", -1.2, 0.8));
+  template_custom.push_back(DNNInput("m_top", "Leptonic pseudo t quark mass [GeV]", 0, 800));
+  template_custom.push_back(DNNInput("mt_w", "Transverse leptonic W boson mass [GeV]", 0, 500));
+  template_custom.push_back(DNNInput("n_xjets", "Number of xjets", -0.5, 10.5, 11));
+  template_custom.push_back(DNNInput("ht_xjets", "H_{T}(xjets) [GeV]", 0, 800));
+  template_custom.push_back(DNNInput("xjet1pt_m", "m_{jet}(p_{T}-leading xjet) [GeV]", 0, 100));
+  template_custom.push_back(DNNInput("xjet1pt_pt", "p_{T}(p_{T}-leading xjet) [GeV]", 0, 1000));
+  template_custom.push_back(DNNInput("xjet1pt_eta", "#eta(p_{T}-leading xjet)", -3, 3));
+  template_custom.push_back(DNNInput("xjet1pt_deepjet", "#it{O}_{DeepJet}(p_{T}-leading xjet)", 0, 1));
+  template_custom.push_back(DNNInput("mass_xjet1pt_lep", "m(p_{T}-leading xjet, lepton) [GeV]", 0, 800));
+  template_custom.push_back(DNNInput("dr_xjet1pt_lep", "#DeltaR(p_{T}-leading xjet, lepton)", 0, 5));
+  template_custom.push_back(DNNInput("dr_xjet1pt_tjet", "#DeltaR(p_{T}-leading xjet, t jet)", 0, 5));
+  template_custom.push_back(DNNInput("xjet1dj_m", "m_{jet}(#it{O}_{DeepJet}-leading xjet) [GeV]", 0, 100));
+  template_custom.push_back(DNNInput("xjet1dj_pt", "p_{T}(#it{O}_{DeepJet}-leading xjet) [GeV]", 0, 1000));
+  template_custom.push_back(DNNInput("xjet1dj_eta", "#eta(#it{O}_{DeepJet}-leading xjet)", -3, 3));
+  template_custom.push_back(DNNInput("xjet1dj_deepjet", "#it{O}_{DeepJet}(#it{O}_{DeepJet}-leading xjet)", 0, 1));
+  template_custom.push_back(DNNInput("mass_xjet1dj_lep", "m(#it{O}_{DeepJet}-leading xjet, lepton) [GeV]", 0, 800));
+  template_custom.push_back(DNNInput("dr_xjet1dj_lep", "#DeltaR(#it{O}_{DeepJet}-leading xjet, lepton)", 0, 5));
+  template_custom.push_back(DNNInput("dr_xjet1dj_tjet", "#DeltaR(#it{O}_{DeepJet}-leading xjet, t jet)", 0, 5));
+  template_custom.push_back(DNNInput("xjet2dj_deepjet", "#it{O}_{DeepJet}(#it{O}_{DeepJet}-subleading xjet)", 0, 1));
+  template_custom.push_back(DNNInput("ijet1dj_deepjet", "#it{O}_{DeepJet}(#it{O}_{DeepJet}-leading ijet)", 0, 1));
+  template_custom.push_back(DNNInput("ijet2dj_deepjet", "#it{O}_{DeepJet}(#it{O}_{DeepJet}-subleading ijet)", 0, 1));
 
   // Prepare vector with input name strings:
   string prefix = "DNN__";
-  for(auto s : template_event) m_inputs.push_back(prefix+string("event_")+s);
+  for(auto s : template_event) {
+    string new_name = prefix+string("event_")+s.name();
+    m_input_names.push_back(new_name);
+    s.set_name(new_name);
+    m_inputs_info.push_back(s);
+  }
   for(unsigned int i = 1; i <= m_n_hotvr; i++) {
-    for(auto s : template_hotvr) m_inputs.push_back(prefix+string("hotvr")+to_string(i)+string("_")+s); }
+    for(auto s : template_hotvr) {
+      string new_name = prefix+string("hotvr")+to_string(i)+string("_")+s.name();
+      m_input_names.push_back(new_name);
+      s.set_name(new_name);
+      m_inputs_info.push_back(s);
+    }
+  }
   for(unsigned int i = 1; i <= m_n_jets; i++) {
-    for(auto s : template_jet) m_inputs.push_back(prefix+string("jet")+to_string(i)+string("_")+s); }
-  for(auto s : template_lepton) m_inputs.push_back(prefix+string("lepton_")+s);
-  for(auto s : template_custom) m_inputs.push_back(prefix+string("custom_")+s);
-  cout << "Number of DNN input variables to set:  " << m_inputs.size() << endl;
-  cout << "Double value for 'zero padding':        " << m_zeropadding << endl;
+    for(auto s : template_jet) {
+      string new_name = prefix+string("jet")+to_string(i)+string("_")+s.name();
+      m_input_names.push_back(new_name);
+      s.set_name(new_name);
+      m_inputs_info.push_back(s);
+    }
+  }
+  for(auto s : template_lepton) {
+    string new_name = prefix+string("lepton_")+s.name();
+    m_input_names.push_back(new_name);
+    s.set_name(new_name);
+    m_inputs_info.push_back(s);
+  }
+  for(auto s : template_custom) {
+    string new_name = prefix+string("custom_")+s.name();
+    m_input_names.push_back(new_name);
+    s.set_name(new_name);
+    m_inputs_info.push_back(s);
+  }
+  cout << "Number of DNN input variables to set:  " << m_input_names.size() << endl;
+  cout << "Double value for 'zero padding':       " << m_zeropadding << endl;
 
   // Fill the event handle vector with the variable names:
-  for(unsigned int i = 0; i < m_inputs.size(); i++) {
-    m_h_dnn_inputs.push_back(ctx.declare_event_output<double>(m_inputs.at(i))); }
+  for(unsigned int i = 0; i < m_input_names.size(); i++) {
+    m_h_dnn_inputs.push_back(ctx.declare_event_output<double>(m_input_names.at(i))); }
 
   it_works();
 }
@@ -180,7 +206,7 @@ bool DNNSetup::process(Event & event) {
 
   unsigned int i = 0;
   vector<double> values;
-  values.resize(m_inputs.size(), m_zeropadding);
+  values.resize(m_input_names.size(), m_zeropadding);
 
   // Event
   values.at(i++) = (*event.pvs).size();
@@ -328,3 +354,7 @@ bool DNNSetup::process(Event & event) {
 
   return true;
 }
+
+
+DNNInput::DNNInput(string arg_input_name, string arg_plot_label, double arg_xlow, double arg_xhigh, uint arg_nbins):
+  _input_name(arg_input_name), _plot_label(arg_plot_label), _xlow(arg_xlow), _xhigh(arg_xhigh), _nbins(arg_nbins) {}
