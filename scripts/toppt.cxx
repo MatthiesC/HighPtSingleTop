@@ -170,8 +170,8 @@ void draw(bool _normalized) {
   h1_tW_DS_over_DR_rebinned->SetLineColor(kBlack);
   h1_tW_DS_over_DR_rebinned->SetMaximum(1.19);
 
-  if(!_normalized) c->SaveAs("toppt.eps");
-  else c->SaveAs("toppt_norm.eps");
+  if(!_normalized) c->SaveAs("plots/toppt.eps");
+  else c->SaveAs("plots/toppt_norm.eps");
 
   tf_tW_DR->Close();
   tf_tW_DS->Close();
