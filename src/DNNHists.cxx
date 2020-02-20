@@ -16,6 +16,9 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, const vector<string> i
   _h_event_weight = ctx.get_handle<double>("DNN_EventWeight");
   _h_dnn_output = ctx.get_handle<double>("DNN_Output");
   _h_dnn_output__HighBoost = ctx.get_handle<double>("DNN_Output__HighBoost");
+  _h_xjets_bloose = ctx.get_handle<vector<Jet>>("TopExBJetsLoose");
+  _h_xjets_bmedium = ctx.get_handle<vector<Jet>>("TopExBJetsMedium");
+  _h_xjets_btight = ctx.get_handle<vector<Jet>>("TopExBJetsTight");
 
   _MIN_VAL = arg_MIN_VAL;
   _MAX_VAL = arg_MAX_VAL;
@@ -41,6 +44,10 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, const vector<string> i
     _h_inputs.push_back(ctx.get_handle<double>(_inputs_info.at(i).name()));
     _input_hists.push_back(book<TH1F>(_inputs_info.at(i).name().c_str(), _inputs_info.at(i).label().c_str(), _inputs_info.at(i).nbins(), _inputs_info.at(i).xlow(), _inputs_info.at(i).xhigh()));
   }
+
+  hist_xjets_bloose = book<TH1F>("xjets_bloose", "Number of b-tagged xjets (loose WP)", 11, -0.5, 10.5);
+  hist_xjets_bmedium = book<TH1F>("xjets_bmedium", "Number of b-tagged xjets (medium WP)", 11, -0.5, 10.5);
+  hist_xjets_btight = book<TH1F>("xjets_btight", "Number of b-tagged xjets (tight WP)", 11, -0.5, 10.5);
 }
 
 
@@ -70,6 +77,14 @@ void DNNHists::fill(const Event & event) {
   for(uint i = 0; i < _inputs_info.size(); i++) {
     _input_hists.at(i)->Fill(input_vals.at(i), w);
   }
+
+  vector<Jet> xjets_bloose = event.get(_h_xjets_bloose);
+  vector<Jet> xjets_bmedium = event.get(_h_xjets_bmedium);
+  vector<Jet> xjets_btight = event.get(_h_xjets_btight);
+
+  hist_xjets_bloose->Fill(xjets_bloose.size(), w);
+  hist_xjets_bmedium->Fill(xjets_bmedium.size(), w);
+  hist_xjets_btight->Fill(xjets_btight.size(), w);
 
   return;
 }
