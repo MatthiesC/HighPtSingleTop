@@ -199,9 +199,13 @@ bool DNNSetup::process(Event & event) {
   sort_by_deepjet(ijets_sortedByDj);
 
   const vector<Jet> jets = *event.jets;
+  sort_by_pt(jets);
   const vector<TopJet> hotvrjets = *event.topjets;
+  sort_by_pt(hotvrjets);
   const vector<Electron> electrons = *event.electrons;
+  sort_by_pt(electrons);
   const vector<Muon> muons = *event.muons;
+  sort_by_pt(muons);
   MET met = *event.met;
 
   unsigned int i = 0;
