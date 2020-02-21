@@ -1,6 +1,8 @@
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
 #include "UHH2/HighPtSingleTop/include/MyUtils.h"
 
+#include "UHH2/common/include/Utils.h"
+
 using namespace std;
 using namespace uhh2;
 
@@ -190,22 +192,24 @@ bool DNNSetup::process(Event & event) {
   const auto & lepton = event.get(h_primlep);
   const auto & pseudotop = event.get(h_pseudotop);
   const auto & wboson = event.get(h_wboson);
-  const auto & xjets = event.get(h_xjets);
-  const auto & ijets = event.get(h_ijets);
+  auto & xjets = event.get(h_xjets);
+  sort_by_pt<Jet>(xjets);
+  auto & ijets = event.get(h_ijets);
+  sort_by_pt<Jet>(ijets);
 
   vector<Jet> xjets_sortedByDj = xjets;
   sort_by_deepjet(xjets_sortedByDj);
   vector<Jet> ijets_sortedByDj = ijets;
   sort_by_deepjet(ijets_sortedByDj);
 
-  const vector<Jet> jets = *event.jets;
-  sort_by_pt(jets);
-  const vector<TopJet> hotvrjets = *event.topjets;
-  sort_by_pt(hotvrjets);
-  const vector<Electron> electrons = *event.electrons;
-  sort_by_pt(electrons);
-  const vector<Muon> muons = *event.muons;
-  sort_by_pt(muons);
+  vector<Jet> jets = *event.jets;
+  sort_by_pt<Jet>(jets);
+  vector<TopJet> hotvrjets = *event.topjets;
+  sort_by_pt<TopJet>(hotvrjets);
+  vector<Electron> electrons = *event.electrons;
+  sort_by_pt<Electron>(electrons);
+  vector<Muon> muons = *event.muons;
+  sort_by_pt<Muon>(muons);
   MET met = *event.met;
 
   unsigned int i = 0;
