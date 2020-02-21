@@ -1,5 +1,7 @@
 #include "UHH2/HighPtSingleTop/include/TaggedJets.h"
 
+#include "UHH2/common/include/Utils.h"
+
 using namespace uhh2;
 using namespace std;
 
@@ -15,10 +17,21 @@ TopTaggedJet::TopTaggedJet(Context & ctx,
 bool TopTaggedJet::process(uhh2::Event & event) {
   assert(event.topjets);
 
-  TopJet toptaggedjet;
+  vector<TopJet> topjets = *event.topjets;
+  sort_by_pt<TopJet>(topjets);
 
-  for(auto t : *event.topjets) {
-    if(m_topjetid(t, event)) toptaggedjet = t;
+  TopJet toptaggedjet;
+  bool toptag_found = false;
+
+  for(auto t : topjets) {
+    if(m_topjetid(t, event)) {
+      toptaggedjet = t;
+      toptag_found = true;
+    }
+  }
+
+  if(!toptag_found) { // Needed for the 0toptag validation region
+    toptaggedjet = topjets.at(0);
   }
 
   event.set(h_toptaggedjet, std::move(toptaggedjet));
