@@ -48,11 +48,11 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd;
     unique_ptr<DNNSetup> dnn_setup;
 
-    unique_ptr<Selection> slct_trigger, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet, slct_noxjet;
+    unique_ptr<Selection> slct_trigger, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet, slct_noxjet, slct_1bxjet;
 
-    unique_ptr<AndHists> hist_presel, hist_trigger, hist_1toptag, hist_btagsf;
+    unique_ptr<AndHists> hist_presel, hist_trigger, hist_1toptag, hist_0toptag, hist_1toptag_btagsf, hist_0toptag_btagsf;
     unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
-    unique_ptr<BinnedDNNHists> hist_dnn, hist_dnn_noxjet_YES, hist_dnn_noxjet_NO;
+    unique_ptr<BinnedDNNHists> hist_dnn, hist_dnn_noxjet_YES, hist_dnn_noxjet_NO, hist_dnn_0bxjet, hist_dnn_1bxjet, hist_dnn_0toptag;
 
     bool is_data, is_mc, is_muon, is_elec, using_hotvr;
     string dataset_version;
@@ -210,6 +210,7 @@ namespace uhh2 {
     slct_WJetsHeavy.reset(new WJetsGenSelection(ctx, "HF"));
     slct_oneijet.reset(new NObjectsSelection(ctx, 1, -1, "TopInJets"));
     slct_noxjet.reset(new NObjectsSelection(ctx, 0, 0, "TopExJets"));
+    slct_1bxjet.reset(new NObjectsSelection(ctx, 1, -1, "TopExBJetsTight"));
 
 
     //------------//
@@ -220,23 +221,34 @@ namespace uhh2 {
 
     hist_trigger.reset(new AndHists(ctx, "2_Trigger"));
 
-    hist_1toptag.reset(new AndHists(ctx, "3_OneTopTag"));
-    hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Full"));
-    hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Pt0to400", 0, 400));
-    hist_1toptag->add_hist(new TopTagHists(ctx, "3_OneTopTag_TopTagHists_Pt400toInf", 400));
+    hist_1toptag.reset(new AndHists(ctx, "3_1TopTag"));
+    hist_1toptag->add_hist(new TopTagHists(ctx, "3_1TopTag_TopTagHists_Full"));
+    hist_1toptag->add_hist(new TopTagHists(ctx, "3_1TopTag_TopTagHists_Pt0to400", 0, 400));
+    hist_1toptag->add_hist(new TopTagHists(ctx, "3_1TopTag_TopTagHists_Pt400toInf", 400));
+    hist_0toptag.reset(new AndHists(ctx, "3_0TopTag"));
+    hist_0toptag->add_hist(new TopTagHists(ctx, "3_0TopTag_TopTagHists_Full"));
+    hist_0toptag->add_hist(new TopTagHists(ctx, "3_0TopTag_TopTagHists_Pt0to400", 0, 400));
+    hist_0toptag->add_hist(new TopTagHists(ctx, "3_0TopTag_TopTagHists_Pt400toInf", 400));
 
-    hist_btagsf.reset(new AndHists(ctx, "4_BTagSF"));
-    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Full"));
-    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Pt0to400", 0, 400));
-    hist_btagsf->add_hist(new TopTagHists(ctx, "4_BTagSF_TopTagHists_Pt400toInf", 400));
+    hist_1toptag_btagsf.reset(new AndHists(ctx, "4_1TopTag_BTagSF"));
+    hist_1toptag_btagsf->add_hist(new TopTagHists(ctx, "4_1TopTag_BTagSF_TopTagHists_Full"));
+    hist_1toptag_btagsf->add_hist(new TopTagHists(ctx, "4_1TopTag_BTagSF_TopTagHists_Pt0to400", 0, 400));
+    hist_1toptag_btagsf->add_hist(new TopTagHists(ctx, "4_1TopTag_BTagSF_TopTagHists_Pt400toInf", 400));
+    hist_0toptag_btagsf.reset(new AndHists(ctx, "4_0TopTag_BTagSF"));
+    hist_0toptag_btagsf->add_hist(new TopTagHists(ctx, "4_0TopTag_BTagSF_TopTagHists_Full"));
+    hist_0toptag_btagsf->add_hist(new TopTagHists(ctx, "4_0TopTag_BTagSF_TopTagHists_Pt0to400", 0, 400));
+    hist_0toptag_btagsf->add_hist(new TopTagHists(ctx, "4_0TopTag_BTagSF_TopTagHists_Pt400toInf", 400));
 
     hist_decaymatch.reset(new MatchHists(ctx, "MatchHists_Full"));
     hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
     hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
 
-    hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists", dnn_config_inputNames, dnn_setup->inputs_info()));
-    hist_dnn_noxjet_YES.reset(new BinnedDNNHists(ctx, "NoXJet_YES_DNNHists", dnn_config_inputNames, dnn_setup->inputs_info()));
-    hist_dnn_noxjet_NO.reset(new BinnedDNNHists(ctx, "NoXJet_NO_DNNHists", dnn_config_inputNames, dnn_setup->inputs_info()));
+    hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists_1TopTag", dnn_config_inputNames, dnn_setup->inputs_info()));
+    hist_dnn_noxjet_YES.reset(new BinnedDNNHists(ctx, "DNNHists_NoXJet_YES", dnn_config_inputNames, dnn_setup->inputs_info()));
+    hist_dnn_noxjet_NO.reset(new BinnedDNNHists(ctx, "DNNHists_NoXJet_NO", dnn_config_inputNames, dnn_setup->inputs_info()));
+    hist_dnn_0bxjet.reset(new BinnedDNNHists(ctx, "DNNHists_0bXJet", dnn_config_inputNames, dnn_setup->inputs_info()));
+    hist_dnn_1bxjet.reset(new BinnedDNNHists(ctx, "DNNHists_1bXJet", dnn_config_inputNames, dnn_setup->inputs_info()));
+    hist_dnn_0toptag.reset(new BinnedDNNHists(ctx, "DNNHists_0TopTag", dnn_config_inputNames, dnn_setup->inputs_info()));
 }
 
 
@@ -285,25 +297,31 @@ namespace uhh2 {
     hist_trigger->fill(event);
 
     // Require exactly one HOTVR t-tag
-    if(!slct_1toptag->passes(event)) return false;
-    hadronictop->process(event);
-    sf_toptag->process(event);
+    bool _1toptag = slct_1toptag->passes(event);
+    //if(!slct_1toptag->passes(event)) return false;
+    if(_1toptag) {
+      hadronictop->process(event);
+      sf_toptag->process(event);
+    }
 
     // Tag some objects
-    toptaggedjet->process(event);
+    toptaggedjet->process(event); // in case, we are in the 0toptag validation region, use leading HOTVR jet as "t jet"
     btaggedjets->process(event);
     nontopak4jets->process(event);
     wboson->process(event);
     pseudotop->process(event);
     if(!slct_oneijet->passes(event)) return false; // filter very few events which do not have one AK4 jet overlapping with t jet
-    hist_1toptag->fill(event);
+
+    if(_1toptag) hist_1toptag->fill(event);
+    else hist_0toptag->fill(event);
 
     // Apply reweighting of DeepJet distributions
     sf_deepjet->process(event);
-    hist_btagsf->fill(event);
+    if(_1toptag) hist_1toptag_btagsf->fill(event);
+    else hist_0toptag_btagsf->fill(event);
 
     // Split tW signal into 3-merged, 2-merged, 1-merged, 0-merged (== how many top decay products ended up inside t-tagged HOTVR jet)
-    if(dataset_version.find("ST_tW") == 0) {
+    if(_1toptag && dataset_version.find("ST_tW") == 0) {
       // GenProducer already processed at beginning of module!
       if((dataset_version.find("ST_tW_merged3") == 0 || dataset_version.find("ST_tW_DS_merged3") == 0) && !slct_tW_merged3->passes(event)) return false;
       if((dataset_version.find("ST_tW_merged2") == 0 || dataset_version.find("ST_tW_DS_merged2") == 0) && !slct_tW_merged2->passes(event)) return false;
@@ -333,9 +351,20 @@ namespace uhh2 {
     event.set(h_dnn_output_val__HighBoost, (double)dnn_output_vals__HighBoost[dnn_config_outputName__HighBoost]);
 
     // Histograms of DNN inputs and DNN output
-    hist_dnn->fill(event);
-    if(slct_noxjet->passes(event)) hist_dnn_noxjet_YES->fill(event); // well-defined tW LO, suppressing interference effects of tW NLO / ttbar LO
-    else hist_dnn_noxjet_NO->fill(event);
+    if(_1toptag) {
+      hist_dnn->fill(event);
+      if(slct_noxjet->passes(event)) hist_dnn_noxjet_YES->fill(event); // well-defined tW LO, suppressing interference effects of tW NLO / ttbar LO
+      else {
+	hist_dnn_noxjet_NO->fill(event);
+	if(slct_1bxjet->passes(event)) hist_dnn_1bxjet->fill(event);
+	else hist_dnn_0bxjet->fill(event);
+      }
+    }
+    else { // Fill validation region DNN plots
+      hist_dnn_0toptag->fill(event);
+    }
+
+    if(!_1toptag) return false; // Finally through away events without t-tagged jet
 
     // Place analysis routines into a new Module!!!
     // End of main selection
