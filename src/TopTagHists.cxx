@@ -19,8 +19,6 @@ TopTagHists::TopTagHists(Context & ctx, const string & dirname, double arg_MIN_P
 
   const int nBins_dR = 100;
   const int nBins_dPhi = 128;
-  const int nBins_dR_lowRes = 50;
-  const int nBins_dPhi_lowRes = 64;
 
   hist_top_pt = book<TH1F>("top_pt", "t jet p_{T} [GeV]", 100, 0, 1600);
   hist_top_pt_1GeV = book<TH1F>("top_pt_1GeV", "t jet p_{T} [GeV]", 1600, 0, 1600);
@@ -74,13 +72,15 @@ void TopTagHists::fill(const uhh2::Event & event) {
     // Substructure variables
     vector<Jet> subjets = topjet.subjets();
     sort_by_pt(subjets);
-    double m12 = (subjets.at(0).v4() + subjets.at(1).v4()).M();
-    double m13 = (subjets.at(0).v4() + subjets.at(2).v4()).M();
-    double m23 = (subjets.at(1).v4() + subjets.at(2).v4()).M();
-    double min_mass_ij = min(m12, min(m13, m23));
     hist_top_nsub->Fill(subjets.size(), w);
     hist_top_fpt->Fill(subjets.at(0).pt() / topjet.v4().Pt(), w);
-    hist_top_mpair->Fill(min_mass_ij, w);
+    if(topjet.subjets().size() > 2) {
+      double m12 = (subjets.at(0).v4() + subjets.at(1).v4()).M();
+      double m13 = (subjets.at(0).v4() + subjets.at(2).v4()).M();
+      double m23 = (subjets.at(1).v4() + subjets.at(2).v4()).M();
+      double min_mass_ij = min(m12, min(m13, m23));
+      hist_top_mpair->Fill(min_mass_ij, w);
+    }
     hist_top_tau32->Fill(topjet.tau3_groomed() / topjet.tau2_groomed(), w);
     hist_top_tau21->Fill(topjet.tau2_groomed() / topjet.tau1_groomed(), w);
     hist_top_tau1->Fill(topjet.tau1_groomed(), w);

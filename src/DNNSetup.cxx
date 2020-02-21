@@ -321,7 +321,8 @@ bool DNNSetup::process(Event & event) {
   values.at(i++) = topjet.tau3_groomed();
   values.at(i++) = topjet.subjets().at(0).v4().Pt() / topjet.v4().Pt();
   values.at(i++) = topjet.v4().M();
-  values.at(i++) = min((topjet.subjets().at(0).v4() + topjet.subjets().at(1).v4()).M(), min((topjet.subjets().at(0).v4() + topjet.subjets().at(2).v4()).M(), (topjet.subjets().at(1).v4() + topjet.subjets().at(2).v4()).M()));
+  if(topjet.subjets().size() == 2) values.at(i++) = (topjet.subjets().at(0).v4() + topjet.subjets().at(0).v4()).M(); // Needed for 0toptag validation region, where we do not necessarily have 3 subjets
+  else values.at(i++) = min((topjet.subjets().at(0).v4() + topjet.subjets().at(1).v4()).M(), min((topjet.subjets().at(0).v4() + topjet.subjets().at(2).v4()).M(), (topjet.subjets().at(1).v4() + topjet.subjets().at(2).v4()).M()));
   values.at(i++) = deltaR(topjet.v4(), lepton.v4());
   values.at(i++) = deltaPhi(topjet.v4(), met.v4());
   values.at(i++) = deltaPhi(lepton.v4(), met.v4());
