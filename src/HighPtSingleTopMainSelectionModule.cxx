@@ -50,7 +50,7 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd;
     unique_ptr<DNNSetup> dnn_setup;
 
-    unique_ptr<Selection> slct_trigger, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet, slct_noxjet, slct_1bxjet;
+    unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet, slct_noxjet, slct_1bxjet;
 
     unique_ptr<AndHists> hist_presel, hist_trigger, hist_1toptag, hist_0toptag, hist_1toptag_btagsf, hist_0toptag_btagsf;
     unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
@@ -83,7 +83,7 @@ namespace uhh2 {
     // KEYS //
     //------//
 
-    debug = true;
+    debug = false;
 
     is_data = ctx.get("dataset_type") == "DATA";
     is_mc   = ctx.get("dataset_type") == "MC";
@@ -204,6 +204,7 @@ namespace uhh2 {
     //------------//
 
     slct_trigger.reset(new HighPtSingleTopTriggerSelection(ctx));
+    slct_0toptag.reset(new NTopJetSelection(0, 0, StandardHOTVRTopTagID));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
     slct_tW_merged3.reset(new MergeScenarioSelection(ctx, 3));
     slct_tW_merged2.reset(new MergeScenarioSelection(ctx, 2));
@@ -309,6 +310,7 @@ namespace uhh2 {
     if(debug) cout << "Require exactly one HOTVR t-tag" << endl;
     bool _1toptag = slct_1toptag->passes(event);
     //if(!slct_1toptag->passes(event)) return false;
+    if(!slct_1toptag->passes(event) || !slct_0toptag->passes(event)) return false; // make sure to reject events with 2 or more t tags
     if(_1toptag) {
       hadronictop->process(event);
       sf_toptag->process(event);
@@ -320,8 +322,8 @@ namespace uhh2 {
     btaggedjets->process(event);
     nontopak4jets->process(event);
     wboson->process(event);
-    pseudotop->process(event);
     if(!slct_oneijet->passes(event)) return false; // filter very few events which do not have one AK4 jet overlapping with t jet
+    pseudotop->process(event); // needs to come after oneijet seletion! Else, no leptonic top quark hypothesis can be built
 
     if(_1toptag) hist_1toptag->fill(event);
     else hist_0toptag->fill(event);
