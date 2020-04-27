@@ -44,6 +44,8 @@ namespace uhh2 {
     
   private:
 
+    bool debug;
+
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_deepjet;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd;
     unique_ptr<DNNSetup> dnn_setup;
@@ -80,6 +82,8 @@ namespace uhh2 {
     //------//
     // KEYS //
     //------//
+
+    debug = true;
 
     is_data = ctx.get("dataset_type") == "DATA";
     is_mc   = ctx.get("dataset_type") == "MC";
@@ -259,10 +263,12 @@ namespace uhh2 {
   bool HighPtSingleTopMainSelectionModule::process(Event & event) {
 
     // Split up WJets into heavy flavour and light jets
+    if(debug) cout << "Split up WJets into heavy flavour and light jets" << endl;
     if((dataset_version.find("WJetsHeavy") == 0) && !slct_WJetsHeavy->passes(event)) return false;
     if((dataset_version.find("WJetsLight") == 0) && slct_WJetsHeavy->passes(event)) return false;
 
     // Split up tW background into TopToHadAndWToTau and Else
+    if(debug) cout << "Split up tW background into TopToHadAndWToTau and Else" << endl;
     if(dataset_version.find("ST_tW") == 0) {
       SingleTopGen_tWchProd->process(event);
       bool is_TopToHadAndWToTau = slct_tW_TopToHad->passes(event) && slct_tW_WToTau->passes(event);
@@ -271,9 +277,11 @@ namespace uhh2 {
     }
 
     // Identify primary lepton
+    if(debug) cout << "Identify primary lepton" << endl;
     primarylep->process(event);
 
     // After preselection
+    if(debug) cout << "After preselection" << endl;
     scale_variation->process(event);
     sf_lumi->process(event);
     sf_pileup->process(event);
@@ -287,6 +295,7 @@ namespace uhh2 {
     hist_presel->fill(event);
 
     // Trigger paths
+    if(debug) cout << "Trigger paths" << endl;
     if(!slct_trigger->passes(event)) return false;
     if(is_muon) {
       sf_muon_trig->process(event);
@@ -297,6 +306,7 @@ namespace uhh2 {
     hist_trigger->fill(event);
 
     // Require exactly one HOTVR t-tag
+    if(debug) cout << "Require exactly one HOTVR t-tag" << endl;
     bool _1toptag = slct_1toptag->passes(event);
     //if(!slct_1toptag->passes(event)) return false;
     if(_1toptag) {
@@ -305,6 +315,7 @@ namespace uhh2 {
     }
 
     // Tag some objects
+    if(debug) cout << "Tag some objects" << endl;
     toptaggedjet->process(event); // in case, we are in the 0toptag validation region, use leading HOTVR jet as "t jet"
     btaggedjets->process(event);
     nontopak4jets->process(event);
@@ -316,11 +327,13 @@ namespace uhh2 {
     else hist_0toptag->fill(event);
 
     // Apply reweighting of DeepJet distributions
+    if(debug) cout << "Apply reweighting of DeepJet distributions" << endl;
     sf_deepjet->process(event);
     if(_1toptag) hist_1toptag_btagsf->fill(event);
     else hist_0toptag_btagsf->fill(event);
 
     // Split tW signal into 3-merged, 2-merged, 1-merged, 0-merged (== how many top decay products ended up inside t-tagged HOTVR jet)
+    if(debug) cout << "Split tW signal into 3-merged, 2-merged, 1-merged, 0-merged (== how many top decay products ended up inside t-tagged HOTVR jet)" << endl;
     if(_1toptag && dataset_version.find("ST_tW") == 0) {
       // GenProducer already processed at beginning of module!
       if((dataset_version.find("ST_tW_merged3") == 0 || dataset_version.find("ST_tW_DS_merged3") == 0) && !slct_tW_merged3->passes(event)) return false;
@@ -333,9 +346,11 @@ namespace uhh2 {
     }
 
     // Set event handles used as input for DNN training
+    if(debug) cout << "Set event handles used as input for DNN training" << endl;
     dnn_setup->process(event);
 
     // Application of a trained DNN -- low boost
+    if(debug) cout << "Application of a trained DNN -- low boost" << endl;
     map<string, double> inputs_map;
     for(uint i = 0; i < dnn_config_inputNames.size(); i++) {
       inputs_map[dnn_config_inputNames.at(i)] = (double)event.get(m_input_handles.at(i));
@@ -343,6 +358,7 @@ namespace uhh2 {
     auto dnn_output_vals = NeuralNetwork->compute(inputs_map);
     event.set(h_dnn_output_val, (double)dnn_output_vals[dnn_config_outputName]);
     // Application of a trained DNN -- high boost
+    if(debug) cout << "Application of a trained DNN -- high boost" << endl;
     map<string, double> inputs_map__HighBoost;
     for(uint i = 0; i < dnn_config_inputNames__HighBoost.size(); i++) {
       inputs_map__HighBoost[dnn_config_inputNames__HighBoost.at(i)] = (double)event.get(m_input_handles__HighBoost.at(i));
@@ -351,6 +367,7 @@ namespace uhh2 {
     event.set(h_dnn_output_val__HighBoost, (double)dnn_output_vals__HighBoost[dnn_config_outputName__HighBoost]);
 
     // Histograms of DNN inputs and DNN output
+    if(debug) cout << "Histograms of DNN inputs and DNN output" << endl;
     if(_1toptag) {
       hist_dnn->fill(event);
       if(slct_noxjet->passes(event)) hist_dnn_noxjet_YES->fill(event); // well-defined tW LO, suppressing interference effects of tW NLO / ttbar LO
