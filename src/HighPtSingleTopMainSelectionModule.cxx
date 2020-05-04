@@ -310,7 +310,7 @@ namespace uhh2 {
     if(debug) cout << "Require exactly one HOTVR t-tag" << endl;
     bool _1toptag = slct_1toptag->passes(event);
     //if(!slct_1toptag->passes(event)) return false;
-    if(!slct_1toptag->passes(event) || !slct_0toptag->passes(event)) return false; // make sure to reject events with 2 or more t tags
+    //if(!(slct_1toptag->passes(event) && slct_0toptag->passes(event))) return false; // make sure to reject events with 2 or more t tags
     if(_1toptag) {
       hadronictop->process(event);
       sf_toptag->process(event);
