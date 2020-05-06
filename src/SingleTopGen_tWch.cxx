@@ -168,7 +168,7 @@ SingleTopGen_tWch::SingleTopGen_tWch(const vector<GenParticle> & genparticles, b
       m_gluonAss = final_gluon;
     }
     // find possible final state bottom (not from top decay, but from non-LO processes)
-    else if ((abs(genp.pdgId()) == 5 || abs(genp.pdgId()) == 3 || abs(genp.pdgId()) == 1) && genp.mother(&genparticles, 1)->index() < 2 && genp.mother(&genparticles, 2)->index() < 2){
+    else if (abs(genp.pdgId()) == 5 && genp.mother(&genparticles, 1)->index() < 2 && genp.mother(&genparticles, 2)->index() < 2){
       GenParticle bAss;
       bAss = genp;
       m_bAss = bAss;
