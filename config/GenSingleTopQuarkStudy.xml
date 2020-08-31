@@ -30,14 +30,14 @@
   <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTdir;/" PostFix="" TargetLumi="&TargetLumi;" >
 
     <!-- s-channel -->
-    <InputData Lumi="9818810.853" NEventsMax="&NEVT;" Type="MC" Version="ST_sChannel" Cacheable="&b_Cacheable;">
+    <!--<InputData Lumi="9818810.853" NEventsMax="&NEVT;" Type="MC" Version="ST_sChannel" Cacheable="&b_Cacheable;">
       &ST_sChannel_TTbar;
       <InputTree Name="AnalysisTree" />
       <OutputTree Name="AnalysisTree" />
-    </InputData>
+    </InputData>-->
 
     <!-- t-channel -->
-    <InputData Lumi="477843.6995" NEventsMax="&NEVT;" Type="MC" Version="ST_tChannel_T" Cacheable="&b_Cacheable;">
+    <!--<InputData Lumi="477843.6995" NEventsMax="&NEVT;" Type="MC" Version="ST_tChannel_T" Cacheable="&b_Cacheable;">
       &ST_tChannel_T;
       <InputTree Name="AnalysisTree" />
       <OutputTree Name="AnalysisTree" />
@@ -46,7 +46,7 @@
       &ST_tChannel_Tbar;
       <InputTree Name="AnalysisTree" />
       <OutputTree Name="AnalysisTree" />
-    </InputData>
+    </InputData>-->
 
     <!-- tW DR -->
     <InputData Lumi="442296.4019" NEventsMax="&NEVT;" Type="MC" Version="ST_tW_DR_T" Cacheable="&b_Cacheable;">
@@ -75,6 +75,7 @@
     <UserConfig>
       <Item Name="GenParticleCollection" Value="GenParticles" />
       <Item Name="GenInfoName" Value="genInfo" />
+      <Item Name="GenJetCollection" Value="slimmedGenJets" />
       <Item Name="AnalysisModule" Value="GenSingleTopQuarkModule" />
       <Item Name="use_sframe_weight" Value="false" />
     </UserConfig>

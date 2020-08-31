@@ -110,6 +110,7 @@ public:
   GenParticle m_initial2;
   GenParticle m_gluonAss = GenParticle(); // make sure that this member variable is initialized
   GenParticle m_bAss = GenParticle(); // same
+  bool m_has_bAss = false;
 
   E_DecayChannel m_type;
 };

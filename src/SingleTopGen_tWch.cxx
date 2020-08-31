@@ -172,6 +172,7 @@ SingleTopGen_tWch::SingleTopGen_tWch(const vector<GenParticle> & genparticles, b
       GenParticle bAss;
       bAss = genp;
       m_bAss = bAss;
+      m_has_bAss = true;
     }
   }
 
@@ -325,7 +326,7 @@ bool SingleTopGen_tWch::IsBottomGluonProcess() const{
 }
 
 bool SingleTopGen_tWch::HasAssociatedBottom() const{
-  return m_bAss.pdgId();
+  return m_has_bAss;
 }
 
 bool SingleTopGen_tWch::HasAssociatedGluon() const{

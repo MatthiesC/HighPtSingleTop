@@ -135,6 +135,16 @@ bool tWgenSelection::passes(const Event & event) {
   //else if(m_decay == "LO") {
   //  if(!GENtW.IsBottomGluonProcess()) return false;
   //}
+  else if(m_decay == "GenBJet") {
+    if(!GENtW.HasAssociatedBottom()) return false;
+    if(!(abs(GENtW.bAss().v4().Eta()) < 2.4)) return false;
+    if(!(GENtW.bAss().v4().Pt() > 30)) return false;
+    bool near_genjet = false;
+    for(auto gj : *event.genjets) {
+      if(deltaR(gj.v4(), GENtW.bAss().v4()) < 0.1) near_genjet = true;
+    }
+    if(!near_genjet) return false;
+  }
 
   return true;
 }
