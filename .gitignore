@@ -18,3 +18,4 @@ tmva/weights/*
 tmva/plots*/*
 config/process_TTbar.sh
 data/*
+output
