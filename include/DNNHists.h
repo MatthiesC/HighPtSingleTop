@@ -16,7 +16,6 @@ class DNNHists: public uhh2::Hists {
   uhh2::Event::Handle<double> _h_binning_var;
   uhh2::Event::Handle<double> _h_event_weight;
   uhh2::Event::Handle<double> _h_dnn_output;
-  uhh2::Event::Handle<double> _h_dnn_output__HighBoost;
   uhh2::Event::Handle<std::vector<Jet>> _h_xjets_bloose;
   uhh2::Event::Handle<std::vector<Jet>> _h_xjets_bmedium;
   uhh2::Event::Handle<std::vector<Jet>> _h_xjets_btight;
@@ -27,9 +26,6 @@ class DNNHists: public uhh2::Hists {
   TH1F *hist_dnn_output;
   TH1F *hist_dnn_output_20bins;
   TH1F *hist_dnn_output_10bins;
-  TH1F *hist_dnn_output__HighBoost;
-  TH1F *hist_dnn_output_20bins__HighBoost;
-  TH1F *hist_dnn_output_10bins__HighBoost;
 
   std::vector<DNNInput> _inputs_info;
   std::vector<uhh2::Event::Handle<double>> _h_inputs;

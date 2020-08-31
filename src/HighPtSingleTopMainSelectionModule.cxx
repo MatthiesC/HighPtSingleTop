@@ -68,12 +68,6 @@ namespace uhh2 {
     string dnn_config_outputName;
     vector<Event::Handle<double>> m_input_handles;
     Event::Handle<double> h_dnn_output_val;
-
-    unique_ptr<lwt::LightweightNeuralNetwork> NeuralNetwork__HighBoost;
-    vector<string> dnn_config_inputNames__HighBoost;
-    string dnn_config_outputName__HighBoost;
-    vector<Event::Handle<double>> m_input_handles__HighBoost;
-    Event::Handle<double> h_dnn_output_val__HighBoost;
   };
 
 
@@ -101,7 +95,6 @@ namespace uhh2 {
     string syst_btag         = ctx.get("SystDirection_BTagSF", "nominal");
 
     string neural_net_filepath = ctx.get("NeuralNetFile");
-    string neural_net_filepath__HighBoost = ctx.get("NeuralNetFile__HighBoost");
 
 
     //---------------------//
@@ -158,7 +151,6 @@ namespace uhh2 {
 
     dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID, 0.));
 
-    // Low boost NN
     ifstream neural_net_file(neural_net_filepath);
     auto dnn_config = lwt::parse_json(neural_net_file);
     NeuralNetwork.reset(new lwt::LightweightNeuralNetwork(dnn_config.inputs, dnn_config.layers, dnn_config.outputs));
@@ -177,26 +169,6 @@ namespace uhh2 {
       m_input_handles.push_back(ctx.get_handle<double>(dnn_config_inputNames.at(i)));
     }
     h_dnn_output_val = ctx.declare_event_output<double>("DNN_Output");
-
-    // High boost NN
-    ifstream neural_net_file__HighBoost(neural_net_filepath__HighBoost);
-    auto dnn_config__HighBoost = lwt::parse_json(neural_net_file__HighBoost);
-    NeuralNetwork__HighBoost.reset(new lwt::LightweightNeuralNetwork(dnn_config__HighBoost.inputs, dnn_config__HighBoost.layers, dnn_config__HighBoost.outputs));
-    cout << "Number of used DNN inputs: " << dnn_config__HighBoost.inputs.size() << endl;
-    for(uint i = 0; i < dnn_config__HighBoost.inputs.size(); i++) {
-      const auto & input = dnn_config__HighBoost.inputs.at(i);
-      cout << "input.name: " << input.name << endl;
-      dnn_config_inputNames__HighBoost.push_back(input.name);
-    }
-    for(uint i = 0; i < dnn_config__HighBoost.outputs.size(); i++) {
-      const auto & output = dnn_config__HighBoost.outputs.at(i);
-      cout << "output.name: " << output << endl;
-      dnn_config_outputName__HighBoost = output;
-    }
-    for(uint i = 0; i < dnn_config_inputNames__HighBoost.size(); i++) {
-      m_input_handles__HighBoost.push_back(ctx.get_handle<double>(dnn_config_inputNames__HighBoost.at(i)));
-    }
-    h_dnn_output_val__HighBoost = ctx.declare_event_output<double>("DNN_Output__HighBoost");
 
 
     //------------//
@@ -359,14 +331,6 @@ namespace uhh2 {
     }
     auto dnn_output_vals = NeuralNetwork->compute(inputs_map);
     event.set(h_dnn_output_val, (double)dnn_output_vals[dnn_config_outputName]);
-    // Application of a trained DNN -- high boost
-    if(debug) cout << "Application of a trained DNN -- high boost" << endl;
-    map<string, double> inputs_map__HighBoost;
-    for(uint i = 0; i < dnn_config_inputNames__HighBoost.size(); i++) {
-      inputs_map__HighBoost[dnn_config_inputNames__HighBoost.at(i)] = (double)event.get(m_input_handles__HighBoost.at(i));
-    }
-    auto dnn_output_vals__HighBoost = NeuralNetwork__HighBoost->compute(inputs_map__HighBoost);
-    event.set(h_dnn_output_val__HighBoost, (double)dnn_output_vals__HighBoost[dnn_config_outputName__HighBoost]);
 
     // Histograms of DNN inputs and DNN output
     if(debug) cout << "Histograms of DNN inputs and DNN output" << endl;
