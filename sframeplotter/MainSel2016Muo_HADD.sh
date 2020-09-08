@@ -1,7 +1,15 @@
 #!/bin/bash
 
-workDir=/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/
+workDir=/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon
 preFix=uhh2.AnalysisModuleRunner.
+
+declare -a systs=( \
+    #/ \ # nominal
+    /syst/jec/up/ \
+    /syst/jec/down/ \
+    /syst/jer/up/ \
+    /syst/jer/down/ \
+)
 
 declare -a arr=( \
     DATA.DATA \
@@ -33,7 +41,10 @@ declare -a arr=( \
     MC.QCD \
 )
 
-for i in "${arr[@]}"
+for s in "${systs[@]}"
 do
-    hadd -f ${workDir}${preFix}${i}.root ${workDir}${preFix}${i}*.root
+    for i in "${arr[@]}"
+    do
+	hadd -f ${workDir}${s}${preFix}${i}.root ${workDir}${s}${preFix}${i}*.root
+    done
 done

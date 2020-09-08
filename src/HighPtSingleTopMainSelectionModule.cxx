@@ -38,10 +38,10 @@ namespace uhh2 {
 
   class HighPtSingleTopMainSelectionModule: public AnalysisModule {
   public:
-    
+
     explicit HighPtSingleTopMainSelectionModule(Context & ctx);
     virtual bool process(Event & event) override;
-    
+
   private:
 
     bool debug;
@@ -323,8 +323,8 @@ namespace uhh2 {
     if(debug) cout << "Set event handles used as input for DNN training" << endl;
     dnn_setup->process(event);
 
-    // Application of a trained DNN -- low boost
-    if(debug) cout << "Application of a trained DNN -- low boost" << endl;
+    // Application of a trained DNN
+    if(debug) cout << "Application of a trained DNN" << endl;
     map<string, double> inputs_map;
     for(uint i = 0; i < dnn_config_inputNames.size(); i++) {
       inputs_map[dnn_config_inputNames.at(i)] = (double)event.get(m_input_handles.at(i));
@@ -338,9 +338,9 @@ namespace uhh2 {
       hist_dnn->fill(event);
       if(slct_noxjet->passes(event)) hist_dnn_noxjet_YES->fill(event); // well-defined tW LO, suppressing interference effects of tW NLO / ttbar LO
       else {
-	hist_dnn_noxjet_NO->fill(event);
-	if(slct_1bxjet->passes(event)) hist_dnn_1bxjet->fill(event);
-	else hist_dnn_0bxjet->fill(event);
+	      hist_dnn_noxjet_NO->fill(event);
+	      if(slct_1bxjet->passes(event)) hist_dnn_1bxjet->fill(event);
+	      else hist_dnn_0bxjet->fill(event);
       }
     }
     else { // Fill validation region DNN plots
