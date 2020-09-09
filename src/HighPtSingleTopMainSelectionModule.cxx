@@ -18,6 +18,7 @@
 #include "UHH2/HOTVR/include/HOTVRScaleFactor.h"
 #include "UHH2/HOTVR/include/HadronicTop.h"
 
+#include "UHH2/HighPtSingleTop/include/Ak8Corrections.h"
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
@@ -48,6 +49,8 @@ namespace uhh2 {
 
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_deepjet;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd;
+    unique_ptr<Ak8Corrections> ak8corrections;
+    unique_ptr<AnalysisModule> ak8leptonCleaner;
     unique_ptr<DNNSetup> dnn_setup;
 
     unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet, slct_noxjet, slct_1bxjet;
@@ -128,8 +131,8 @@ namespace uhh2 {
     // only 2016 muon scale factors linked here, TODO later: distinguish between years and ele/muon
     // checkout Alex' genius: /nfs/dust/cms/user/froehlia/CMSSW_10_2_10/src/UHH2/BstarToTW/src/BstarToTWSystematics.cxx
     sf_muon_trig.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/uhh2-102X-v2/CMSSW_10_2_16/src/UHH2/common/data/2016/MuonTrigger_EfficienciesAndSF_average_RunBtoH.root", "IsoMu24_OR_IsoTkMu24_PtEtaBins", 0.5, "muon_trigger", true, syst_muon_trigger));
-    sf_muon_id.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/uhh2-102X-v2/CMSSW_10_2_16/src/UHH2/common/data/2016/MuonID_EfficienciesAndSF_average_RunBtoH.root", "NUM_TightID_DEN_genTracks_eta_pt", 1, "muon_tightID", true, syst_muon_id));
-    sf_muon_iso.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/uhh2-102X-v2/CMSSW_10_2_16/src/UHH2/common/data/2016/MuonIso_EfficienciesAndSF_average_RunBtoH.root", "NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt", 1, "muon_isolation", true, syst_muon_iso));
+    sf_muon_id.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/uhh2-102X-v2/CMSSW_10_2_16/src/UHH2/common/data/2016/MuonID_EfficienciesAndSF_average_RunBtoH.root", "MC_NUM_TightID_DEN_genTracks_PAR_pt_eta", 1, "muon_tightID", true, syst_muon_id));
+    sf_muon_iso.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/uhh2-102X-v2/CMSSW_10_2_16/src/UHH2/common/data/2016/MuonIso_EfficienciesAndSF_average_RunBtoH.root", "TightISO_TightID_pt_eta", 1, "muon_isolation", true, syst_muon_iso));
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_toptag));
     sf_deepjet.reset(new MCBTagDiscriminantReweighting(ctx, btag_algo, "jets", syst_btag));
@@ -139,6 +142,9 @@ namespace uhh2 {
     // MISCELLANEOUS //
     //---------------//
 
+    ak8corrections.reset(new Ak8Corrections());
+    ak8corrections->init(ctx);
+    ak8leptonCleaner.reset(new Ak8LeptonDeltaRCleaner(ctx));
     primarylep.reset(new PrimaryLepton(ctx));
     hadronictop.reset(new HadronicTop(ctx));
     toptaggedjet.reset(new TopTaggedJet(ctx, StandardHOTVRTopTagID));
@@ -252,6 +258,10 @@ namespace uhh2 {
     // Identify primary lepton
     if(debug) cout << "Identify primary lepton" << endl;
     primarylep->process(event);
+
+    // Apply jec/jer corrections for Ak8 jets (stored as additional branch, see xml)
+    ak8corrections->process(event);
+    ak8leptonCleaner->process(event);
 
     // After preselection: lumi, PU, and lepton scale factors
     if(debug) cout << "After preselection" << endl;
