@@ -13,7 +13,7 @@
 
 
 namespace uhh2 {
-    
+
   class METSelection: public uhh2::Selection {
   public:
     METSelection(double met_min_ = 0);
@@ -107,7 +107,17 @@ namespace uhh2 {
     int m_n_max;
   };
 
-  
+  // TODO: Merge this class with the one above...
+  class MyNTopJetsSelection: public uhh2::Selection {
+  public:
+    MyNTopJetsSelection(uhh2::Context & ctx, int n_min, int n_max, std::string objects_handle_name);
+    virtual bool passes(const uhh2::Event & event) override;
+  private:
+    uhh2::Event::Handle<std::vector<TopJet>> h_objects;
+    int m_n_min;
+    int m_n_max;
+  };
+
   // copied from Alex
   class HighPtSingleTopTriggerSelection : public uhh2::Selection {
   public:

@@ -94,7 +94,7 @@ tWgenSignalSelection::tWgenSignalSelection(Context & ctx, bool is_muon_):
   is_muon(is_muon_) {}
 
 bool tWgenSignalSelection::passes(const Event & event) {
-  
+
   const auto & GENtW = event.get(h_GENtW);
 
   if(!GENtW.IsTopHadronicDecay()) return false;
@@ -196,18 +196,18 @@ JetLeptonOverlapRemoval::JetLeptonOverlapRemoval(Context & ctx, double & deltaR_
   deltaR_min(deltaR_min_) {}
 
 bool JetLeptonOverlapRemoval::process(Event & event) {
-  
+
   std::vector<Jet> result;
   const FlavorParticle & lepton = event.get(h_primlepton);
-  
+
   for(const auto & jet : *event.jets) {
     if(uhh2::deltaR(jet, lepton) > deltaR_min) {
       result.push_back(jet);
     }
    }
-  
+
   std::swap(result, *event.jets);
-  
+
   return true;
 }
 
@@ -246,10 +246,11 @@ bool MergeScenarioSelection::passes(const Event & event) {
 }
 
 
-NObjectsSelection::NObjectsSelection(Context & ctx, int n_min, int n_max, string objects_handle_name):
-  h_objects(ctx.get_handle<vector<Jet>>(objects_handle_name)),
-  m_n_min(n_min),
-  m_n_max(n_max) {
+NObjectsSelection::NObjectsSelection(Context & ctx, int n_min, int n_max, string objects_handle_name) {
+
+  h_objects = ctx.get_handle<vector<Jet>>(objects_handle_name);
+  m_n_min = n_min;
+  m_n_max = n_max;
 
   if(m_n_max < -1) throw runtime_error("NObjectsSelection: n_max must be an integer >= -1");
   if(m_n_min < 0) throw runtime_error("NObjectsSelection: n_min must be an integer >= 0");
@@ -268,12 +269,41 @@ bool NObjectsSelection::passes(const Event & event) {
   }
 }
 
+// TODO: Merge this class with the one above...
+MyNTopJetsSelection::MyNTopJetsSelection(Context & ctx, int n_min, int n_max, string objects_handle_name) {
+
+  h_objects = ctx.get_handle<vector<TopJet>>(objects_handle_name);
+  m_n_min = n_min;
+  m_n_max = n_max;
+
+  if(m_n_max < -1) throw runtime_error("MyNTopJetsSelection: n_max must be an integer >= -1");
+  if(m_n_min < 0) throw runtime_error("MyNTopJetsSelection: n_min must be an integer >= 0");
+  if(m_n_max < m_n_min && m_n_max != -1) throw runtime_error("MyNTopJetsSelection: n_max >= n_min must be fulfilled");
+}
+
+bool MyNTopJetsSelection::passes(const Event & event) {
+
+  const auto objects = event.get(h_objects);
+
+  if(m_n_max == -1) {
+    return objects.size() >= (uint)m_n_min;
+  }
+  else {
+    return objects.size() >= (uint)m_n_min && objects.size() <= (uint)m_n_max;
+  }
+}
+
+
+
+
+
+
 
 // copied from Alex
 HighPtSingleTopTriggerSelection::HighPtSingleTopTriggerSelection(Context &ctx) {
   year = extract_year(ctx);
   is_ele = ctx.get("analysis_channel") == "ELECTRON";
-  is_muo = ctx.get("analysis_channel") == "MUON";    
+  is_muo = ctx.get("analysis_channel") == "MUON";
 
   trig_isomu24.reset(new TriggerSelection("HLT_IsoMu24_v*"));
   trig_isotkmu24.reset(new TriggerSelection("HLT_IsoTkMu24_v*"));
@@ -290,7 +320,7 @@ HighPtSingleTopTriggerSelection::HighPtSingleTopTriggerSelection(Context &ctx) {
 
 bool HighPtSingleTopTriggerSelection::passes(const Event &event) {
 
-  if (year == Year::is2016v3) 
+  if (year == Year::is2016v3)
     {
       if (is_ele)
 	{
@@ -302,7 +332,7 @@ bool HighPtSingleTopTriggerSelection::passes(const Event &event) {
 	}
     }
 
-  else if (year == Year::is2017v2) 
+  else if (year == Year::is2017v2)
     {
       if (is_ele)
 	{
@@ -313,7 +343,7 @@ bool HighPtSingleTopTriggerSelection::passes(const Event &event) {
 	  return (trig_isomu27->passes(event));
 	}
     }
-  
+
   else if (year == Year::is2018)
     {
       if (is_ele)

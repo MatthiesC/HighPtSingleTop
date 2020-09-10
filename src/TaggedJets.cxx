@@ -59,6 +59,49 @@ bool Ak8Jets::process(uhh2::Event & event) {
 Ak8Jets::~Ak8Jets() {}
 
 
+WTaggedJets::WTaggedJets(Context & ctx,
+       const std::string & h_name_analysis,
+       const std::string & h_name_loose,
+       const std::string & h_name_medium,
+       const std::string & h_name_tight,
+       const std::string & h_name_ak8jets):
+  h_ak8jets(ctx.get_handle<vector<TopJet>>(h_name_ak8jets)),
+  h_wtaggedjets_loose(ctx.get_handle<vector<TopJet>>(h_name_loose)),
+  h_wtaggedjets_medium(ctx.get_handle<vector<TopJet>>(h_name_medium)),
+  h_wtaggedjets_tight(ctx.get_handle<vector<TopJet>>(h_name_tight)),
+  h_wtaggedjets_analysis(ctx.get_handle<vector<TopJet>>(h_name_analysis))
+{}
+
+
+bool WTaggedJets::process(Event & event) {
+
+  vector<TopJet> ak8jets = event.get(h_ak8jets);
+  vector<TopJet> wjets_loose, wjets_medium, wjets_tight;
+
+  // TODO: the following cuts are just valid for 2016!!! This really needs to be more sophisticated!!! Maybe also switch to DeepAK8!!!
+  // https://twiki.cern.ch/twiki/bin/view/CMS/JetWtagging
+  for(auto & j : ak8jets) {
+    double tau21 = j.tau2_groomed() / j.tau1_groomed();
+    if(tau21 > 0.55) continue;
+    wjets_loose.push_back(j);
+    if(tau21 > 0.4) continue;
+    wjets_medium.push_back(j);
+    if(tau21 > 0.35) continue;
+    wjets_tight.push_back(j);
+  }
+
+  event.set(h_wtaggedjets_analysis, wjets_tight); // TODO: Use an argument of the constructor to decide which WP to use on analysis level
+  event.set(h_wtaggedjets_loose, std::move(wjets_loose));
+  event.set(h_wtaggedjets_medium, std::move(wjets_medium));
+  event.set(h_wtaggedjets_tight, std::move(wjets_tight));
+
+  return true;
+}
+
+
+WTaggedJets::~WTaggedJets() {}
+
+
 BTaggedJets::BTaggedJets(Context & ctx,
 			 BTag::algo btagalgo,
 			 BTag::wp workingpoint,

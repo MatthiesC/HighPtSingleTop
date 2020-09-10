@@ -268,6 +268,10 @@ bool Ak8Cleaning::process(uhh2::Event & event) {
 
   event.set(h_ak8jets_rec, cleaned_topjets);
 
+  //event.get(h_ak8jets_rec).clear();
+  //event.get(h_ak8jets_rec).reserve(cleaned_topjets.size());
+  //for(auto & tjet : cleaned_topjets) event.get(h_ak8jets_rec).push_back(tjet);
+
   //event.topjets->clear();
   //event.topjets->reserve(cleaned_topjets.size());
   //for(auto & j : cleaned_topjets) event.topjets->push_back(j);

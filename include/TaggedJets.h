@@ -38,18 +38,24 @@ private:
 };
 
 
-// class WTaggedJets: public uhh2::AnalysisModule {
-// public:
-//   explicit WTaggedJets(uhh2::Context & ctx,
-//            const std::string & h_name_analysis="WJets");
-//
-//   virtual bool process(uhh2::Event & event) override;
-//
-//   virtual ~WTaggedJets();
-//
-// private:
-//   uhh2::Event::Handle<std::vector<TopJet>> h_wtaggedjets_analysis;
-// };
+class WTaggedJets: public uhh2::AnalysisModule {
+public:
+  explicit WTaggedJets(uhh2::Context & ctx,
+           const std::string & h_name_analysis="WJets",
+           const std::string & h_name_loose="WJetsLoose",
+           const std::string & h_name_medium="WJetsMedium",
+           const std::string & h_name_tight="WJetsTight",
+           // loose, medium, tight, deepAk8, tau-only cuts, etc.
+				   const std::string & h_name_ak8jets="Ak8Jets");
+
+  virtual bool process(uhh2::Event & event) override;
+
+  virtual ~WTaggedJets();
+
+private:
+	uhh2::Event::Handle<std::vector<TopJet>> h_ak8jets;
+  uhh2::Event::Handle<std::vector<TopJet>> h_wtaggedjets_loose, h_wtaggedjets_medium, h_wtaggedjets_tight, h_wtaggedjets_analysis;
+};
 
 
 class BTaggedJets: public uhh2::AnalysisModule {

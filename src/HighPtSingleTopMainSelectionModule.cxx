@@ -26,6 +26,7 @@
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
 #include "UHH2/HighPtSingleTop/include/MatchHists.h"
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
+#include "UHH2/HighPtSingleTop/include/WTagHists.h"
 #include "UHH2/HighPtSingleTop/include/ReconstructionAlgorithms.h"
 
 #include "lwtnn/LightweightNeuralNetwork.hh"
@@ -50,12 +51,12 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_deepjet;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd;
     unique_ptr<Ak8Corrections> ak8corrections;
-    unique_ptr<AnalysisModule> ak8cleaning, ak8jets;
+    unique_ptr<AnalysisModule> ak8cleaning, ak8jets, wtaggedjets;
     unique_ptr<DNNSetup> dnn_setup;
 
-    unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet, slct_noxjet, slct_1bxjet;
+    unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet, slct_noxjet, slct_1bxjet, slct_1wtag;
 
-    unique_ptr<AndHists> hist_presel, hist_trigger, hist_1toptag, hist_0toptag, hist_1toptag_btagsf, hist_0toptag_btagsf;
+    unique_ptr<AndHists> hist_presel, hist_trigger, hist_1toptag, hist_0toptag, hist_0top1wtag, hist_1toptag_btagsf, hist_0toptag_btagsf;
     unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
     unique_ptr<BinnedDNNHists> hist_dnn, hist_dnn_noxjet_YES, hist_dnn_noxjet_NO, hist_dnn_0bxjet, hist_dnn_1bxjet, hist_dnn_0toptag;
 
@@ -153,6 +154,7 @@ namespace uhh2 {
     ak8corrections->init(ctx);
     ak8cleaning.reset(new Ak8Cleaning(ctx, ak8_pt_min, ak8_eta_max, ak8_deltaRlepton_min));
     ak8jets.reset(new Ak8Jets(ctx));
+    wtaggedjets.reset(new WTaggedJets(ctx));
 
     hadronictop.reset(new HadronicTop(ctx));
     toptaggedjet.reset(new TopTaggedJet(ctx, StandardHOTVRTopTagID));
@@ -203,6 +205,8 @@ namespace uhh2 {
     slct_noxjet.reset(new NObjectsSelection(ctx, 0, 0, "TopExJets"));
     slct_1bxjet.reset(new NObjectsSelection(ctx, 1, -1, "TopExBJetsTight"));
 
+    slct_1wtag.reset(new MyNTopJetsSelection(ctx, 1, 1, "WJets"));
+
 
     //------------//
     // HISTOGRAMS //
@@ -220,6 +224,11 @@ namespace uhh2 {
     hist_0toptag->add_hist(new TopTagHists(ctx, "3_0TopTag_TopTagHists_Full"));
     hist_0toptag->add_hist(new TopTagHists(ctx, "3_0TopTag_TopTagHists_Pt0to400", 0, 400));
     hist_0toptag->add_hist(new TopTagHists(ctx, "3_0TopTag_TopTagHists_Pt400toInf", 400));
+
+    hist_0top1wtag.reset(new AndHists(ctx, "3_0Top1WTag"));
+    hist_0top1wtag->add_hist(new WTagHists(ctx, "3_0Top1WTag_WTagHists_Full"));
+    hist_0top1wtag->add_hist(new WTagHists(ctx, "3_0Top1WTag_WTagHists_Pt0to400", 0, 400));
+    hist_0top1wtag->add_hist(new WTagHists(ctx, "3_0Top1WTag_WTagHists_Pt400toInf", 400));
 
     hist_1toptag_btagsf.reset(new AndHists(ctx, "4_1TopTag_BTagSF"));
     hist_1toptag_btagsf->add_hist(new TopTagHists(ctx, "4_1TopTag_BTagSF_TopTagHists_Full"));
@@ -272,6 +281,7 @@ namespace uhh2 {
     ak8corrections->process(event);
     ak8cleaning->process(event);
     ak8jets->process(event);
+    wtaggedjets->process(event);
 
     // After preselection: lumi, PU, and lepton scale factors
     if(debug) cout << "After preselection" << endl;
@@ -318,7 +328,13 @@ namespace uhh2 {
     pseudotop->process(event); // needs to come after oneijet seletion! Else, no leptonic top quark hypothesis can be built
 
     if(_1toptag) hist_1toptag->fill(event);
-    else hist_0toptag->fill(event);
+    else {
+      hist_0toptag->fill(event);
+      // Erste Histogramm-Studien fuer t(lep)W(had)-Kategorie...
+      if(slct_1wtag->passes(event)) {
+        hist_0top1wtag->fill(event);
+      }
+    }
 
     // Apply reweighting of DeepJet distributions
     if(debug) cout << "Apply reweighting of DeepJet distributions" << endl;
