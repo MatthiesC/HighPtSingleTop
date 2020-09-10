@@ -23,6 +23,35 @@ class TopTaggedJet: public uhh2::AnalysisModule {
 };
 
 
+class Ak8Jets: public uhh2::AnalysisModule {
+public:
+  explicit Ak8Jets(uhh2::Context & ctx,
+           const std::string & h_name_ak8jets="Ak8Jets");
+
+  virtual bool process(uhh2::Event & event) override;
+
+  virtual ~Ak8Jets();
+
+private:
+  uhh2::Event::Handle<std::vector<TopJet>> h_ak8jets_rec;
+  uhh2::Event::Handle<std::vector<TopJet>> h_ak8jets;
+};
+
+
+// class WTaggedJets: public uhh2::AnalysisModule {
+// public:
+//   explicit WTaggedJets(uhh2::Context & ctx,
+//            const std::string & h_name_analysis="WJets");
+//
+//   virtual bool process(uhh2::Event & event) override;
+//
+//   virtual ~WTaggedJets();
+//
+// private:
+//   uhh2::Event::Handle<std::vector<TopJet>> h_wtaggedjets_analysis;
+// };
+
+
 class BTaggedJets: public uhh2::AnalysisModule {
  public:
   explicit BTaggedJets(uhh2::Context & ctx,
@@ -32,7 +61,7 @@ class BTaggedJets: public uhh2::AnalysisModule {
 		       const std::string & h_name_loose="BJetsLoose",
 		       const std::string & h_name_medium="BJetsMedium",
 		       const std::string & h_name_tight="BJetsTight");
-  
+
   virtual bool process(uhh2::Event & event) override;
 
   virtual ~BTaggedJets();

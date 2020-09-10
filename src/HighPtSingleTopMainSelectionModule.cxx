@@ -50,7 +50,7 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_muon_trig, sf_muon_id, sf_muon_iso, sf_toptag, sf_deepjet;
     unique_ptr<AnalysisModule> scale_variation, primarylep, hadronictop, toptaggedjet, btaggedjets, nontopak4jets, wboson, pseudotop, SingleTopGen_tWchProd;
     unique_ptr<Ak8Corrections> ak8corrections;
-    unique_ptr<AnalysisModule> ak8cleaning;
+    unique_ptr<AnalysisModule> ak8cleaning, ak8jets;
     unique_ptr<DNNSetup> dnn_setup;
 
     unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_tW_TopToHad, slct_tW_WToTau, slct_WJetsHeavy, slct_oneijet, slct_noxjet, slct_1bxjet;
@@ -147,10 +147,13 @@ namespace uhh2 {
     // MISCELLANEOUS //
     //---------------//
 
+    primarylep.reset(new PrimaryLepton(ctx));
+
     ak8corrections.reset(new Ak8Corrections());
     ak8corrections->init(ctx);
     ak8cleaning.reset(new Ak8Cleaning(ctx, ak8_pt_min, ak8_eta_max, ak8_deltaRlepton_min));
-    primarylep.reset(new PrimaryLepton(ctx));
+    ak8jets.reset(new Ak8Jets(ctx));
+
     hadronictop.reset(new HadronicTop(ctx));
     toptaggedjet.reset(new TopTaggedJet(ctx, StandardHOTVRTopTagID));
     btaggedjets.reset(new BTaggedJets(ctx, btag_algo, btag_workingpoint));
@@ -268,6 +271,7 @@ namespace uhh2 {
     if(debug) cout << "Apply AK8 corrections and clean jets overlapping with primary lepton" << endl;
     ak8corrections->process(event);
     ak8cleaning->process(event);
+    ak8jets->process(event);
 
     // After preselection: lumi, PU, and lepton scale factors
     if(debug) cout << "After preselection" << endl;

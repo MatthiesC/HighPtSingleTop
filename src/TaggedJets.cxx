@@ -42,6 +42,22 @@ bool TopTaggedJet::process(uhh2::Event & event) {
 TopTaggedJet::~TopTaggedJet() {}
 
 
+Ak8Jets::Ak8Jets(Context & ctx,
+       const std::string & h_name_ak8jets):
+  h_ak8jets_rec(ctx.get_handle<vector<TopJet>>(ctx.get("Ak8recCollection"))),
+  h_ak8jets(ctx.get_handle<vector<TopJet>>(h_name_ak8jets))
+{}
+
+
+bool Ak8Jets::process(uhh2::Event & event) {
+  event.set(h_ak8jets, event.get(h_ak8jets_rec));
+
+  return true;
+}
+
+
+Ak8Jets::~Ak8Jets() {}
+
 
 BTaggedJets::BTaggedJets(Context & ctx,
 			 BTag::algo btagalgo,
@@ -132,7 +148,7 @@ bool NonTopAK4Jets::process(uhh2::Event & event) {
   JetId loose_id = BTag(m_btagalgo, BTag::WP_LOOSE);
   JetId medium_id = BTag(m_btagalgo, BTag::WP_MEDIUM);
   JetId tight_id = BTag(m_btagalgo, BTag::WP_TIGHT);
-  
+
   TopJet toptaggedjet = event.get(h_toptaggedjet);
 
   for(auto j : *event.jets) {
