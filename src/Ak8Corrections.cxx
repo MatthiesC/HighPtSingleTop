@@ -240,15 +240,17 @@ bool Ak8Corrections::process(uhh2::Event & event){
 
 
 
-Ak8LeptonDeltaRCleaner::Ak8LeptonDeltaRCleaner(Context & ctx, const double & minDR, const string & h_primlep_name) {
+Ak8Cleaning::Ak8Cleaning(Context & ctx, const double & minPt, const double & maxEta, const double & minDR, const string & h_primlep_name) {
 
+  _minPt = minPt;
+  _maxEta = maxEta;
   _minDR = minDR;
   h_ak8jets_rec = ctx.get_handle<vector<TopJet>>(ctx.get("Ak8recCollection"));
   h_primlep = ctx.get_handle<FlavorParticle>(h_primlep_name);
 }
 
 
-bool Ak8LeptonDeltaRCleaner::process(uhh2::Event & event) {
+bool Ak8Cleaning::process(uhh2::Event & event) {
 
   //assert(event.topjets);
   vector<TopJet> initial_topjets = event.get(h_ak8jets_rec);
@@ -257,9 +259,10 @@ bool Ak8LeptonDeltaRCleaner::process(uhh2::Event & event) {
   const auto & primlep = event.get(h_primlep);
 
   for(const auto & tjet : initial_topjets) {
-    if(uhh2::deltaR(tjet, primlep) > _minDR) {
-      cleaned_topjets.push_back(tjet);
-    }
+    if(uhh2::deltaR(tjet, primlep) < _minDR) continue;
+    if(abs(tjet.v4().eta()) > _maxEta) continue;
+    if(tjet.v4().pt() < _minPt) continue;
+    cleaned_topjets.push_back(tjet);
   }
   //cout << "cleaned " << cleaned_topjets.size() << endl;
 

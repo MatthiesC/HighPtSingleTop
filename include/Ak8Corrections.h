@@ -75,13 +75,15 @@ private:
 
 
 
-class Ak8LeptonDeltaRCleaner : public uhh2::AnalysisModule {
+class Ak8Cleaning : public uhh2::AnalysisModule {
  public:
-  Ak8LeptonDeltaRCleaner(uhh2::Context & ctx, const double & minDR = 0.8, const std::string & h_name_primlep = "PrimaryLepton");
+  Ak8Cleaning(uhh2::Context & ctx, const double & minPt, const double & maxEta, const double & minDR = 0.8, const std::string & h_name_primlep = "PrimaryLepton");
 
   virtual bool process(uhh2::Event&) override;
 
  private:
+  double _minPt;
+  double _maxEta;
   double _minDR;
 
   uhh2::Event::Handle<FlavorParticle> h_primlep;
