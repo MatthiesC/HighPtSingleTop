@@ -61,39 +61,64 @@ Ak8Jets::~Ak8Jets() {}
 
 WTaggedJets::WTaggedJets(Context & ctx,
        const std::string & h_name_analysis,
+       const std::string & h_name_veryloose,
        const std::string & h_name_loose,
        const std::string & h_name_medium,
        const std::string & h_name_tight,
-       const std::string & h_name_ak8jets):
+       const std::string & h_name_verytight,
+       const std::string & h_name_ak8jets,
+       const bool & b_massDecorrelated_):
   h_ak8jets(ctx.get_handle<vector<TopJet>>(h_name_ak8jets)),
+  h_wtaggedjets_veryloose(ctx.get_handle<vector<TopJet>>(h_name_veryloose)),
   h_wtaggedjets_loose(ctx.get_handle<vector<TopJet>>(h_name_loose)),
   h_wtaggedjets_medium(ctx.get_handle<vector<TopJet>>(h_name_medium)),
   h_wtaggedjets_tight(ctx.get_handle<vector<TopJet>>(h_name_tight)),
-  h_wtaggedjets_analysis(ctx.get_handle<vector<TopJet>>(h_name_analysis))
-{}
+  h_wtaggedjets_verytight(ctx.get_handle<vector<TopJet>>(h_name_verytight)),
+  h_wtaggedjets_analysis(ctx.get_handle<vector<TopJet>>(h_name_analysis)),
+  year(extract_year(ctx)),
+  b_massDecorrelated(b_massDecorrelated_)
+{
+  if(year == Year::is2016v3) { b_massDecorrelated ? wps = wps_W_2016_MD : wps = wps_W_2016; }
+  else if(year == Year::is2017v2) { b_massDecorrelated ? wps = wps_W_2017_MD : wps = wps_W_2017; }
+  else if(year == Year::is2018) { b_massDecorrelated ? wps = wps_W_2018_MD : wps = wps_W_2018; }
+  else { runtime_error("WTaggedJets: Provided year information not valid."); }
+}
 
 
 bool WTaggedJets::process(Event & event) {
 
   vector<TopJet> ak8jets = event.get(h_ak8jets);
-  vector<TopJet> wjets_loose, wjets_medium, wjets_tight;
+  vector<TopJet> wjets_veryloose, wjets_loose, wjets_medium, wjets_tight, wjets_verytight;
 
   // TODO: the following cuts are just valid for 2016!!! This really needs to be more sophisticated!!! Maybe also switch to DeepAK8!!!
+  // WPs are year-dependent
   // https://twiki.cern.ch/twiki/bin/view/CMS/JetWtagging
+  // https://twiki.cern.ch/twiki/bin/viewauth/CMS/DeepAK8Tagging2018WPsSFs
   for(auto & j : ak8jets) {
-    double tau21 = j.tau2_groomed() / j.tau1_groomed();
-    if(tau21 > 0.55) continue;
+
+		bool b_massWindow = j.softdropmass() >= 65. && j.softdropmass() <= 105.;
+    if(!b_massWindow) continue;
+
+    // https://gitlab.cern.ch/DeepAK8/NNKit/tree/for94X
+    double discr = b_massDecorrelated ? j.btag_MassDecorrelatedDeepBoosted_WvsQCD() : j.btag_DeepBoosted_WvsQCD(); // binarized NN output
+    if(discr > wps.at(0)) continue;
+    wjets_veryloose.push_back(j);
+    if(discr > wps.at(1)) continue;
     wjets_loose.push_back(j);
-    if(tau21 > 0.4) continue;
+    if(discr > wps.at(2)) continue;
     wjets_medium.push_back(j);
-    if(tau21 > 0.35) continue;
+    if(discr > wps.at(3)) continue;
     wjets_tight.push_back(j);
+    if(discr > wps.at(4)) continue;
+    wjets_verytight.push_back(j);
   }
 
   event.set(h_wtaggedjets_analysis, wjets_tight); // TODO: Use an argument of the constructor to decide which WP to use on analysis level
+  event.set(h_wtaggedjets_veryloose, std::move(wjets_veryloose));
   event.set(h_wtaggedjets_loose, std::move(wjets_loose));
   event.set(h_wtaggedjets_medium, std::move(wjets_medium));
   event.set(h_wtaggedjets_tight, std::move(wjets_tight));
+  event.set(h_wtaggedjets_verytight, std::move(wjets_verytight));
 
   return true;
 }
