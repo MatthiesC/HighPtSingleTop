@@ -59,8 +59,8 @@ namespace uhh2 {
     // unique_ptr<Selection> slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_oneijet, slct_noxjet, slct_1bxjet;
 
     unique_ptr<AndHists> hist_presel, hist_preselSF, hist_trigger, hist_triggerSF;
-    unique_ptr<AndHists> hist_TopHadWLep_Begin, hist_TopHadWLep_HotvrSF, hist_TopHadWLep_End;
-    unique_ptr<AndHists> hist_TopLepWHad_Begin, hist_TopLepWHad_DeepAk8SF, hist_TopLepWHad_End;
+    unique_ptr<AndHists> hist_TopTag_Begin, hist_TopTag_HotvrSF, hist_TopTag_End;
+    unique_ptr<AndHists> hist_WTag_Begin, hist_WTag_DeepAk8SF, hist_WTag_End;
     unique_ptr<AndHists> hist_Validation_Begin, hist_Validation_Ak8Cut, hist_Validation_End;
 
     //unique_ptr<Hists> hist_count_TopHadWLep_before, hist_count_TopHadWLep_after, hist_count_TopLepWHad_before, hist_count_TopLepWHad_after, hist_count_Validation_before, hist_count_Validation_after;
@@ -248,19 +248,19 @@ namespace uhh2 {
     hist_trigger.reset(new AndHists(ctx, "2_Trigger"));
     hist_triggerSF.reset(new AndHists(ctx, "2_TriggerSF"));
 
-    hist_TopHadWLep_Begin.reset(new AndHists(ctx, "3_TopHadWLep_Begin"));
-    hist_TopHadWLep_Begin->add_TopTagHists(ctx);
-    hist_TopHadWLep_HotvrSF.reset(new AndHists(ctx, "3_TopHadWLep_HotvrSF"));
-    hist_TopHadWLep_HotvrSF->add_TopTagHists(ctx);
-    hist_TopHadWLep_End.reset(new AndHists(ctx, "3_TopHadWLep_End"));
-    hist_TopHadWLep_End->add_TopTagHists(ctx);
+    hist_TopTag_Begin.reset(new AndHists(ctx, "3_TopTag_Begin"));
+    hist_TopTag_Begin->add_TopTagHists(ctx);
+    hist_TopTag_HotvrSF.reset(new AndHists(ctx, "3_TopTag_HotvrSF"));
+    hist_TopTag_HotvrSF->add_TopTagHists(ctx);
+    hist_TopTag_End.reset(new AndHists(ctx, "3_TopTag_End"));
+    hist_TopTag_End->add_TopTagHists(ctx);
 
-    hist_TopLepWHad_Begin.reset(new AndHists(ctx, "3_TopLepWHad_Begin"));
-    hist_TopLepWHad_Begin->add_WTagHists(ctx);
-    hist_TopLepWHad_DeepAk8SF.reset(new AndHists(ctx, "3_TopLepWHad_DeepAk8SF"));
-    hist_TopLepWHad_DeepAk8SF->add_WTagHists(ctx);
-    hist_TopLepWHad_End.reset(new AndHists(ctx, "3_TopLepWHad_End"));
-    hist_TopLepWHad_End->add_WTagHists(ctx);
+    hist_WTag_Begin.reset(new AndHists(ctx, "3_WTag_Begin"));
+    hist_WTag_Begin->add_WTagHists(ctx);
+    hist_WTag_DeepAk8SF.reset(new AndHists(ctx, "3_WTag_DeepAk8SF"));
+    hist_WTag_DeepAk8SF->add_WTagHists(ctx);
+    hist_WTag_End.reset(new AndHists(ctx, "3_WTag_End"));
+    hist_WTag_End->add_WTagHists(ctx);
 
     hist_Validation_Begin.reset(new AndHists(ctx, "3_Validation_Begin"));
     hist_Validation_Ak8Cut.reset(new AndHists(ctx, "3_Validation_Ak8Cut"));
@@ -274,7 +274,7 @@ namespace uhh2 {
     // hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
     // hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
 
-    hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists_TopHadWLep", dnn_config_inputNames, dnn_setup->inputs_info()));
+    hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists_TopTag", dnn_config_inputNames, dnn_setup->inputs_info()));
     //hist_dnn_noxjet_YES.reset(new BinnedDNNHists(ctx, "DNNHists_NoXJet_YES", dnn_config_inputNames, dnn_setup->inputs_info()));
     //hist_dnn_noxjet_NO.reset(new BinnedDNNHists(ctx, "DNNHists_NoXJet_NO", dnn_config_inputNames, dnn_setup->inputs_info()));
     //hist_dnn_0bxjet.reset(new BinnedDNNHists(ctx, "DNNHists_0bXJet", dnn_config_inputNames, dnn_setup->inputs_info()));
@@ -393,8 +393,8 @@ namespace uhh2 {
     bool b_0toptag = slct_0toptag->passes(event);
     bool b_1wtag = slct_1wtag->passes(event);
     bool b_0wtag = slct_0wtag->passes(event);
-    bool is_TopHadWLepRegion(false);
-    bool is_TopLepWHadRegion(false);
+    bool is_TopTagRegion(false);
+    bool is_WTagRegion(false);
     bool is_ValidationRegion(false);
 
     // Caveat: The order of analysis modules in the following if-statements is crucial and should be changed with care only!
@@ -404,18 +404,18 @@ namespace uhh2 {
       toptaggedjet->process(event);
       ak4InExJets_top->process(event);
       if(debug) cout << "SR t(had)W(lep):  Fill initial control histograms" << endl;
-      hist_TopHadWLep_Begin->fill(event);
+      hist_TopTag_Begin->fill(event);
       if(debug) cout << "SR t(had)W(lep):  Apply HOTVR top-tagging scale factors" << endl;
       hadronictop->process(event);
       sf_toptag->process(event);
       if(debug) cout << "SR t(had)W(lep):  Fill control histograms after HOTVR scale factors" << endl;
-      hist_TopHadWLep_HotvrSF->fill(event);
+      hist_TopTag_HotvrSF->fill(event);
       if(debug) cout << "SR t(had)W(lep):  Throw away very few events which do not have at least one AK4 jet within top jet" << endl;
       if(!slct_oneijet_top->passes(event)) return false; // Need to have at least one AK4 jet for pseudotop and also makes sense to have at least one AK4 jet inside HOTVR jet
       if(debug) cout << "SR t(had)W(lep):  Fill final control histograms" << endl;
-      hist_TopHadWLep_End->fill(event);
+      hist_TopTag_End->fill(event);
 
-      is_TopHadWLepRegion = true;
+      is_TopTagRegion = true;
     }
 
     else if(b_0toptag && b_1wtag) {
@@ -423,17 +423,17 @@ namespace uhh2 {
       wtaggedjet->process(event);
       ak4InExJets_W->process(event);
       if(debug) cout << "SR t(lep)W(had):  Fill initial control histograms" << endl;
-      hist_TopLepWHad_Begin->fill(event);
+      hist_WTag_Begin->fill(event);
       if(debug) cout << "SR t(lep)W(had):  Apply DeepAK8 W-tagging scale factors" << endl;
       //TODO: sf_wtag->process(event);
       if(debug) cout << "SR t(had)W(lep):  Fill control histograms after DeepAK8 scale factors" << endl;
-      hist_TopLepWHad_DeepAk8SF->fill(event);
+      hist_WTag_DeepAk8SF->fill(event);
       if(debug) cout << "SR t(lep)W(had):  Require at least one AK4 jet outside W jet as potential candidate for the b jet from leptonic top quark" << endl;
       if(!slct_onexjet_W->passes(event)) return false; // Need to have at least one AK4 jet for pseudotop and also makes sense due to decay mode (additional AK4 jet potentially represents b jet from leptonic top quark)
       if(debug) cout << "SR t(lep)W(had):  Fill final control histograms" << endl;
-      hist_TopLepWHad_End->fill(event);
+      hist_WTag_End->fill(event);
 
-      is_TopLepWHadRegion = true;
+      is_WTagRegion = true;
     }
 
     else if(b_0toptag && b_0wtag) {
@@ -464,7 +464,7 @@ namespace uhh2 {
 
     // DNN-related code starts here...
 
-    if(is_TopHadWLepRegion) {
+    if(is_TopTagRegion) {
       if(debug) cout << "Set event handles used as input for DNN training" << endl;
       dnn_setup->process(event);
       if(debug) cout << "Application of a trained DNN" << endl;
