@@ -11,7 +11,7 @@ using namespace uhh2;
 WTagHists::WTagHists(Context & ctx, const string & dirname, double arg_MIN_PT, double arg_MAX_PT):
   Hists(ctx, dirname) {
 
-  h_wtaggedjets = ctx.get_handle<vector<TopJet>>("WJets");
+  h_wtaggedjet = ctx.get_handle<TopJet>("WTaggedJet");
   h_primlep = ctx.get_handle<FlavorParticle>("PrimaryLepton");
 
   m_MIN_PT = arg_MIN_PT;
@@ -24,7 +24,8 @@ WTagHists::WTagHists(Context & ctx, const string & dirname, double arg_MIN_PT, d
   hist_w_pt_1GeV = book<TH1F>("w_pt_1GeV", "W jet p_{T} [GeV]", 1600, 0, 1600);
   hist_w_eta = book<TH1F>("w_eta", "W jet #eta", 100, -2.5, 2.5);
   hist_w_mass = book<TH1F>("w_mass", "W jet m_{jet} [GeV]", 100, 0, 200);
-  hist_w_SDmass = book<TH1F>("w_SDmass", "W jet m_{jet} [GeV]", 100, 0, 200);
+  hist_w_SDmass = book<TH1F>("w_SDmass", "W jet m_{SD} [GeV]", 100, 0, 200);
+  hist_w_SDmass_60_110 = book<TH1F>("w_SDmass", "W jet m_{SD} [GeV]", 100, 60, 110);
   hist_w_phi = book<TH1F>("w_phi", "W jet #phi", 100, -M_PI, M_PI);
   hist_w_px = book<TH1F>("w_px", "W jet p_{x} [GeV]", 100, -2000, 2000);
   hist_w_py = book<TH1F>("w_py", "W jet p_{y} [GeV]", 100, -2000, 2000);
@@ -39,7 +40,7 @@ WTagHists::WTagHists(Context & ctx, const string & dirname, double arg_MIN_PT, d
   hist_w_tau3 = book<TH1F>("w_tau3", "W jet #tau_{3}", 100, 0, 1);
   hist_w_DeepAK8 = book<TH1F>("w_DeepAK8", "W jet: DeepAK8 score (W vs. QCD)", 100, 0, 1);
   hist_w_DeepAK8MD = book<TH1F>("w_DeepAK8MD", "W jet: MD-DeepAK8 score (W vs. QCD)", 100, 0, 1);
-  
+
   hist_w_dr_lepton = book<TH1F>("w_dr_lepton", "#DeltaR(W jet, lepton)", nBins_dR, 0, 5);
   hist_w_dphi_lepton = book<TH1F>("w_dphi_lepton", "#Delta#phi(W jet, lepton)", nBins_dPhi, 0, M_PI);
   hist_w_dphi_met = book<TH1F>("w_dphi_met", "#Delta#phi(W jet, p_{T}^{miss})", nBins_dPhi, 0, M_PI);
@@ -49,7 +50,7 @@ WTagHists::WTagHists(Context & ctx, const string & dirname, double arg_MIN_PT, d
 
 void WTagHists::fill(const uhh2::Event & event) {
 
-  const auto & wjet = event.get(h_wtaggedjets).at(0); // TODO: not so elegant, define specific handle for the one W tag!!!
+  const auto & wjet = event.get(h_wtaggedjet); // TODO: not so elegant, define specific handle for the one W tag!!!
   const auto & primlep = event.get(h_primlep);
 
   const double w = event.weight;
@@ -63,6 +64,7 @@ void WTagHists::fill(const uhh2::Event & event) {
     hist_w_eta->Fill(wjet.v4().Eta(), w);
     hist_w_mass->Fill(wjet.v4().M(), w);
     hist_w_SDmass->Fill(wjet.softdropmass(), w);
+    hist_w_SDmass_60_110->Fill(wjet.softdropmass(), w);
     hist_w_phi->Fill(wjet.v4().Phi(), w);
     hist_w_px->Fill(wjet.v4().px(), w);
     hist_w_py->Fill(wjet.v4().py(), w);
