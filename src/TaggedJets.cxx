@@ -113,7 +113,7 @@ bool WTaggedJets::process(Event & event) {
     wjets_verytight.push_back(j);
   }
 
-  event.set(h_wtaggedjets_analysis, wjets_tight); // TODO: Use an argument of the constructor to decide which WP to use on analysis level
+  event.set(h_wtaggedjets_analysis, wjets_loose); // TODO: Use an argument of the constructor to decide which WP to use on analysis level
   event.set(h_wtaggedjets_veryloose, std::move(wjets_veryloose));
   event.set(h_wtaggedjets_loose, std::move(wjets_loose));
   event.set(h_wtaggedjets_medium, std::move(wjets_medium));
@@ -125,6 +125,33 @@ bool WTaggedJets::process(Event & event) {
 
 
 WTaggedJets::~WTaggedJets() {}
+
+
+WTaggedJet::WTaggedJet(Context & ctx,
+			   const std::string & h_name):
+  h_ak8jets(ctx.get_handle<vector<TopJet>>("Ak8Jets")),
+  h_wtaggedjets(ctx.get_handle<vector<TopJet>>("WJets")),
+  h_wtaggedjet(ctx.get_handle<TopJet>(h_name))
+{}
+
+
+bool WTaggedJet::process(Event & event) {
+
+  vector<TopJet> ak8jets = event.get(h_ak8jets);
+  vector<TopJet> wtaggedjets = event.get(h_wtaggedjets);
+  TopJet wtaggedjet;
+
+  if(wtaggedjets.size() > 0) wtaggedjet = wtaggedjets.at(0);
+  else if(ak8jets.size() > 0) wtaggedjet = ak8jets.at(0);
+  else { runtime_error("WTaggedJet: You need to require at least one AK8 jet"); }
+
+  event.set(h_wtaggedjet, std::move(wtaggedjet));
+
+  return true;
+}
+
+
+WTaggedJet::~WTaggedJet() {}
 
 
 BTaggedJets::BTaggedJets(Context & ctx,
@@ -173,95 +200,86 @@ bool BTaggedJets::process(uhh2::Event & event) {
 BTaggedJets::~BTaggedJets() {}
 
 
-NonTopAK4Jets::NonTopAK4Jets(Context & ctx,
+InExAK4Jets::InExAK4Jets(Context & ctx,
 			     BTag::algo btagalgo,
 			     BTag::wp workingpoint,
-			     double toptag_radius,
-			     const std::string & h_name_topEx_jets, // jets outside top tag
-			     const std::string & h_name_topEx_bAnalysis,
-			     const std::string & h_name_topEx_bLoose,
-			     const std::string & h_name_topEx_bMedium,
-			     const std::string & h_name_topEx_bTight,
-			     const std::string & h_name_topIn_jets, // jets inside top tag (or rather jets that have an overlap with top tag)
-			     const std::string & h_name_topIn_bAnalysis,
-			     const std::string & h_name_topIn_bLoose,
-			     const std::string & h_name_topIn_bMedium,
-			     const std::string & h_name_topIn_bTight,
-			     const std::string & h_name_TopTag,
+           const std::string & h_name_postfix,
+			     const std::string & h_name_FatJet,
+           const bool is_hotvr,
 			     const double rho):
-  h_topEx_ak4(ctx.get_handle<vector<Jet>>(h_name_topEx_jets)),
-  h_topEx_ak4_bLoose(ctx.get_handle<vector<Jet>>(h_name_topEx_bLoose)),
-  h_topEx_ak4_bMedium(ctx.get_handle<vector<Jet>>(h_name_topEx_bMedium)),
-  h_topEx_ak4_bTight(ctx.get_handle<vector<Jet>>(h_name_topEx_bTight)),
-  h_topEx_ak4_bAnalysis(ctx.get_handle<vector<Jet>>(h_name_topEx_bAnalysis)),
-  h_topIn_ak4(ctx.get_handle<vector<Jet>>(h_name_topIn_jets)),
-  h_topIn_ak4_bLoose(ctx.get_handle<vector<Jet>>(h_name_topIn_bLoose)),
-  h_topIn_ak4_bMedium(ctx.get_handle<vector<Jet>>(h_name_topIn_bMedium)),
-  h_topIn_ak4_bTight(ctx.get_handle<vector<Jet>>(h_name_topIn_bTight)),
-  h_topIn_ak4_bAnalysis(ctx.get_handle<vector<Jet>>(h_name_topIn_bAnalysis)),
-  h_toptaggedjet(ctx.get_handle<TopJet>(h_name_TopTag)),
+  h_Ex_ak4(ctx.get_handle<vector<Jet>>("ExJets"+h_name_postfix)),
+  h_Ex_ak4_bLoose(ctx.get_handle<vector<Jet>>("ExBJets"+h_name_postfix)),
+  h_Ex_ak4_bMedium(ctx.get_handle<vector<Jet>>("ExBJetsLoose"+h_name_postfix)),
+  h_Ex_ak4_bTight(ctx.get_handle<vector<Jet>>("ExBJetsMedium"+h_name_postfix)),
+  h_Ex_ak4_bAnalysis(ctx.get_handle<vector<Jet>>("ExBJetsTight"+h_name_postfix)),
+  h_In_ak4(ctx.get_handle<vector<Jet>>("InJets"+h_name_postfix)),
+  h_In_ak4_bLoose(ctx.get_handle<vector<Jet>>("InBJets"+h_name_postfix)),
+  h_In_ak4_bMedium(ctx.get_handle<vector<Jet>>("InBJetsLoose"+h_name_postfix)),
+  h_In_ak4_bTight(ctx.get_handle<vector<Jet>>("InBJetsMedium"+h_name_postfix)),
+  h_In_ak4_bAnalysis(ctx.get_handle<vector<Jet>>("InBJetsTight"+h_name_postfix)),
+  h_taggedfatjet(ctx.get_handle<TopJet>(h_name_FatJet)),
+  m_is_hotvr(is_hotvr),
   m_rho(rho),
   m_btagalgo(btagalgo),
-  m_workingpoint(workingpoint),
-  m_toptag_radius(toptag_radius)
+  m_workingpoint(workingpoint)
 {}
 
 
-bool NonTopAK4Jets::process(uhh2::Event & event) {
+bool InExAK4Jets::process(uhh2::Event & event) {
   assert(event.jets);
 
-  vector<Jet> topEx_ak4, topEx_ak4_bLoose, topEx_ak4_bMedium, topEx_ak4_bTight;
-  vector<Jet> topIn_ak4, topIn_ak4_bLoose, topIn_ak4_bMedium, topIn_ak4_bTight;
+  vector<Jet> Ex_ak4, Ex_ak4_bLoose, Ex_ak4_bMedium, Ex_ak4_bTight;
+  vector<Jet> In_ak4, In_ak4_bLoose, In_ak4_bMedium, In_ak4_bTight;
 
   JetId loose_id = BTag(m_btagalgo, BTag::WP_LOOSE);
   JetId medium_id = BTag(m_btagalgo, BTag::WP_MEDIUM);
   JetId tight_id = BTag(m_btagalgo, BTag::WP_TIGHT);
 
-  TopJet toptaggedjet = event.get(h_toptaggedjet);
+  TopJet taggedfatjet = event.get(h_taggedfatjet);
+  double Reff = 0.8; // in case of AK8
+  if(m_is_hotvr) Reff = min(1.5, max(0.1, m_rho / ( taggedfatjet.v4().pt() * taggedfatjet.JEC_factor_raw() ) ));
 
   for(auto j : *event.jets) {
-    double dR = uhh2::deltaR(j.v4(), toptaggedjet.v4());
-    double Reff = min(1.5, max(0.1, m_rho / ( toptaggedjet.v4().pt() * toptaggedjet.JEC_factor_raw() ) ));
-    if(m_toptag_radius >= 0) Reff = m_toptag_radius;
-    if(dR > Reff+0.4) { // need to add AK4 radius of 0.4 here in order to ensure that the AK4 jet is actually outside of t jet
-      topEx_ak4.push_back(j);
-      if(loose_id(j, event)) topEx_ak4_bLoose.push_back(j);
-      if(medium_id(j, event)) topEx_ak4_bMedium.push_back(j);
-      if(tight_id(j, event)) topEx_ak4_bTight.push_back(j);
+    double dR = uhh2::deltaR(j.v4(), taggedfatjet.v4());
+    if(dR > Reff+0.4) { // need to add AK4 radius of 0.4 here in order to ensure that the AK4 jet is actually outside of fat jet
+      Ex_ak4.push_back(j);
+      if(loose_id(j, event)) Ex_ak4_bLoose.push_back(j);
+      if(medium_id(j, event)) Ex_ak4_bMedium.push_back(j);
+      if(tight_id(j, event)) Ex_ak4_bTight.push_back(j);
     }
     else {
-      topIn_ak4.push_back(j);
-      if(loose_id(j, event)) topIn_ak4_bLoose.push_back(j);
-      if(medium_id(j, event)) topIn_ak4_bMedium.push_back(j);
-      if(tight_id(j, event)) topIn_ak4_bTight.push_back(j);
+      In_ak4.push_back(j);
+      if(loose_id(j, event)) In_ak4_bLoose.push_back(j);
+      if(medium_id(j, event)) In_ak4_bMedium.push_back(j);
+      if(tight_id(j, event)) In_ak4_bTight.push_back(j);
     }
   }
 
   if (m_workingpoint == BTag::WP_LOOSE) {
-    event.set(h_topEx_ak4_bAnalysis, topEx_ak4_bLoose);
-    event.set(h_topIn_ak4_bAnalysis, topIn_ak4_bLoose);
+    event.set(h_Ex_ak4_bAnalysis, Ex_ak4_bLoose);
+    event.set(h_In_ak4_bAnalysis, In_ak4_bLoose);
   }
   else if (m_workingpoint == BTag::WP_MEDIUM) {
-    event.set(h_topEx_ak4_bAnalysis, topEx_ak4_bMedium);
-    event.set(h_topIn_ak4_bAnalysis, topIn_ak4_bMedium);
+    event.set(h_Ex_ak4_bAnalysis, Ex_ak4_bMedium);
+    event.set(h_In_ak4_bAnalysis, In_ak4_bMedium);
   }
   else if (m_workingpoint == BTag::WP_TIGHT) {
-    event.set(h_topEx_ak4_bAnalysis, topEx_ak4_bTight);
-    event.set(h_topIn_ak4_bAnalysis, topIn_ak4_bTight);
+    event.set(h_Ex_ak4_bAnalysis, Ex_ak4_bTight);
+    event.set(h_In_ak4_bAnalysis, In_ak4_bTight);
   }
 
-  event.set(h_topEx_ak4, std::move(topEx_ak4));
-  event.set(h_topEx_ak4_bLoose, std::move(topEx_ak4_bLoose));
-  event.set(h_topEx_ak4_bMedium, std::move(topEx_ak4_bMedium));
-  event.set(h_topEx_ak4_bTight, std::move(topEx_ak4_bTight));
+  event.set(h_Ex_ak4, std::move(Ex_ak4));
+  event.set(h_Ex_ak4_bLoose, std::move(Ex_ak4_bLoose));
+  event.set(h_Ex_ak4_bMedium, std::move(Ex_ak4_bMedium));
+  event.set(h_Ex_ak4_bTight, std::move(Ex_ak4_bTight));
 
-  event.set(h_topIn_ak4, std::move(topIn_ak4));
-  event.set(h_topIn_ak4_bLoose, std::move(topIn_ak4_bLoose));
-  event.set(h_topIn_ak4_bMedium, std::move(topIn_ak4_bMedium));
-  event.set(h_topIn_ak4_bTight, std::move(topIn_ak4_bTight));
+  event.set(h_In_ak4, std::move(In_ak4));
+  event.set(h_In_ak4_bLoose, std::move(In_ak4_bLoose));
+  event.set(h_In_ak4_bMedium, std::move(In_ak4_bMedium));
+  event.set(h_In_ak4_bTight, std::move(In_ak4_bTight));
 
   return true;
 }
 
 
-NonTopAK4Jets::~NonTopAK4Jets() {}
+InExAK4Jets::~InExAK4Jets() {}

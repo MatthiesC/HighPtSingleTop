@@ -61,12 +61,11 @@ namespace uhh2 {
 
   class tWgenSelection: public uhh2::Selection {
   public:
-    tWgenSelection(uhh2::Context & ctx, std::string decay_, bool is_muon_);
+    tWgenSelection(uhh2::Context & ctx, std::string decay_);
     virtual bool passes(const uhh2::Event & event) override;
   private:
     uhh2::Event::Handle<SingleTopGen_tWch> h_GENtW;
     std::string m_decay;
-    bool m_is_muon;
   };
 
   class WJetsGenSelection: public uhh2::Selection {

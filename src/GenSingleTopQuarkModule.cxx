@@ -44,7 +44,7 @@ GenSingleTopQuarkModule::GenSingleTopQuarkModule(Context & ctx) {
   histograms_tW_bjet_no.reset(new GenSingleTopQuarkHists(ctx, "tW_bjet_no", "tW"));
 
   GENtW.reset(new SingleTopGen_tWchProducer(ctx, "h_GENtW"));
-  slct_GenBJet.reset(new tWgenSelection(ctx, "GenBJet", false));
+  slct_GenBJet.reset(new tWgenSelection(ctx, "GenBJet"));
 }
 
 

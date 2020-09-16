@@ -15,9 +15,9 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, const vector<string> i
   _h_binning_var = ctx.get_handle<double>(binning_var_name);
   _h_event_weight = ctx.get_handle<double>("DNN_EventWeight");
   _h_dnn_output = ctx.get_handle<double>("DNN_Output");
-  _h_xjets_bloose = ctx.get_handle<vector<Jet>>("TopExBJetsLoose");
-  _h_xjets_bmedium = ctx.get_handle<vector<Jet>>("TopExBJetsMedium");
-  _h_xjets_btight = ctx.get_handle<vector<Jet>>("TopExBJetsTight");
+  _h_xjets_bloose = ctx.get_handle<vector<Jet>>("ExBJetsLoose_Top");
+  _h_xjets_bmedium = ctx.get_handle<vector<Jet>>("ExBJetsMedium_Top");
+  _h_xjets_btight = ctx.get_handle<vector<Jet>>("ExBJetsTight_Top");
 
   _MIN_VAL = arg_MIN_VAL;
   _MAX_VAL = arg_MAX_VAL;

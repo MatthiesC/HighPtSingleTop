@@ -114,10 +114,9 @@ bool tWgenSignalSelection::passes(const Event & event) {
 // Select tW events based on a specific decay channel given by string //
 //--------------------------------------------------------------------//
 
-tWgenSelection::tWgenSelection(Context & ctx, string decay_, bool is_muon_):
+tWgenSelection::tWgenSelection(Context & ctx, string decay_):
   h_GENtW(ctx.get_handle<SingleTopGen_tWch>("h_GENtW")),
-  m_decay(decay_),
-  m_is_muon(is_muon_) {
+  m_decay(decay_) {
 
   cout << "tWgenSelection: CAVEAT, cannot check which particles a tau lepton decays into! Generator info missing." << endl;
 }
@@ -128,6 +127,24 @@ bool tWgenSelection::passes(const Event & event) {
 
   if(m_decay == "TopToHad") {
     if(!GENtW.IsTopHadronicDecay()) return false;
+  }
+  else if(m_decay == "TopToEle") {
+    if(!GENtW.IsTopToElectronDecay()) return false;
+  }
+  else if(m_decay == "TopToMuo") {
+    if(!GENtW.IsTopToMuonDecay()) return false;
+  }
+  else if(m_decay == "TopToTau") {
+    if(!GENtW.IsTopToTauonDecay()) return false;
+  }
+  else if(m_decay == "WToHad") {
+    if(!GENtW.IsAssHadronicDecay()) return false;
+  }
+  else if(m_decay == "WToEle") {
+    if(!GENtW.IsAssToElectronDecay()) return false;
+  }
+  else if(m_decay == "WToMuo") {
+    if(!GENtW.IsAssToMuonDecay()) return false;
   }
   else if(m_decay == "WToTau") {
     if(!GENtW.IsAssToTauonDecay()) return false;

@@ -39,7 +39,7 @@ private:
 };
 
 
-// Could be extended to be used with top tags as well
+// TODO: Could be extended to be used with top tags as well
 class WTaggedJets: public uhh2::AnalysisModule {
 public:
   explicit WTaggedJets(uhh2::Context & ctx,
@@ -83,6 +83,23 @@ private:
 };
 
 
+// class to tag the W ak8 jet; if there is no w tag, the leading ak8 jet is used
+class WTaggedJet: public uhh2::AnalysisModule {
+public:
+  explicit WTaggedJet(uhh2::Context & ctx,
+           const std::string & h_name="WTaggedJet");
+
+  virtual bool process(uhh2::Event & event) override;
+
+  virtual ~WTaggedJet();
+
+private:
+  uhh2::Event::Handle<std::vector<TopJet>> h_ak8jets;
+  uhh2::Event::Handle<std::vector<TopJet>> h_wtaggedjets;
+  uhh2::Event::Handle<TopJet> h_wtaggedjet;
+};
+
+
 class BTaggedJets: public uhh2::AnalysisModule {
  public:
   explicit BTaggedJets(uhh2::Context & ctx,
@@ -110,45 +127,36 @@ class BTaggedJets: public uhh2::AnalysisModule {
 
 // creates event handles for ak4 jets which have been filtered not to be inside/outside the t-tagged jet
 
-class NonTopAK4Jets: public uhh2::AnalysisModule {
+class InExAK4Jets: public uhh2::AnalysisModule {
  public:
-  explicit NonTopAK4Jets(uhh2::Context & ctx,
+  explicit InExAK4Jets(uhh2::Context & ctx,
 			 BTag::algo btagalgo,
 			 BTag::wp workingpoint,
-			 double toptag_radius,
-			 const std::string & h_name_topEx_jets="TopExJets",
-			 const std::string & h_name_topEx_bAnalysis="TopExBJets",
-			 const std::string & h_name_topEx_bLoose="TopExBJetsLoose",
-			 const std::string & h_name_topEx_bMedium="TopExBJetsMedium",
-			 const std::string & h_name_topEx_bTight="TopExBJetsTight",
-			 const std::string & h_name_topIn_jets="TopInJets",
-			 const std::string & h_name_topIn_bAnalysis="TopInBJets",
-			 const std::string & h_name_topIn_bLoose="TopInBJetsLoose",
-			 const std::string & h_name_topIn_bMedium="TopInBJetsMedium",
-			 const std::string & h_name_topIn_bTight="TopInBJetsTight",
-			 const std::string & h_name_TopTag="TopTaggedJet",
+			 const std::string & h_name_postfix,
+			 const std::string & h_name_FatJet,
+       const bool is_hotvr,
 			 const double rho = 600);
 
   virtual bool process(uhh2::Event & event) override;
 
-  virtual ~NonTopAK4Jets();
+  virtual ~InExAK4Jets();
 
  private:
-  uhh2::Event::Handle<std::vector<Jet>> h_topEx_ak4;
-  uhh2::Event::Handle<std::vector<Jet>> h_topEx_ak4_bLoose;
-  uhh2::Event::Handle<std::vector<Jet>> h_topEx_ak4_bMedium;
-  uhh2::Event::Handle<std::vector<Jet>> h_topEx_ak4_bTight;
-  uhh2::Event::Handle<std::vector<Jet>> h_topEx_ak4_bAnalysis;
-  uhh2::Event::Handle<std::vector<Jet>> h_topIn_ak4;
-  uhh2::Event::Handle<std::vector<Jet>> h_topIn_ak4_bLoose;
-  uhh2::Event::Handle<std::vector<Jet>> h_topIn_ak4_bMedium;
-  uhh2::Event::Handle<std::vector<Jet>> h_topIn_ak4_bTight;
-  uhh2::Event::Handle<std::vector<Jet>> h_topIn_ak4_bAnalysis;
-  uhh2::Event::Handle<TopJet> h_toptaggedjet;
+  uhh2::Event::Handle<std::vector<Jet>> h_Ex_ak4;
+  uhh2::Event::Handle<std::vector<Jet>> h_Ex_ak4_bLoose;
+  uhh2::Event::Handle<std::vector<Jet>> h_Ex_ak4_bMedium;
+  uhh2::Event::Handle<std::vector<Jet>> h_Ex_ak4_bTight;
+  uhh2::Event::Handle<std::vector<Jet>> h_Ex_ak4_bAnalysis;
+  uhh2::Event::Handle<std::vector<Jet>> h_In_ak4;
+  uhh2::Event::Handle<std::vector<Jet>> h_In_ak4_bLoose;
+  uhh2::Event::Handle<std::vector<Jet>> h_In_ak4_bMedium;
+  uhh2::Event::Handle<std::vector<Jet>> h_In_ak4_bTight;
+  uhh2::Event::Handle<std::vector<Jet>> h_In_ak4_bAnalysis;
+  uhh2::Event::Handle<TopJet> h_taggedfatjet;
 
+  bool m_is_hotvr;
   double m_rho;
 
   BTag::algo m_btagalgo;
   BTag::wp m_workingpoint;
-  double m_toptag_radius;
 };

@@ -14,8 +14,8 @@ DNNSetup::DNNSetup(Context & ctx, vector<Event::Handle<double>> & h_dnn_inputs, 
   h_primlep = ctx.get_handle<FlavorParticle>("PrimaryLepton");
   h_pseudotop = ctx.get_handle<LorentzVector>("PseudoTop");
   h_wboson = ctx.get_handle<LorentzVector>("WBosonLeptonic");
-  h_xjets = ctx.get_handle<vector<Jet>>("TopExJets");
-  h_ijets = ctx.get_handle<vector<Jet>>("TopInJets");
+  h_xjets = ctx.get_handle<vector<Jet>>("ExJets_Top");
+  h_ijets = ctx.get_handle<vector<Jet>>("InJets_Top");
 
   h_event_weight = ctx.declare_event_output<double>("DNN_EventWeight");
   h_toptag_pt = ctx.declare_event_output<double>("DNN_TopTagPt");
