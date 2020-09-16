@@ -71,8 +71,8 @@ void AndHists::add_WTagHists(Context & ctx, const bool & var_binned) {
 
   hists_vector.push_back(new WTagHists(ctx, m_dirname + "_WTagHists_Full"));
   if(var_binned) {
-    hists_vector.push_back(new WTagHists(ctx, m_dirname + "_WTagHists_Pt0to400", 0, 400));
-    hists_vector.push_back(new WTagHists(ctx, m_dirname + "_WTagHists_Pt400toInf", 400));
+    hists_vector.push_back(new WTagHists(ctx, m_dirname + "_WTagHists_Pt0to300", 0, 300));
+    hists_vector.push_back(new WTagHists(ctx, m_dirname + "_WTagHists_Pt300toInf", 300));
   }
 }
 
@@ -81,8 +81,8 @@ void AndHists::add_TopTagHists(Context & ctx, const bool & var_binned) {
 
   hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists_Full"));
   if (var_binned) {
-    hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists_Pt0to400", 0, 400));
-    hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists_Pt400toInf", 400));
+    hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists_Pt0to300", 0, 300));
+    hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists_Pt300toInf", 300));
   }
 }
 

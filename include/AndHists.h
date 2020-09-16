@@ -31,8 +31,8 @@ namespace uhh2 {
     virtual void fill(const uhh2::Event & event);
     virtual ~AndHists();
     void add_hist(uhh2::Hists *hist);
-    void add_WTagHists(uhh2::Context &ctx, const bool & var_binned=false);
-    void add_TopTagHists(uhh2::Context &ctx, const bool & var_binned=false);
+    void add_WTagHists(uhh2::Context &ctx, const bool & var_binned=true);
+    void add_TopTagHists(uhh2::Context &ctx, const bool & var_binned=true);
     std::string get_dirname();
 
   private:
