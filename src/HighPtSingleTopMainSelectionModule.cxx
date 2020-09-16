@@ -58,7 +58,7 @@ namespace uhh2 {
     unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_0wtag, slct_1wtag, slct_oneijet_top, slct_onexjet_W, slct_oneAk8jet, slct_oneAk4jet;
     // unique_ptr<Selection> slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_oneijet, slct_noxjet, slct_1bxjet;
 
-    unique_ptr<AndHists> hist_presel, hist_trigger, hist_triggerSF;
+    unique_ptr<AndHists> hist_presel, hist_preselSF, hist_trigger, hist_triggerSF;
     unique_ptr<AndHists> hist_TopHadWLep_Begin, hist_TopHadWLep_HotvrSF, hist_TopHadWLep_End;
     unique_ptr<AndHists> hist_TopLepWHad_Begin, hist_TopLepWHad_DeepAk8SF, hist_TopLepWHad_End;
     unique_ptr<AndHists> hist_Validation_Begin, hist_Validation_Ak8Cut, hist_Validation_End;
@@ -133,6 +133,7 @@ namespace uhh2 {
     BTag::algo btag_algo = BTag::DEEPJET;
     BTag::wp btag_workingpoint = BTag::WP_MEDIUM; // working point needed by some histogram classes ("analysis b-tag workingpoint"); should be removed at some point
     JetId BJetID = BTag(btag_algo, btag_workingpoint);
+    WTaggedJets::wp wtag_workingpoint = WTaggedJets::WP_LOOSE;
 
 
     //---------------//
@@ -163,7 +164,7 @@ namespace uhh2 {
     ak8corrections->init(ctx);
     ak8cleaning.reset(new Ak8Cleaning(ctx, ak8_pt_min, ak8_eta_max, ak8_deltaRlepton_min));
     ak8jets.reset(new Ak8Jets(ctx));
-    wtaggedjets.reset(new WTaggedJets(ctx));
+    wtaggedjets.reset(new WTaggedJets(ctx, wtag_workingpoint));
     btaggedjets.reset(new BTaggedJets(ctx, btag_algo, btag_workingpoint));
     wboson.reset(new WBosonLeptonic(ctx));
     pseudotop.reset(new PseudoTopLeptonic(ctx, true)); // true = don't use b jets but all jets
@@ -242,6 +243,7 @@ namespace uhh2 {
     //------------//
 
     hist_presel.reset(new AndHists(ctx, "1_PreSel"));
+    hist_preselSF.reset(new AndHists(ctx, "1_PreSelSF"));
 
     hist_trigger.reset(new AndHists(ctx, "2_Trigger"));
     hist_triggerSF.reset(new AndHists(ctx, "2_TriggerSF"));
@@ -358,6 +360,7 @@ namespace uhh2 {
     scale_variation->process(event);
     sf_lumi->process(event);
     sf_pileup->process(event);
+    hist_presel->fill(event);
     if(is_muon) {
       sf_muon_id->process(event);
       sf_muon_iso->process(event);
@@ -365,7 +368,7 @@ namespace uhh2 {
     else if(is_elec) {
       // TODO: electron id, reco sf
     }
-    hist_presel->fill(event);
+    hist_preselSF->fill(event);
 
     if(debug) cout << "Select trigger paths and apply trigger scale factors" << endl;
     if(!slct_trigger->passes(event)) return false;
