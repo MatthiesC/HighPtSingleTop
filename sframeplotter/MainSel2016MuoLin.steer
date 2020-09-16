@@ -1,23 +1,23 @@
 SteerPlotter(){
-  
+
   // steering for the plotter
-  fCycleName     = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/uhh2.AnalysisModuleRunner";
-  fInputFiles    = " DATA.DATA.root, MC.ST_tW_signal.root, MC.ST_tW_bkg_TopToHadAndWToTau.root, MC.ST_tW_bkg_Else.root, MC.ST_non-tW.root, MC.TTbar.root, MC.WJetsHeavy.root, MC.WJetsLight.root, MC.DYJets.root, MC.Diboson.root, MC.QCD.root, ";
-  fSampleNames   = " 2016_data, tW_signal, t(h)W(#tau)_background, Other_tW_background, Other_single_t, ttbar, W_+_heavy_flavor, W_+_light_jets, DY_+_jets, VV, Multijets";
-  fSamplesWeight = " 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., ";
-  fSamplesUnc    = " 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,  ";
-  fHistColors    = " 1, 609, 617, 618, 400, 800, 418, 811, 602, 856, 390, ";
-  fHistMarkers   = " 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "; // 24 for circle, 8 for black dot
+  fCycleName     = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v2/MainSelection/2016/Muon/hadded/uhh2.AnalysisModuleRunner";
+  fInputFiles    = " DATA.DATA.root, MC.QCD.root, MC.ST_tW_DR_Sig.root, MC.ST_tW_DR_Bkg.root, MC.ST_non-tW.root, MC.TTbar.root, MC.WJetsHeavy.root, MC.WJetsLight.root, MC.DYJets.root, MC.Diboson.root, ";
+  fSampleNames   = " 2016_data, Multijets, tW_signal_(DR), tW_background_(DR), Other_single_t, ttbar, W_+_heavy_flavor, W_+_light_jets, DY_+_jets, VV, ";
+  fSamplesWeight = " 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., ";
+  fSamplesUnc    = " 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., ";
+  fHistColors    = " 1, 920, 632, 609, 400, 800, 418, 811, 602, 856, "; // 617, 618, QCD beige: 390
+  fHistMarkers   = " 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, "; // 24 for circle, 8 for black dot
 
-  fSamplesToStack = " ST_tW_signal, ST_tW_bkg_TopToHadAndWToTau, ST_tW_bkg_Else, ST_non-tW, TTbar, WJetsHeavy, WJetsLight, DYJets, Diboson, QCD "; // the names of chains which you would like to stack (same as in input filenames)
+  fSamplesToStack = " QCD, ST_tW_DR_Sig, ST_tW_DR_Bkg, ST_non-tW, TTbar, WJetsHeavy, WJetsLight, DYJets, Diboson, "; // the names of chains which you would like to stack (same as in input filenames)
 
 
-  fOutputPsFile = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v1/MainSelection/2016/Muon/plots/lin/MainSel2016Muo.ps";	
-  
+  fOutputPsFile = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v2/MainSelection/2016/Muon/plots_DR/lin/MainSel2016Muo.ps";
+
   bRatioPlot = true;   // plot ratio histograms?
   bZScoreInRatio = false;   // plot z-score instead of usual ratio
   bDrawLegend = true;   // draw a legend on each histogram? (otherwise only on the first one in each ps file)
-  bShapeNorm = false;   // shape normalization? 
+  bShapeNorm = false;   // shape normalization?
   bPortrait = true;    // portrait or landscape?
   bDrawEntries = false; // draw the histogram entries?
   fLumi = 35.9; // luminosity of sample
@@ -28,7 +28,7 @@ SteerPlotter(){
   bLogy = false; // draw all histograms with log y-Axis
   bSingleEPS = false;
   bIgnoreEmptyBins = true;
-  
+
 }
 
 
