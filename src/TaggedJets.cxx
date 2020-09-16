@@ -60,6 +60,7 @@ Ak8Jets::~Ak8Jets() {}
 
 
 WTaggedJets::WTaggedJets(Context & ctx,
+       const WTaggedJets::wp & working_point,
        const std::string & h_name_analysis,
        const std::string & h_name_veryloose,
        const std::string & h_name_loose,
@@ -81,7 +82,8 @@ WTaggedJets::WTaggedJets(Context & ctx,
   if(year == Year::is2016v3) { b_massDecorrelated ? wps = wps_W_2016_MD : wps = wps_W_2016; }
   else if(year == Year::is2017v2) { b_massDecorrelated ? wps = wps_W_2017_MD : wps = wps_W_2017; }
   else if(year == Year::is2018) { b_massDecorrelated ? wps = wps_W_2018_MD : wps = wps_W_2018; }
-  else { runtime_error("WTaggedJets: Provided year information not valid."); }
+  else { throw runtime_error("WTaggedJets: Provided year information not valid."); }
+  m_working_point = working_point;
 }
 
 
@@ -101,19 +103,33 @@ bool WTaggedJets::process(Event & event) {
 
     // https://gitlab.cern.ch/DeepAK8/NNKit/tree/for94X
     double discr = b_massDecorrelated ? j.btag_MassDecorrelatedDeepBoosted_WvsQCD() : j.btag_DeepBoosted_WvsQCD(); // binarized NN output
-    if(discr > wps.at(0)) continue;
+    if(discr < wps.at(0)) continue;
     wjets_veryloose.push_back(j);
-    if(discr > wps.at(1)) continue;
+    if(discr < wps.at(1)) continue;
     wjets_loose.push_back(j);
-    if(discr > wps.at(2)) continue;
+    if(discr < wps.at(2)) continue;
     wjets_medium.push_back(j);
-    if(discr > wps.at(3)) continue;
+    if(discr < wps.at(3)) continue;
     wjets_tight.push_back(j);
-    if(discr > wps.at(4)) continue;
+    if(discr < wps.at(4)) continue;
     wjets_verytight.push_back(j);
   }
 
-  event.set(h_wtaggedjets_analysis, wjets_loose); // TODO: Use an argument of the constructor to decide which WP to use on analysis level
+  switch(m_working_point) {
+    case WP_VERYLOOSE:
+      event.set(h_wtaggedjets_analysis, wjets_veryloose); break;
+    case WP_LOOSE:
+      event.set(h_wtaggedjets_analysis, wjets_loose); break;
+    case WP_MEDIUM:
+      event.set(h_wtaggedjets_analysis, wjets_medium); break;
+    case WP_TIGHT:
+      event.set(h_wtaggedjets_analysis, wjets_tight); break;
+    case WP_VERYTIGHT:
+      event.set(h_wtaggedjets_analysis, wjets_verytight); break;
+    default:
+      throw invalid_argument("WTaggedJets: Invalid W-tagging working point");
+  }
+
   event.set(h_wtaggedjets_veryloose, std::move(wjets_veryloose));
   event.set(h_wtaggedjets_loose, std::move(wjets_loose));
   event.set(h_wtaggedjets_medium, std::move(wjets_medium));
@@ -143,7 +159,7 @@ bool WTaggedJet::process(Event & event) {
 
   if(wtaggedjets.size() > 0) wtaggedjet = wtaggedjets.at(0);
   else if(ak8jets.size() > 0) wtaggedjet = ak8jets.at(0);
-  else { runtime_error("WTaggedJet: You need to require at least one AK8 jet"); }
+  else { throw runtime_error("WTaggedJet: You need to require at least one AK8 jet"); }
 
   event.set(h_wtaggedjet, std::move(wtaggedjet));
 

@@ -42,7 +42,9 @@ private:
 // TODO: Could be extended to be used with top tags as well
 class WTaggedJets: public uhh2::AnalysisModule {
 public:
+  enum wp { WP_VERYLOOSE, WP_LOOSE, WP_MEDIUM, WP_TIGHT, WP_VERYTIGHT };
   explicit WTaggedJets(uhh2::Context & ctx,
+           const wp & working_point,
            const std::string & h_name_analysis="WJets",
            const std::string & h_name_veryloose="WJetsVeryLoose",
            const std::string & h_name_loose="WJetsLoose",
@@ -62,6 +64,7 @@ private:
   uhh2::Event::Handle<std::vector<TopJet>> h_wtaggedjets_veryloose, h_wtaggedjets_loose, h_wtaggedjets_medium, h_wtaggedjets_tight, h_wtaggedjets_verytight, h_wtaggedjets_analysis;
   Year year;
   bool b_massDecorrelated;
+  wp m_working_point;
 
   // https://twiki.cern.ch/twiki/bin/viewauth/CMS/DeepAK8Tagging2018WPsSFs
   // W tagging
