@@ -11,6 +11,18 @@
 
 namespace uhh2 {
 
+  class CountingHist: public Hists {
+
+  public:
+    CountingHist(uhh2::Context & ctx, const std::string & dirname);
+
+    virtual void fill(const uhh2::Event & event);
+    virtual ~CountingHist() {};
+
+  private:
+    TH1F *hist_counting;
+  };
+
   class AndHists: public Hists {
 
   public:

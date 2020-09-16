@@ -16,11 +16,26 @@ using namespace std;
 using namespace uhh2;
 
 
+CountingHist::CountingHist(Context & ctx, const string & dirname):
+  Hists(ctx, dirname) {
+
+  hist_counting = book<TH1F>("count", "Number of weighted events", 1, -1, 1);
+}
+
+
+void CountingHist::fill(const Event & event) {
+
+  hist_counting->Fill(0., event.weight);
+
+  return;
+}
+
+
 AndHists::AndHists(Context & ctx, const string & dirname):
   Hists(ctx, dirname+"_Counter"), m_dirname(dirname) {
 
   // Single histogram for event counting
-  nevt = book<TH1F>("NEvt", "Number of weighted events", 0.5, 0, 1);
+  nevt = book<TH1F>("NEvt", "Number of weighted events", 1, -1, 1);
   // Single histogram for event weights
   wevt = book<TH1F>("WEvt", "Event weights (entries are unweighted)", 400, -2, 2);
 

@@ -59,6 +59,7 @@ namespace uhh2 {
     // unique_ptr<Selection> slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_oneijet, slct_noxjet, slct_1bxjet;
 
     unique_ptr<AndHists> hist_presel, hist_trigger, hist_TopHadWLep, hist_TopLepWHad, hist_Validation;
+    unique_ptr<Hists> hist_count_TopHadWLep_before, hist_count_TopHadWLep_after, hist_count_TopLepWHad_before, hist_count_TopLepWHad_after, hist_count_Validation_before, hist_count_Validation_after;
     // unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
     unique_ptr<BinnedDNNHists> hist_dnn;
     // unique_ptr<BinnedDNNHists> hist_dnn_noxjet_YES, hist_dnn_noxjet_NO, hist_dnn_0bxjet, hist_dnn_1bxjet, hist_dnn_0toptag;
@@ -238,16 +239,22 @@ namespace uhh2 {
 
     hist_trigger.reset(new AndHists(ctx, "2_Trigger"));
 
+    hist_count_TopHadWLep_before.reset(new CountingHist(ctx, "3_TopHadWLep_Ak4CutBefore"));
+    hist_count_TopHadWLep_after.reset(new CountingHist(ctx, "3_TopHadWLep_Ak4CutAfter"));
     hist_TopHadWLep.reset(new AndHists(ctx, "3_TopHadWLep"));
     hist_TopHadWLep->add_hist(new TopTagHists(ctx, "3_TopHadWLep_TopTagHists_Full"));
     hist_TopHadWLep->add_hist(new TopTagHists(ctx, "3_TopHadWLep_TopTagHists_Pt0to400", 0, 400));
     hist_TopHadWLep->add_hist(new TopTagHists(ctx, "3_TopHadWLep_TopTagHists_Pt400toInf", 400));
 
+    hist_count_TopLepWHad_before.reset(new CountingHist(ctx, "3_TopLepWHad_Ak4CutBefore"));
+    hist_count_TopLepWHad_after.reset(new CountingHist(ctx, "3_TopLepWHad_Ak4CutAfter"));
     hist_TopLepWHad.reset(new AndHists(ctx, "3_TopLepWHad"));
     hist_TopLepWHad->add_hist(new WTagHists(ctx, "3_TopLepWHad_WTagHists_Full"));
     hist_TopLepWHad->add_hist(new WTagHists(ctx, "3_TopLepWHad_WTagHists_Pt0to400", 0, 400));
     hist_TopLepWHad->add_hist(new WTagHists(ctx, "3_TopLepWHad_WTagHists_Pt400toInf", 400));
 
+    hist_count_Validation_before.reset(new CountingHist(ctx, "3_Validation_Ak8CutBefore"));
+    hist_count_Validation_after.reset(new CountingHist(ctx, "3_Validation_Ak8CutAfter"));
     hist_Validation.reset(new AndHists(ctx, "3_Validation"));
     hist_Validation->add_hist(new TopTagHists(ctx, "3_Validation_TopTagHists_Full"));
     hist_Validation->add_hist(new TopTagHists(ctx, "3_Validation_TopTagHists_Pt0to400", 0, 400));
@@ -380,7 +387,9 @@ namespace uhh2 {
       toptaggedjet->process(event);
       ak4InExJets_top->process(event);
       if(debug) cout << "SR t(had)W(lep):  Throw away very few events which do not have at least one AK4 jet within top jet" << endl; // at least one AK4 jet is required for the pseudotop reconstruction to work
+      hist_count_TopHadWLep_before->fill(event);
       if(!slct_oneijet_top->passes(event)) return false;
+      hist_count_TopHadWLep_after->fill(event);
       if(debug) cout << "SR t(had)W(lep):  Set handle for leptonic pseudo top" << endl;
       pseudotop->process(event);
       if(debug) cout << "SR t(had)W(lep):  Apply HOTVR top-tagging scale factors" << endl;
@@ -397,7 +406,9 @@ namespace uhh2 {
       wtaggedjet->process(event);
       ak4InExJets_W->process(event);
       if(debug) cout << "SR t(lep)W(had):  Require at least one AK4 jet outside W jet as potential candidate for the b jet from leptonic top quark" << endl;
+      hist_count_TopLepWHad_before->fill(event);
       if(!slct_onexjet_W->passes(event)) return false;
+      hist_count_TopLepWHad_after->fill(event);
       if(debug) cout << "SR t(lep)W(had):  Set handle for leptonic pseudo top" << endl;
       pseudotop->process(event);
       if(debug) cout << "SR t(lep)W(had):  Apply DeepAK8 W-tagging scale factors" << endl;
@@ -410,7 +421,9 @@ namespace uhh2 {
 
     else if(b_0toptag && b_0wtag) {
       if(debug) cout << "VR:  Require at least one AK8 jet for validation region" << endl; // We already required one HOTVR jet during the preselection...
+      hist_count_Validation_before->fill(event);
       if(!slct_oneAk8jet->passes(event)) return false;
+      hist_count_Validation_after->fill(event);
       if(debug) cout << "VR:  Set handles for validation region" << endl;
       toptaggedjet->process(event); // leading HOTVR jet
       wtaggedjet->process(event); // leading AK8 jet
