@@ -266,6 +266,9 @@ bool Ak8Cleaning::process(uhh2::Event & event) {
   }
   //cout << "cleaned " << cleaned_topjets.size() << endl;
 
+  // sort ak8 jets by pt !!!!!!!!!!!!!!!!!!!
+  sort_by_pt<TopJet>(cleaned_topjets);
+
   event.set(h_ak8jets_rec, cleaned_topjets);
 
   //event.get(h_ak8jets_rec).clear();
