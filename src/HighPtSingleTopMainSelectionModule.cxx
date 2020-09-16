@@ -437,6 +437,7 @@ namespace uhh2 {
       is_ValidationRegion = true;
     }
 
+    // Discard events not belonging to one of the three regions above
     else return false;
 
     // DNN-related code starts here...

@@ -37,7 +37,9 @@ WTagHists::WTagHists(Context & ctx, const string & dirname, double arg_MIN_PT, d
   hist_w_tau1 = book<TH1F>("w_tau1", "W jet #tau_{1}", 100, 0, 1);
   hist_w_tau2 = book<TH1F>("w_tau2", "W jet #tau_{2}", 100, 0, 1);
   hist_w_tau3 = book<TH1F>("w_tau3", "W jet #tau_{3}", 100, 0, 1);
-
+  hist_w_DeepAK8 = book<TH1F>("w_DeepAK8", "W jet: DeepAK8 score (W vs. QCD)", 100, 0, 1);
+  hist_w_DeepAK8MD = book<TH1F>("w_DeepAK8MD", "W jet: MD-DeepAK8 score (W vs. QCD)", 100, 0, 1);
+  
   hist_w_dr_lepton = book<TH1F>("w_dr_lepton", "#DeltaR(W jet, lepton)", nBins_dR, 0, 5);
   hist_w_dphi_lepton = book<TH1F>("w_dphi_lepton", "#Delta#phi(W jet, lepton)", nBins_dPhi, 0, M_PI);
   hist_w_dphi_met = book<TH1F>("w_dphi_met", "#Delta#phi(W jet, p_{T}^{miss})", nBins_dPhi, 0, M_PI);
@@ -69,11 +71,13 @@ void WTagHists::fill(const uhh2::Event & event) {
     hist_w_area->Fill(wjet.jetArea(), w);
 
     // Substructure variables
-    hist_w_tau32->Fill(wjet.tau3_groomed() / wjet.tau2_groomed(), w);
-    hist_w_tau21->Fill(wjet.tau2_groomed() / wjet.tau1_groomed(), w);
-    hist_w_tau1->Fill(wjet.tau1_groomed(), w);
-    hist_w_tau2->Fill(wjet.tau2_groomed(), w);
-    hist_w_tau3->Fill(wjet.tau3_groomed(), w);
+    hist_w_tau32->Fill(wjet.tau3() / wjet.tau2(), w);
+    hist_w_tau21->Fill(wjet.tau2() / wjet.tau1(), w);
+    hist_w_tau1->Fill(wjet.tau1(), w);
+    hist_w_tau2->Fill(wjet.tau2(), w);
+    hist_w_tau3->Fill(wjet.tau3(), w);
+    hist_w_DeepAK8->Fill(wjet.btag_DeepBoosted_WvsQCD(), w);
+    hist_w_DeepAK8MD->Fill(wjet.btag_MassDecorrelatedDeepBoosted_WvsQCD(), w);
 
     // Relative position
     hist_w_dr_lepton->Fill(uhh2::deltaR(wjet.v4(), primlep.v4()), w);
