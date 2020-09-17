@@ -94,10 +94,8 @@ void HighPtSingleTopHists::fill(const Event & event) {
 
   vector<Jet> jets = *event.jets;
   unsigned int Njets = jets.size();
-  sort_by_pt<Jet>(jets);
   vector<TopJet> hotvrjets = *event.topjets;
   unsigned int Nhotvr = hotvrjets.size();
-  sort_by_pt<TopJet>(hotvrjets);
 
 
   //------------------------------//

@@ -18,7 +18,6 @@ bool TopTaggedJet::process(uhh2::Event & event) {
   assert(event.topjets);
 
   vector<TopJet> topjets = *event.topjets;
-  sort_by_pt<TopJet>(topjets);
 
   TopJet toptaggedjet;
   bool toptag_found = false;

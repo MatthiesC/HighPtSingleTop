@@ -10,7 +10,7 @@ using namespace uhh2;
 
 TopTagHists::TopTagHists(Context & ctx, const string & dirname, double arg_MIN_PT, double arg_MAX_PT):
   Hists(ctx, dirname) {
-  
+
   h_toptaggedjet = ctx.get_handle<TopJet>("TopTaggedJet");
   h_primlep = ctx.get_handle<FlavorParticle>("PrimaryLepton");
 
@@ -56,7 +56,7 @@ void TopTagHists::fill(const uhh2::Event & event) {
 
 
   if(topjet.v4().pt() >= m_MIN_PT && topjet.v4().pt() < m_MAX_PT) {
-    
+
     // Lorentz vector
     hist_top_pt->Fill(topjet.v4().Pt(), w);
     hist_top_pt_1GeV->Fill(topjet.v4().Pt(), w);
@@ -71,7 +71,6 @@ void TopTagHists::fill(const uhh2::Event & event) {
 
     // Substructure variables
     vector<Jet> subjets = topjet.subjets();
-    sort_by_pt(subjets);
     hist_top_nsub->Fill(subjets.size(), w);
     hist_top_fpt->Fill(subjets.at(0).pt() / topjet.v4().Pt(), w);
     if(topjet.subjets().size() > 2) {

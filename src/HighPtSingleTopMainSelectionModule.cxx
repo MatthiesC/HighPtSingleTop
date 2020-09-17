@@ -347,6 +347,15 @@ namespace uhh2 {
       if(dataset_version.find("TopToTau_WToTau") != string::npos && !(is_TopToTau && is_WToTau)) return false;
     }
 
+    if(debug) cout << "Sort jets, topjets, and subjets by pt" << endl;
+    sort_by_pt<Jet>(*event.jets);
+    sort_by_pt<TopJet>(*event.topjets);
+    for(auto & tj : *event.topjets) {
+      vector<Jet> sorted_subjets = tj.subjets();
+      sort_by_pt<Jet>(sorted_subjets);
+      tj.set_subjets(std::move(sorted_subjets));
+    }
+
     if(debug) cout << "Identify primary lepton" << endl;
     primarylep->process(event);
 
@@ -394,8 +403,8 @@ namespace uhh2 {
     bool b_1wtag = slct_1wtag->passes(event);
     bool b_0wtag = slct_0wtag->passes(event);
     bool is_TopTagRegion(false);
-    bool is_WTagRegion(false);
-    bool is_ValidationRegion(false);
+    //bool is_WTagRegion(false);
+    //bool is_ValidationRegion(false);
 
     // Caveat: The order of analysis modules in the following if-statements is crucial and should be changed with care only!
 
@@ -433,7 +442,7 @@ namespace uhh2 {
       if(debug) cout << "SR t(lep)W(had):  Fill final control histograms" << endl;
       hist_WTag_End->fill(event);
 
-      is_WTagRegion = true;
+      //is_WTagRegion = true;
     }
 
     else if(b_0toptag && b_0wtag) {
@@ -453,7 +462,7 @@ namespace uhh2 {
       if(debug) cout << "VR:  Fill final control histograms" << endl;
       hist_Validation_End->fill(event);
 
-      is_ValidationRegion = true;
+      //is_ValidationRegion = true;
     }
 
     // Discard events not belonging to one of the three regions above

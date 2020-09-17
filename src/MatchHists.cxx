@@ -10,7 +10,7 @@ using namespace uhh2;
 
 MatchHists::MatchHists(Context & ctx, const string & dirname, double arg_MIN_PT, double arg_MAX_PT):
   Hists(ctx, dirname) {
-  
+
   h_GENtW = ctx.get_handle<SingleTopGen_tWch>("h_GENtW");
   h_toptaggedjet = ctx.get_handle<TopJet>("TopTaggedJet");
   h_primlep = ctx.get_handle<FlavorParticle>("PrimaryLepton");
@@ -120,10 +120,9 @@ void MatchHists::fill(const uhh2::Event & event) {
     hist_topRecoJet_pz->Fill(topjet.v4().pz(), w);
     hist_topRecoJet_energy->Fill(topjet.v4().e(), w);
     hist_topRecoJet_area->Fill(topjet.jetArea(), w);
-  
+
     // Substructure variables
     vector<Jet> subjets = topjet.subjets();
-    sort_by_pt(subjets);
     double m12 = (subjets.at(0).v4() + subjets.at(1).v4()).M();
     double m13 = (subjets.at(0).v4() + subjets.at(2).v4()).M();
     double m23 = (subjets.at(1).v4() + subjets.at(2).v4()).M();
@@ -136,12 +135,12 @@ void MatchHists::fill(const uhh2::Event & event) {
     hist_topRecoJet_tau1->Fill(topjet.tau1_groomed(), w);
     hist_topRecoJet_tau2->Fill(topjet.tau2_groomed(), w);
     hist_topRecoJet_tau3->Fill(topjet.tau3_groomed(), w);
-  
+
     // Relative position
     hist_topRecoJet_dr_lepton->Fill(uhh2::deltaR(topjet.v4(), primlep.v4()), w);
     hist_topRecoJet_dphi_lepton->Fill(uhh2::deltaPhi(topjet.v4(), primlep.v4()), w);
     hist_topRecoJet_dphi_met->Fill(uhh2::deltaPhi(topjet.v4(), event.met->v4()), w);
     hist_met_dphi_lepton->Fill(uhh2::deltaPhi(event.met->v4(), primlep.v4()), w);
   }
-  
+
 }
