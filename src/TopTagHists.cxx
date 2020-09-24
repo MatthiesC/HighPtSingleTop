@@ -20,7 +20,7 @@ TopTagHists::TopTagHists(Context & ctx, const string & dirname, double arg_MIN_P
   const int nBins_dR = 100;
   const int nBins_dPhi = 128;
 
-  hist_top_pt = book<TH1F>("top_pt", "t jet p_{T} [GeV]", 100, 0, 1600);
+  hist_top_pt = book<TH1F>("top_pt", "t jet p_{T} [GeV]", 100, 0, 1000);
   hist_top_pt_1GeV = book<TH1F>("top_pt_1GeV", "t jet p_{T} [GeV]", 1600, 0, 1600);
   hist_top_eta = book<TH1F>("top_eta", "t jet #eta", 100, -2.5, 2.5);
   hist_top_mass = book<TH1F>("top_mass", "t jet m_{jet} [GeV]", 100, 130, 230); // 140 - 220

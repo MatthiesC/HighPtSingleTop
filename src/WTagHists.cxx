@@ -20,7 +20,7 @@ WTagHists::WTagHists(Context & ctx, const string & dirname, double arg_MIN_PT, d
   const int nBins_dR = 100;
   const int nBins_dPhi = 128;
 
-  hist_w_pt = book<TH1F>("w_pt", "W jet p_{T} [GeV]", 100, 0, 1600);
+  hist_w_pt = book<TH1F>("w_pt", "W jet p_{T} [GeV]", 100, 0, 1000);
   hist_w_pt_1GeV = book<TH1F>("w_pt_1GeV", "W jet p_{T} [GeV]", 1600, 0, 1600);
   hist_w_eta = book<TH1F>("w_eta", "W jet #eta", 100, -2.5, 2.5);
   hist_w_mass = book<TH1F>("w_mass", "W jet m_{jet} [GeV]", 100, 0, 200);
