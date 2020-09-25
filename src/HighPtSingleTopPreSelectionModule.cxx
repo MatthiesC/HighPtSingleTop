@@ -45,7 +45,7 @@ namespace uhh2 {
 
     unique_ptr<CommonModules> common_modules;
 
-    unique_ptr<AnalysisModule> clnr_muon, clnr_elec, clnr_topjet, hotvr_jec_module, clnr_jetLeptonOverlap;
+    unique_ptr<AnalysisModule> clnr_muon, clnr_elec, clnr_hotvr, hotvr_jec_module, clnr_jetLeptonOverlap;
     unique_ptr<AnalysisModule> primarylep;
     unique_ptr<AnalysisModule> SingleTopGen_tWchProd;
     unique_ptr<AnalysisModule> met_xy_correction;
@@ -53,11 +53,11 @@ namespace uhh2 {
     unique_ptr<Selection> slct_mttbarGenCut, slct_tWgenSignal;
     unique_ptr<Selection> slct_lumi;
     unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
-    unique_ptr<Selection> slct_met, slct_1topjet;
+    unique_ptr<Selection> slct_met, slct_1hotvr;
 
-    unique_ptr<AndHists> hist_common, hist_trigger, hist_cleaning, hist_1lepton, hist_met, hist_1topjet;
+    unique_ptr<AndHists> hist_common, hist_trigger, hist_cleaning, hist_1lepton, hist_met, hist_1hotvr;
 
-    bool is_data, is_mc, is_muon, is_elec, using_hotvr;
+    bool is_data, is_mc, is_muon, is_elec;
     string dataset_version, met_name, jet_collection;
   };
 
@@ -81,7 +81,6 @@ namespace uhh2 {
     dataset_version = ctx.get("dataset_version");
     met_name = ctx.get("METName");
     jet_collection = ctx.get("JetCollection");
-    using_hotvr = ctx.get("TopJetCollection") == "hotvrPuppi"; // if false, we use AK8 Puppi
 
 
     //---------------------//
@@ -100,12 +99,8 @@ namespace uhh2 {
     double hotvrPt_min = 200.0;
     double hotvrEta_max = 2.5;
 
-    double ak8Pt_min = 300.0;
-    double ak8Eta_max = 2.4;
-
     double hotvrDeltaRToLepton_min = 1.5;
     double jetDeltaRToLepton_min = 0.4;
-    double ak8DeltaRToLepton_min = 0.8;
 
     double muonPt_min  = 50.0;
     double muonEta_max =  2.4;
@@ -123,25 +118,19 @@ namespace uhh2 {
 
     MuonId muonID_veto = AndId<Muon>(MuonID(Muon::Selector::CutBasedIdLoose), PtEtaCut(muonPt_min_veto, muonEta_max_veto));
     MuonId muonID = AndId<Muon>(MuonID(Muon::Selector::CutBasedIdTight), PtEtaCut(muonPt_min, muonEta_max), MuonIso(muonIso_max));
-    ElectronId elecID_veto;
-    ElectronId elecID;
-    if (year == Year::is2016v2 || year == Year::is2016v3)
-      {
-        elecID_veto = AndId<Electron>(ElectronID_Summer16_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
-        elecID = AndId<Electron>(ElectronID_Summer16_tight, PtEtaCut(elecPt_min, elecEta_max));
-      }
-    else
-      {
-        elecID_veto = AndId<Electron>(ElectronID_Fall17_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
-        elecID = AndId<Electron>(ElectronID_Fall17_tight, PtEtaCut(elecPt_min, elecEta_max));
-      }
+
+    // Recommendation for complete Run 2: https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2
+    ElectronId elecID_veto = AndId<Electron>(ElectronID_Fall17_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
+    ElectronId elecID = AndId<Electron>(ElectronID_Fall17_tight, PtEtaCut(elecPt_min, elecEta_max));
+
     JetPFID::wp jetPFID;
     if(jet_collection == "jetsAk4CHS") jetPFID = JetPFID::WP_TIGHT_CHS;
     else if(jet_collection == "jetsAk4Puppi") jetPFID = JetPFID::WP_TIGHT_PUPPI;
     else throw runtime_error("HighPtSingleTopPreSelectionModule: Please check jet PF ID");
+
     JetId jetID = PtEtaCut(jetPt_min, jetEta_max);
+
     TopJetId hotvrID = AndId<TopJet>(PtEtaCut(hotvrPt_min, hotvrEta_max), DeltaRCut(ctx, hotvrDeltaRToLepton_min)); // through away all HOTVR jets with lepton close by <-- Roman's recommendation from October 16, 2019
-    TopJetId ak8ID = AndId<TopJet>(PtEtaCut(ak8Pt_min, ak8Eta_max), DeltaRCut(ctx, ak8DeltaRToLepton_min));
 
 
     //----------------//
@@ -162,7 +151,7 @@ namespace uhh2 {
 
     clnr_muon.reset(new MuonCleaner(muonID));
     clnr_elec.reset(new ElectronCleaner(elecID));
-    clnr_topjet.reset(new TopJetCleaner(ctx, (using_hotvr ? hotvrID : ak8ID)));
+    clnr_hotvr.reset(new TopJetCleaner(ctx, hotvrID));
     clnr_jetLeptonOverlap.reset(new JetLeptonOverlapRemoval(ctx, jetDeltaRToLepton_min));
 
 
@@ -173,14 +162,13 @@ namespace uhh2 {
     slct_lumi.reset(new LumiSelection(ctx));
 
     slct_mttbarGenCut.reset(new MttbarGenSelection(0, 700));
-    slct_tWgenSignal.reset(new tWgenSignalSelection(ctx, is_muon));
 
     slct_1muon.reset(new NMuonSelection(1, 1));
     slct_0muon.reset(new NMuonSelection(0, 0));
     slct_1elec.reset(new NElectronSelection(1, 1));
     slct_0elec.reset(new NElectronSelection(0, 0));
     slct_met.reset(new METSelection(met_min));
-    slct_1topjet.reset(new NTopJetSelection(1, -1));
+    slct_1hotvr.reset(new NTopJetSelection(1, -1));
 
 
     //------------//
@@ -190,7 +178,7 @@ namespace uhh2 {
     hist_common.reset(new AndHists(ctx, "0_Common"));
     hist_1lepton.reset(new AndHists(ctx, "1_OneLepton"));
     hist_met.reset(new AndHists(ctx, "2_MET"));
-    hist_1topjet.reset(new AndHists(ctx, "3_OneTopJet"));
+    hist_1hotvr.reset(new AndHists(ctx, "3_OneHotvr"));
 
 
     //---------------//
@@ -198,7 +186,6 @@ namespace uhh2 {
     //---------------//
 
     primarylep.reset(new PrimaryLepton(ctx));
-    SingleTopGen_tWchProd.reset(new SingleTopGen_tWchProducer(ctx, "h_GENtW"));
     met_xy_correction.reset(new METXYCorrections(ctx));
   }
 
@@ -217,13 +204,6 @@ namespace uhh2 {
 
     // Lumi selection
     if(is_data && !slct_lumi->passes(event)) return false;
-
-    // Split up tW samples into SIGNAL and OTHER depending on MC truth info
-    if(dataset_version.find("ST_tW") == 0) {
-      SingleTopGen_tWchProd->process(event);
-      if( (dataset_version.find("ST_tW_signal") == 0 || dataset_version.find("ST_tW_DS_signal") == 0) && !slct_tWgenSignal->passes(event) ) return false;
-      else if( (dataset_version.find("ST_tW_other") == 0 || dataset_version.find("ST_tW_DS_other") == 0) && slct_tWgenSignal->passes(event) ) return false;
-    }
 
     // Mttbar gencut
     if(dataset_version.find("TTbar_M0to700") == 0 && !slct_mttbarGenCut->passes(event)) return false;
@@ -255,11 +235,11 @@ namespace uhh2 {
     if(!slct_met->passes(event)) return false;
     hist_met->fill(event);
 
-    // At least one TOP jet
-    if(using_hotvr) hotvr_jec_module->process(event);
-    clnr_topjet->process(event);
-    if(!slct_1topjet->passes(event)) return false;
-    hist_1topjet->fill(event);
+    // At least one HOTVR jet
+    hotvr_jec_module->process(event);
+    clnr_hotvr->process(event);
+    if(!slct_1hotvr->passes(event)) return false;
+    hist_1hotvr->fill(event);
 
     // Place additional selections into a new Module!!!
     // End of preselection
