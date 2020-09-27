@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE JobConfiguration PUBLIC "" "JobConfig.dtd"[
 
-          <!ENTITY TargetLumi      "35922">
-          <!ENTITY SELdir          "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v2/MainSelection/2016/Muon/">
-          <!ENTITY b_Cacheable     "False">
-          <!ENTITY NEVT            "-1">
-          <!ENTITY PRESELdir       "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v2/PreSelection/2016/Muon/">
-          <!ENTITY PRESELfilename  "uhh2.AnalysisModuleRunner">
-          <!ENTITY YEARsuffix      "_2016v3">
-          <!ENTITY PROOFdir        "/nfs/dust/cms/user/matthies/.proof2">
-
+          <!ENTITY TargetLumi     "35922">
+          <!ENTITY SELdir         "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v2/MainSelection/2016/Muon/">
+          <!ENTITY b_Cacheable    "False">
+          <!ENTITY NEVT           "-1">
+          <!ENTITY PRESELdir      "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v2/PreSelection/2016/Muon/">
+          <!ENTITY PRESELfilename "uhh2.AnalysisModuleRunner">
+          <!ENTITY YEARsuffix     "_2016v3">
+          <!ENTITY PROOFdir       "/nfs/dust/cms/user/matthies/.proof2">
 
           <!ENTITY TTbar_M0to700    "&PRESELdir;/&PRESELfilename;.MC.TTbar_M0to700&YEARsuffix;.root">
           <!ENTITY TTbar_M700to1000 "&PRESELdir;/&PRESELfilename;.MC.TTbar_M700to1000&YEARsuffix;.root">
@@ -221,7 +220,6 @@
     <InputData Lumi="793364.5000" NEventsMax="&NEVT;" Type="MC" Version="QCD_PT600to800&YEARsuffix;"  Cacheable="&b_Cacheable;"> <In FileName="&QCD_PT600to800;"  Lumi="0.0"/> <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
     <InputData Lumi="4236071.165" NEventsMax="&NEVT;" Type="MC" Version="QCD_PT800to1000&YEARsuffix;" Cacheable="&b_Cacheable;"> <In FileName="&QCD_PT800to1000;" Lumi="0.0"/> <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
     <InputData Lumi="2430398.987" NEventsMax="&NEVT;" Type="MC" Version="QCD_PT1000toInf&YEARsuffix;" Cacheable="&b_Cacheable;"> <In FileName="&QCD_PT1000toInf;" Lumi="0.0"/> <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
-
 
     <UserConfig>
 
