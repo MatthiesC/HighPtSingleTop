@@ -2,10 +2,10 @@
 <!DOCTYPE JobConfiguration PUBLIC "" "JobConfig.dtd"[
 
           <!ENTITY TargetLumi     "35922">
-          <!ENTITY SELdir         "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v2/MainSelection/2016/Muon/">
+          <!ENTITY SELdir         "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v2/mainsel/2016/muo/">
           <!ENTITY b_Cacheable    "False">
           <!ENTITY NEVT           "-1">
-          <!ENTITY PRESELdir      "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v2/PreSelection/2016/Muon/">
+          <!ENTITY PRESELdir      "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v2/presel/2016/muo/">
           <!ENTITY PRESELfilename "uhh2.AnalysisModuleRunner">
           <!ENTITY YEARsuffix     "_2016v3">
           <!ENTITY PROOFdir       "/nfs/dust/cms/user/matthies/.proof2">
@@ -69,7 +69,7 @@
 
 <!--
 <ConfigParse NEventsBreak="100000" FileSplit="0" AutoResubmit="5"/>
-<ConfigSGE RAM ="4" DISK ="3" Mail="christopher.matthies@desy.de" Notification="as" Workdir="workdir_mainsel2016_muo"/>
+<ConfigSGE RAM ="4" DISK ="3" Mail="christopher.matthies@desy.de" Notification="as" Workdir="workdir_mainsel_2016_muo"/>
 -->
 
 <!-- OutputLevel controls which messages are printed; set to VERBOSE or DEBUG for more verbosity, to WARNING or ERROR for less -->
