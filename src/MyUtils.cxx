@@ -82,7 +82,7 @@ const Jet * nextJetToMET(const uhh2::Event & event, const std::vector<Jet> & jet
 }
 
 
-// return HOTVR jet min. m_ij
+// return HOTVR jet's min. m_ij of three leading subjets
 double calcHOTVRmpair(const TopJet & hotvrjet) {
 
   std::vector<Jet> subjets = hotvrjet.subjets();
@@ -99,14 +99,14 @@ double calcHOTVRmpair(const TopJet & hotvrjet) {
 }
 
 
-// return HOTVR jet min. m_ij
-double calcHOTVRfpt(const TopJet & hotvrjet) {
+// return HOTVR jet's f_pt(subi) [sub1 is default]
+double calcHOTVRfpt(const TopJet & hotvrjet, const unsigned int & i_sub) {
 
   std::vector<Jet> subjets = hotvrjet.subjets();
 
   sort_by_pt<Jet>(subjets);
 
-  return subjets.at(0).v4().pt() / hotvrjet.v4().pt();
+  return subjets.at(i_sub).v4().pt() / hotvrjet.v4().pt();
 }
 
 

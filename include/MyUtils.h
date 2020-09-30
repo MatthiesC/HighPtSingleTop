@@ -53,7 +53,7 @@ const Jet * nextJetToMET(const uhh2::Event&, const std::vector<Jet>&);
 
 double calcHOTVRmpair(const TopJet & hotvrjet);
 
-double calcHOTVRfpt(const TopJet & hotvrjet);
+double calcHOTVRfpt(const TopJet & hotvrjet, const unsigned int & i_sub=0);
 
 void it_works();
 
