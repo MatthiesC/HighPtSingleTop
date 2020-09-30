@@ -37,7 +37,7 @@ class TopJetGroomer : public uhh2::AnalysisModule {
 
   explicit TopJetGroomer(bool corrected = true) : _corrected(corrected) {}
   virtual bool process(uhh2::Event & event) override;
- 
+
  private:
   bool _corrected;
 
@@ -50,6 +50,10 @@ double calcMTW(const FlavorParticle&, const uhh2::Event&);
 FlavorParticle returnPrimaryLepton(const uhh2::Event&);
 
 const Jet * nextJetToMET(const uhh2::Event&, const std::vector<Jet>&);
+
+double calcHOTVRmpair(const TopJet & hotvrjet);
+
+double calcHOTVRfpt(const TopJet & hotvrjet);
 
 void it_works();
 
