@@ -117,13 +117,13 @@ namespace uhh2 {
     int m_n_max;
   };
 
-  // copied from Alex
   class HighPtSingleTopTriggerSelection : public uhh2::Selection {
   public:
-    HighPtSingleTopTriggerSelection(uhh2::Context &ctx);
-    virtual bool passes(const uhh2::Event &event) override;
+    HighPtSingleTopTriggerSelection(uhh2::Context & ctx);
+    virtual bool passes(const uhh2::Event & event) override;
   private:
     Year year;
+    bool b_electron_stream;
     bool is_muo, is_ele;
     std::unique_ptr<uhh2::Selection> trig_isomu24, trig_isotkmu24, trig_isomu27;
     std::unique_ptr<uhh2::Selection> trig_ele27, trig_ele32, trig_ele35;
