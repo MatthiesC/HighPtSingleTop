@@ -2,6 +2,8 @@
 
 import os
 import sys
+import csv
+from collections import OrderedDict
 # import xml.etree.ElementTree as ET
 
 
@@ -13,6 +15,7 @@ class configContainer:
    uhh2Dir = str()
    userMail = str()
    yearVars = dict()
+   used_samples = OrderedDict()
 
    def __init__(self):
 
@@ -88,6 +91,35 @@ class configContainer:
       }
 
 
+class sampleEntity:
+
+   '''Container to hold information about a data or MC sample, as read from CSV database'''
+
+   def __init__(self, csvRow: OrderedDict):
+
+      self.year = csvRow['year']
+      self.channel = csvRow['channel']
+      self.is_data = True if csvRow['is_data']=='True' else False
+      self.nickName = csvRow['nickName']
+      self.xmlPath = csvRow['xmlPath']
+      self.xsection = float(csvRow['xsection']) # to be given in pb
+      self.weightedEvents = float(csvRow['weightedEvents'])
+      self.lumi = 1. if self.is_data else self.weightedEvents/self.xsection
+      self.mainsel_versions = list()
+
+      # init mainsel_versions
+      if self.nickName.startswith('WJets'):
+         self.mainsel_versions.append(self.nickName.replace('WJets', 'WJetsHeavy'))
+         self.mainsel_versions.append(self.nickName.replace('WJets', 'WJetsLight'))
+      elif self.nickName.startswith('ST_tW'):
+         decays = ['Had', 'Ele', 'Muo', 'Tau']
+         for tDecay in decays:
+            for wDecay in decays:
+               self.mainsel_versions.append(self.nickName.replace('_T', '_TopTo'+tDecay+'_WTo'+wDecay+'_T'))
+      else:
+         self.mainsel_versions.append(self.nickName)
+
+
 class xmlCreator:
 
    '''Creates XML files for SFrame'''
@@ -147,7 +179,7 @@ class xmlCreator:
          file.write(''']>\n''')
          file.write('''\n''')
          file.write('''<!--\n''')
-         file.write('''<ConfigParse NEventsBreak="'''+('200000' if self.is_mainsel else '0')+'''" FileSplit="'''+('0' if self.is_mainsel else self.yearVars['FileSplit'][self.year])+'''" AutoResubmit="5"/>\n''')
+         file.write('''<ConfigParse NEventsBreak="'''+('200000' if self.is_mainsel else '0')+'''" FileSplit="'''+('0' if self.is_mainsel else self.yearVars['preselFileSplit'][self.year])+'''" AutoResubmit="5"/>\n''')
          file.write('''<ConfigSGE RAM="4" DISK="3" Mail="'''+self.userMail+'''" Notification="as" Workdir="'''+'''_'''.join(['workdir', self.selection, self.year, self.channel])+'''"/>\n''')
          file.write('''-->\n''')
          file.write('''\n''')
@@ -235,5 +267,32 @@ class xmlCreator:
 
 if __name__=='__main__':
 
-   a = xmlCreator('mainsel', '2018', 'ele')
-   a.write_xml()
+   # a = xmlCreator('mainsel', '2018', 'ele')
+   # a.write_xml()
+
+   used_samples = OrderedDict()
+   years = ['2016', '2017', '2018']
+   channels = ['ele', 'muo']
+
+   for year in years:
+      used_samples[year] = OrderedDict()
+      for channel in channels:
+         used_samples[year][channel] = list()
+         with open('database.csv', 'r') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+               use_me = row['use_me']=='True' and row['year']==year and (row['channel']==channel or row['channel']=='both')
+               if use_me:
+                  used_samples[year][channel].append(sampleEntity(row))
+
+   configContainer.used_samples = used_samples
+
+   for year in years:
+      for channel in channels:
+         for selection in ['presel', 'mainsel']:
+            x = xmlCreator(selection, year, channel)
+            x.write_xml()
+   # confCon = configContainer()
+   #
+   # for x in confCon.used_samples['2016']['muo']:
+   #    print(x.mainsel_versions)
