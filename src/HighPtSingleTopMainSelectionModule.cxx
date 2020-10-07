@@ -95,19 +95,20 @@ namespace uhh2 {
 
     is_data = ctx.get("dataset_type") == "DATA";
     is_mc   = ctx.get("dataset_type") == "MC";
-    is_muon = string2lowercase(ctx.get("analysis_channel")) == "muon";
-    is_elec = string2lowercase(ctx.get("analysis_channel")) == "electron";
+    is_muon = ctx.get("analysis_channel") == "muo";
+    is_elec = ctx.get("analysis_channel") == "ele";
 
     dataset_version = ctx.get("dataset_version");
 
-    string syst_pileup       = ctx.get("SystDirection_Pileup", "nominal");
-    string syst_muon_trigger = ctx.get("SystDirection_MuonTrig", "nominal");
-    string syst_muon_id      = ctx.get("SystDirection_MuonId", "nominal");
-    string syst_muon_iso     = ctx.get("SystDirection_MuonIso", "nominal");
-    string syst_toptag       = ctx.get("SystDirection_TopTagSF", "nominal");
-    string syst_btag         = ctx.get("SystDirection_BTagSF", "nominal");
+    string syst_pileup       = ctx.get("SystDirection_Pileup");
+    string syst_muon_trigger = ctx.get("SystDirection_MuonTrig");
+    string syst_muon_id      = ctx.get("SystDirection_MuonId");
+    string syst_muon_iso     = ctx.get("SystDirection_MuonIso");
+    string syst_toptag       = ctx.get("SystDirection_HOTVRTopTagSF");
+    string syst_wtag         = ctx.get("SystDirection_DeepAK8WTagSF");
+    string syst_btag         = ctx.get("SystDirection_DeepJetBTagSF");
 
-    string neural_net_filepath = ctx.get("NeuralNetFile");
+    string neural_net_filepath  = ctx.get("NeuralNetFile_tTag");
 
 
     //---------------------//
@@ -416,8 +417,8 @@ namespace uhh2 {
     bool b_1wtag = slct_1wtag->passes(event);
     bool b_0wtag = slct_0wtag->passes(event);
     bool is_TopTagRegion(false);
-    //bool is_WTagRegion(false);
-    //bool is_ValidationRegion(false);
+    // bool is_WTagRegion(false);
+    // bool is_ValidationRegion(false);
 
     // Caveat: The order of analysis modules in the following if-statements is crucial and should be changed with care only!
 

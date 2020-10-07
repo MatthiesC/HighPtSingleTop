@@ -72,8 +72,8 @@ namespace uhh2 {
 
     is_data = ctx.get("dataset_type") == "DATA";
     is_mc   = ctx.get("dataset_type") == "MC";
-    is_muon = ctx.get("analysis_channel") == "MUON";
-    is_elec = ctx.get("analysis_channel") == "ELECTRON";
+    is_muon = ctx.get("analysis_channel") == "muo";
+    is_elec = ctx.get("analysis_channel") == "ele";
 
     if(!(is_data || is_mc)) throw runtime_error("HighPtSingleTopPreSelectionModule: Dataset is labeled as neither DATA nor MC. Please check the XML config file!");
     if(!(is_muon || is_elec)) throw runtime_error("HighPtSingleTopPreSelectionModule: Analysis channel ( ELECTRON / MUON ) not correctly given. Please check the XML config file!");

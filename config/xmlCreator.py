@@ -131,6 +131,7 @@ class xmlCreator:
       self.userName = confCon.userName
       self.userMail = confCon.userMail
       self.yearVars = confCon.yearVars
+      self.sample_list = confCon.used_samples[year][channel]
 
       if selection not in ['presel', 'mainsel']:
          sys.exit('Given value of argument "selection" not valid. Abort.')
@@ -152,7 +153,7 @@ class xmlCreator:
          sys.exit('Warning: Make sure to create output directory via "ln -s". Abort.')
 
       self.xmlFileName = '_'.join(['parsedConfigFile', self.selection, self.year, self.channel])+'.xml'
-      self.xmlFilePathBase = self.uhh2Dir+'HighPtSingleTop/config/'+'_'.join(['xmlWorkdir', self.selection, self.year, self.channel])+'/'
+      self.xmlFilePathBase = self.uhh2Dir+'HighPtSingleTop/config/'+'_'.join(['config', self.selection, self.year, self.channel])+'/'
       os.makedirs(self.xmlFilePathBase, exist_ok=True)
       self.xmlFilePath = self.xmlFilePathBase+self.xmlFileName
 
@@ -174,7 +175,11 @@ class xmlCreator:
          file.write('''<!ENTITY YEARsuffix "_'''+self.year+self.yearVersion+'''">\n''')
          file.write('''<!ENTITY PROOFdir "/nfs/dust/cms/user/'''+self.userName+'''/.proof2">\n''')
          file.write('''\n''')
-         # TODO: entities of input samples
+         for s in self.sample_list:
+            if self.is_mainsel:
+               file.write('''<!ENTITY '''+s.nickName+''' "&PRESELdir;/&PRESELfilename;'''+('.DATA.' if s.is_data else '.MC.')+s.nickName+'''&YEARsuffix;.root">\n''')
+            else:
+               file.write('''<!ENTITY '''+s.nickName+''' SYSTEM "'''+self.uhh2Dir+'common/UHH2-datasets/'+s.xmlPath+'''">\n''')
          file.write('''\n''')
          file.write(''']>\n''')
          file.write('''\n''')
@@ -189,7 +194,12 @@ class xmlCreator:
          file.write('''<Package Name="SUHH2HighPtSingleTop.par"/>\n''')
          file.write('''<Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTPUTdir;/" PostFix="" TargetLumi="&TargetLumi;">\n''')
          file.write('''\n''')
-         # TODO: samples
+         for s in self.sample_list:
+            if self.is_mainsel:
+               for v in s.mainsel_versions:
+                  file.write('''<InputData Lumi="'''+str(s.lumi)+'''" NEventsMax="&NEVT;" Type="'''+('DATA' if s.is_data else 'MC')+'''" Version="'''+v+'''&YEARsuffix;" Cacheable="&b_Cacheable;"> <In FileName="&'''+s.nickName+''';" Lumi="0.0"/> <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>\n''')
+            else:
+               file.write('''<InputData Lumi="'''+str(s.lumi)+'''" NEventsMax="&NEVT;" Type="'''+('DATA' if s.is_data else 'MC')+'''" Version="'''+s.nickName+'''&YEARsuffix;" Cacheable="&b_Cacheable;"> &'''+s.nickName+'''; <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>\n''')
          file.write('''\n''')
          file.write('''<UserConfig>\n''')
          file.write('''\n''')
