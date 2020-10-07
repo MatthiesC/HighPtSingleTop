@@ -311,16 +311,14 @@ bool MyNTopJetsSelection::passes(const Event & event) {
 }
 
 
+HighPtSingleTopTriggerSelection::HighPtSingleTopTriggerSelection(Context & ctx) {
 
-
-
-
-
-// copied from Alex
-HighPtSingleTopTriggerSelection::HighPtSingleTopTriggerSelection(Context &ctx) {
   year = extract_year(ctx);
-  is_ele = ctx.get("analysis_channel") == "ELECTRON";
-  is_muo = ctx.get("analysis_channel") == "MUON";
+  TString dataset_version = ctx.get("dataset_version");
+  b_electron_stream = dataset_version.Contains("SingleElectron");
+
+  is_ele = ctx.get("analysis_channel") == "ele";
+  is_muo = ctx.get("analysis_channel") == "muo";
 
   trig_isomu24.reset(new TriggerSelection("HLT_IsoMu24_v*"));
   trig_isotkmu24.reset(new TriggerSelection("HLT_IsoTkMu24_v*"));
@@ -332,46 +330,40 @@ HighPtSingleTopTriggerSelection::HighPtSingleTopTriggerSelection(Context &ctx) {
 
   trig_photon175.reset(new TriggerSelection("HLT_Photon175_v*"));
   trig_photon200.reset(new TriggerSelection("HLT_Photon200_v*"));
-
 }
 
-bool HighPtSingleTopTriggerSelection::passes(const Event &event) {
+bool HighPtSingleTopTriggerSelection::passes(const Event & event) {
 
-  if (year == Year::is2016v3)
-    {
-      if (is_ele)
-	{
-	  return (trig_ele27->passes(event) || trig_photon175->passes(event));
-	}
-      if (is_muo)
-	{
-	  return (trig_isomu24->passes(event) || trig_isotkmu24->passes(event));
-	}
+  if(year == Year::is2016v3) {
+    if(is_ele) {
+      if(event.isRealData) {
+        if(b_electron_stream) return trig_ele27->passes(event);
+        else return (!trig_ele27->passes(event) && trig_photon175->passes(event)); // only select events without ele27 trigger, since they are already in SingleElectron
+      }
+      else return (trig_ele27->passes(event) || trig_photon175->passes(event));
     }
+    else if(is_muo) return (trig_isomu24->passes(event) || trig_isotkmu24->passes(event));
+    else return false;
+  }
 
-  else if (year == Year::is2017v2)
-    {
-      if (is_ele)
-	{
-	  return (trig_ele35->passes(event) || trig_photon200->passes(event));
-	}
-      if (is_muo)
-	{
-	  return (trig_isomu27->passes(event));
-	}
+  else if(year == Year::is2017v2) {
+    if(is_ele) {
+      if(event.isRealData) {
+        if(b_electron_stream) return trig_ele35->passes(event);
+        else return (!trig_ele35->passes(event) && trig_photon200->passes(event)); // only select events without ele35 trigger, since they are already in SingleElectron
+      }
+      else return (trig_ele35->passes(event) || trig_photon200->passes(event));
     }
+    else if(is_muo) return (trig_isomu27->passes(event));
+    else return false;
+  }
 
-  else if (year == Year::is2018)
-    {
-      if (is_ele)
-	{
-	  return (trig_ele32->passes(event));
-	}
-      if (is_muo)
-	{
-	  return (trig_isomu24->passes(event));
-	}
-    }
+  else if(year == Year::is2018) {
+    // no need for differentiation between photon and electron stream since EGamma dataset
+    if(is_ele) return (trig_ele32->passes(event) || trig_photon200->passes(event));
+    else if(is_muo) return (trig_isomu24->passes(event));
+    else return false;
+  }
 
-  return false;
+  else return false;
 }
