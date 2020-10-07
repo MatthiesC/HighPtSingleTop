@@ -277,9 +277,6 @@ class xmlCreator:
 
 if __name__=='__main__':
 
-   # a = xmlCreator('mainsel', '2018', 'ele')
-   # a.write_xml()
-
    used_samples = OrderedDict()
    years = ['2016', '2017', '2018']
    channels = ['ele', 'muo']
@@ -302,7 +299,4 @@ if __name__=='__main__':
          for selection in ['presel', 'mainsel']:
             x = xmlCreator(selection, year, channel)
             x.write_xml()
-   # confCon = configContainer()
-   #
-   # for x in confCon.used_samples['2016']['muo']:
-   #    print(x.mainsel_versions)
+            #x.write_systematics_files with help of ElementTree
