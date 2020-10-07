@@ -47,24 +47,6 @@ class configContainer:
          '2018': self.uhh2Dir+'common/data/2018/Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.root',
       }
 
-      self.yearVars['muonSFFiles_trigger'] = {
-         '2016': self.uhh2Dir+'common/data/2016/MuonTrigger_EfficienciesAndSF_average_RunBtoH.root',
-         '2017': self.uhh2Dir+'common/data/2017/MuonTrigger_EfficienciesAndSF_RunBtoF_Nov17Nov2017.root',
-         '2018': self.uhh2Dir+'common/data/2018/',
-      }
-
-      self.yearVars['muonSFFiles_id'] = {
-         '2016': self.uhh2Dir+'common/data/2016/MuonID_EfficienciesAndSF_average_RunBtoH.root',
-         '2017': self.uhh2Dir+'common/data/2017/MuonID_94X_RunBCDEF_SF_ID.root',
-         '2018': self.uhh2Dir+'common/data/2018/Muon_ID_SF_RunABCD.root',
-      }
-
-      self.yearVars['muonSFFiles_iso'] = {
-         '2016': self.uhh2Dir+'common/data/2016/MuonIso_EfficienciesAndSF_average_RunBtoH.root',
-         '2017': self.uhh2Dir+'common/data/2017/MuonIso_94X_RunBCDEF_SF_ISO.root',
-         '2018': self.uhh2Dir+'common/data/2018/Muon_Iso_SF_RunABCD.root',
-      }
-
       self.yearVars['hotvrSFFiles'] = {
          '2016': self.uhh2Dir+'HOTVR/data/2016TopTaggingScaleFactors.root',
          '2017': self.uhh2Dir+'HOTVR/data/2017TopTaggingScaleFactors.root',
@@ -72,9 +54,9 @@ class configContainer:
       }
 
       self.yearVars['deepjetSFFiles'] = {
-         '2016': self.uhh2Dir+'HighPtSingleTop/data/ScaleFactors/DeepJet_2016LegacySF_V1__reduced.csv', # if using CP5 samples, need to use other sf file
-         '2017': self.uhh2Dir+'HighPtSingleTop/data/ScaleFactors/DeepFlavour_94XSF_V4_B_F__reduced.csv',
-         '2018': self.uhh2Dir+'HighPtSingleTop/data/ScaleFactors/DeepJet_102XSF_V2__reduced.csv',
+         '2016': self.uhh2Dir+'HighPtSingleTop/data/ScaleFactors/2016/DeepJet_2016LegacySF_V1__reduced.csv', # if using CP5 samples, need to use other sf file
+         '2017': self.uhh2Dir+'HighPtSingleTop/data/ScaleFactors/2017/DeepFlavour_94XSF_V4_B_F__reduced.csv',
+         '2018': self.uhh2Dir+'HighPtSingleTop/data/ScaleFactors/2018/DeepJet_102XSF_V2__reduced.csv',
       }
 
       self.yearVars['NNFiles'] = {
@@ -228,7 +210,7 @@ class xmlCreator:
             file.write('''<Item Name="pileup_directory_data_down" Value="'''+self.uhh2Dir+'common/data/'+self.year+'''/MyDataPileupHistogram'''+self.year+'''_66017.root"/>\n''')
             file.write('''\n''')
             file.write('''<Item Name="HOTVRTopTagSFs" Value="'''+self.yearVars['hotvrSFFiles'][self.year]+'''"/>\n''')
-            file.write('''<Item Name="DeepAK8WTagSFs" Value="'''+self.uhh2Dir+'''HighPtSingleTop/data/ScaleFactors/DeepAK8V2_Top_W_SFs.csv"/>\n''')
+            file.write('''<Item Name="DeepAK8WTagSFs" Value="'''+self.uhh2Dir+'''HighPtSingleTop/data/ScaleFactors/201X/DeepAK8V2_Top_W_SFs.csv"/>\n''')
             file.write('''<Item Name="BTagCalibration" Value="'''+self.yearVars['deepjetSFFiles'][self.year]+'''"/>\n''')
             file.write('''\n''')
             file.write('''<Item Name="NeuralNetFile_tTag" Value="'''+self.yearVars['NNFiles']['tTag'][self.year]+'''"/>\n''')

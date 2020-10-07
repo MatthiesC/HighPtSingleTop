@@ -102,9 +102,6 @@ namespace uhh2 {
     dataset_version = ctx.get("dataset_version");
 
     string syst_pileup       = ctx.get("SystDirection_Pileup");
-    string syst_muon_trigger = ctx.get("SystDirection_MuonTrig");
-    string syst_muon_id      = ctx.get("SystDirection_MuonId");
-    string syst_muon_iso     = ctx.get("SystDirection_MuonIso");
     string syst_toptag       = ctx.get("SystDirection_HOTVRTopTagSF");
     string syst_wtag         = ctx.get("SystDirection_DeepAK8WTagSF");
     string syst_btag         = ctx.get("SystDirection_DeepJetBTagSF");
