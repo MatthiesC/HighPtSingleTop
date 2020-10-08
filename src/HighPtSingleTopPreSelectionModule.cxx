@@ -104,12 +104,12 @@ namespace uhh2 {
     double hotvrDeltaRToLepton_min = 1.5;
     double jetDeltaRToLepton_min = 0.4;
 
-    double muonPt_min  = 50.0;
-    double muonEta_max =  2.4;
-    double muonIso_max =  0.15;
+    double muonPt_min = 50.0;
+    double muonEta_max = 2.4;
+    double muonIso_max = 0.15;
 
-    double elecPt_min  = 50.0;
-    double elecEta_max =  2.4;
+    double elecPt_min = 50.0;
+    double elecEta_max = 2.4;
 
     double met_min = 50.0;
 
@@ -279,8 +279,7 @@ namespace uhh2 {
     if(!slct_1hotvr->passes(event)) return false;
     hist_1hotvr->fill(event);
 
-    // Place additional selections into a new Module!!!
-    // End of preselection
+    // End of Module
     return true;
   }
 
