@@ -48,7 +48,7 @@ namespace uhh2 {
 
   private:
 
-    bool debug;
+    bool debug, empty_output_tree;
 
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_toptag, sf_deepjet, scale_variation;
     unique_ptr<AnalysisModule> handle_primarylep, handle_hadronictop, handle_toptaggedjet, handle_wtaggedjet, handle_btaggedjets, handle_ak4InExJets_top, handle_ak4InExJets_W, handle_wboson, handle_pseudotop, SingleTopGen_tWchProd;
@@ -71,7 +71,6 @@ namespace uhh2 {
     unique_ptr<BinnedDNNHists> hist_dnn;
     // unique_ptr<BinnedDNNHists> hist_dnn_noxjet_YES, hist_dnn_noxjet_NO, hist_dnn_0bxjet, hist_dnn_1bxjet, hist_dnn_0toptag;
 
-    bool is_data, is_mc, is_muon, is_elec;
     string dataset_version;
 
     TopJetId StandardHOTVRTopTagID;
@@ -83,6 +82,7 @@ namespace uhh2 {
     string dnn_config_outputName;
     vector<Event::Handle<double>> m_input_handles;
     Event::Handle<double> h_dnn_output_val;
+    Event::Handle<int> h_which_region;
   };
 
 
@@ -94,17 +94,14 @@ namespace uhh2 {
 
     debug = string2lowercase(ctx.get("Debug", "false")) == "true";
 
-    is_data = ctx.get("dataset_type") == "DATA";
-    is_mc   = ctx.get("dataset_type") == "MC";
-    is_muon = ctx.get("analysis_channel") == "muo";
-    is_elec = ctx.get("analysis_channel") == "ele";
+    empty_output_tree = string2lowercase(ctx.get("EmptyOutputTree")) == "true";
 
     dataset_version = ctx.get("dataset_version");
 
-    string syst_pileup       = ctx.get("SystDirection_Pileup");
-    string syst_toptag       = ctx.get("SystDirection_HOTVRTopTagSF");
-    string syst_wtag         = ctx.get("SystDirection_DeepAK8WTagSF");
-    string syst_btag         = ctx.get("SystDirection_DeepJetBTagSF");
+    string syst_pileup = ctx.get("SystDirection_Pileup");
+    string syst_toptag = ctx.get("SystDirection_HOTVRTopTagSF");
+    string syst_wtag  = ctx.get("SystDirection_DeepAK8WTagSF");
+    string syst_btag  = ctx.get("SystDirection_DeepJetBTagSF");
 
     string neural_net_filepath  = ctx.get("NeuralNetFile_tTag");
 
@@ -114,11 +111,11 @@ namespace uhh2 {
     //---------------------//
 
     // HOTVR t-tagging criteria
-    double hotvr_fpt_max     = 0.8;
+    double hotvr_fpt_max = 0.8;
     double hotvr_jetmass_min = 140;
     double hotvr_jetmass_max = 220;
-    double hotvr_mpair_min   = 50;
-    double hotvr_tau32_max   = 0.56;
+    double hotvr_mpair_min = 50;
+    double hotvr_tau32_max = 0.56;
 
     // Ak8 cleaning criteria
     double ak8_pt_min = 200.0;
@@ -200,6 +197,8 @@ namespace uhh2 {
       m_input_handles.push_back(ctx.get_handle<double>(dnn_config_inputNames.at(i)));
     }
     h_dnn_output_val = ctx.declare_event_output<double>("DNN_Output");
+
+    h_which_region = ctx.declare_event_output<int>("which_region");
 
 
     //------------//
@@ -307,21 +306,12 @@ namespace uhh2 {
       cout << "+-----------+" << endl;
     }
 
-    // Split up WJets into heavy flavour and light jets
-    if(debug) cout << "Split up WJets into heavy flavour and light jets" << endl;
+    // Split up W+jets and tW samples
+
+    if(debug) cout << "Split up WJets into heavy flavor and light jets" << endl;
     if((dataset_version.find("WJetsHeavy") == 0) && !slct_WJetsHeavy->passes(event)) return false;
     if((dataset_version.find("WJetsLight") == 0) && slct_WJetsHeavy->passes(event)) return false;
 
-    // Split up tW background into TopToHadAndWToTau and Else
-    // if(debug) cout << "Split up tW background into TopToHadAndWToTau and Else" << endl;
-    // if(dataset_version.find("ST_tW") == 0) {
-    //   SingleTopGen_tWchProd->process(event);
-    //   bool is_TopToHadAndWToTau = slct_tW_TopToHad->passes(event) && slct_tW_WToTau->passes(event);
-    //   if((dataset_version.find("ST_tW_bkg_TopToHadAndWToTau") == 0 || dataset_version.find("ST_tW_DS_bkg_TopToHadAndWToTau") == 0) && !is_TopToHadAndWToTau) return false;
-    //   if((dataset_version.find("ST_tW_bkg_Else") == 0 || dataset_version.find("ST_tW_DS_bkg_Else") == 0) && is_TopToHadAndWToTau) return false;
-    // }
-
-    // Split up tW sample into decay channels
     if(debug) cout << "Split up tW samples into decay channels" << endl;
     if(dataset_version.find("ST_tW") == 0) {
 
@@ -357,6 +347,8 @@ namespace uhh2 {
       if(dataset_version.find("TopToTau_WToMuo") != string::npos && !(is_TopToTau && is_WToMuo)) return false;
       if(dataset_version.find("TopToTau_WToTau") != string::npos && !(is_TopToTau && is_WToTau)) return false;
     }
+
+    // This is where the fun begins...
 
     if(debug) cout << "Sort jets, topjets, and subjets by pt" << endl;
     sort_by_pt<Jet>(*event.jets);
@@ -406,8 +398,8 @@ namespace uhh2 {
     bool b_1wtag = slct_1wtag->passes(event);
     bool b_0wtag = slct_0wtag->passes(event);
     bool is_TopTagRegion(false);
-    // bool is_WTagRegion(false);
-    // bool is_ValidationRegion(false);
+    bool is_WTagRegion(false);
+    bool is_ValidationRegion(false);
 
     // Caveat: The order of analysis modules in the following if-statements is crucial and should be changed with care only!
 
@@ -427,6 +419,7 @@ namespace uhh2 {
       if(debug) cout << "SR t(had)W(lep):  Fill final control histograms" << endl;
       hist_TopTag_End->fill(event);
 
+      event.set(h_which_region, 1);
       is_TopTagRegion = true;
     }
 
@@ -445,7 +438,8 @@ namespace uhh2 {
       if(debug) cout << "SR t(lep)W(had):  Fill final control histograms" << endl;
       hist_WTag_End->fill(event);
 
-      //is_WTagRegion = true;
+      event.set(h_which_region, 2);
+      is_WTagRegion = true;
     }
 
     else if(b_0toptag && b_0wtag) {
@@ -465,11 +459,14 @@ namespace uhh2 {
       if(debug) cout << "VR:  Fill final control histograms" << endl;
       hist_Validation_End->fill(event);
 
-      //is_ValidationRegion = true;
+      event.set(h_which_region, 3);
+      is_ValidationRegion = true;
     }
 
-    // Discard events not belonging to one of the three regions above
-    else return false;
+    else {
+      event.set(h_which_region, 0);
+      return false; // Discard events not belonging to one of the three regions above
+    }
 
     if(debug) cout << "Set handle for leptonic pseudo top" << endl; // Events w/o AK4 jet have already been discarded at this point
     handle_pseudotop->process(event);
@@ -488,6 +485,14 @@ namespace uhh2 {
       event.set(h_dnn_output_val, (double)dnn_output_vals[dnn_config_outputName]);
       if(debug) cout << "Histograms of DNN inputs and DNN output" << endl;
       hist_dnn->fill(event);
+    }
+
+    else if(is_WTagRegion) {
+      // do stuff
+    }
+
+    else if(is_ValidationRegion) {
+      // do stuff
     }
 
 
@@ -523,9 +528,9 @@ namespace uhh2 {
     //
     // if(!_1toptag) return false; // Finally through away events without t-tagged jet
 
-    // Place analysis routines into a new Module!!!
-    // End of main selection
-    return false;
+
+    // End of Module
+    return !empty_output_tree;
   }
 
 
