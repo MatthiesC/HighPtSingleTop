@@ -3,7 +3,6 @@
 .*
 *.bak
 obj/*
-*.root
 config/workdir_*
 config/config_*
 config/jobTempOutput_*
@@ -15,8 +14,4 @@ config/jobTempOutput_*
 *.pdf
 src/misc/*
 include/misc/*
-tmva/weights/*
-tmva/plots*/*
-config/process_TTbar.sh
-data/*
 output
