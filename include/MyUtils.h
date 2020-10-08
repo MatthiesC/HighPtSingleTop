@@ -30,20 +30,6 @@ const T* match(const Particle &p, const std::vector<T> &genparts, double dR_min)
 }
 
 
-
-// credits to Torben
-class TopJetGroomer : public uhh2::AnalysisModule {
- public:
-
-  explicit TopJetGroomer(bool corrected = true) : _corrected(corrected) {}
-  virtual bool process(uhh2::Event & event) override;
-
- private:
-  bool _corrected;
-
-};
-
-
 // returns the transverse W boson mass, using a given lepton and the MET in the event
 double calcMTW(const FlavorParticle&, const uhh2::Event&);
 
