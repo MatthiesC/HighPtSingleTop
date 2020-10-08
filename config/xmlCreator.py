@@ -241,6 +241,7 @@ class xmlCreator:
          file.write('''<Item Name="AnalysisModule" Value="'''+('HighPtSingleTopMainSelectionModule' if self.is_mainsel else 'HighPtSingleTopPreSelectionModule')+'''"/>\n''')
          file.write('''<Item Name="analysis_channel" Value="'''+self.channel+'''"/>\n''')
          file.write('''<Item Name="uhh2Dir" Value="'''+self.uhh2Dir+'''"/>\n''')
+         file.write('''<Item Name="EmptyOutputTree" Value="false"/>\n''')
          file.write('''\n''')
          file.write('''<!-- Switch for debugging of the central AnalysisModule -->\n''')
          file.write('''<Item Name="Debug" Value="false"/>\n''')
