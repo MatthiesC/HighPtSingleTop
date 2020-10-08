@@ -69,7 +69,7 @@ AndHists::AndHists(Context & ctx, const string & dirname):
   hists_vector.push_back(new MyEventHists(ctx, dirname + "_Event"));
   hists_vector.push_back(new MyElectronHists(ctx, dirname + "_Electron"));
   hists_vector.push_back(new MyMuonHists(ctx, dirname + "_Muon"));
-  hists_vector.push_back(new JetHists(ctx, dirname + "_Jet"));
+  hists_vector.push_back(new JetHists(ctx, dirname + "_Jets"));
   hists_vector.push_back(new HOTVRHists(ctx, dirname +"_Hotvr"));
 }
 

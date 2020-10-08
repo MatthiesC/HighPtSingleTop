@@ -201,7 +201,7 @@ class xmlCreator:
             file.write('''<Item Name="Ak8genCollection" Value="genjetsAk8SubstructureSoftDrop"/>\n''')
          file.write('''\n''')
          file.write('''<Item Name="lumi_file" Value="'''+self.yearVars['lumiFiles'][self.year]+'''"/>\n''')
-         file.write('''<Item Name="lumihists_lumi_per_bin" Value="1000."/>\n''')
+         file.write('''<Item Name="lumihists_lumi_per_bin" Value="500."/>\n''')
          file.write('''\n''')
          file.write('''<Item Name="pileup_directory" Value="'''+self.uhh2Dir+'common/data/'+self.year+'''/MyMCPileupHistogram.root"/>\n''')
          file.write('''<Item Name="pileup_directory_data" Value="'''+self.uhh2Dir+'common/data/'+self.year+'''/MyDataPileupHistogram'''+self.year+'''.root"/>\n''')
