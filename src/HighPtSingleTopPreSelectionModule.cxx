@@ -7,7 +7,6 @@
 #include "UHH2/common/include/LumiSelection.h"
 #include "UHH2/common/include/CommonModules.h"
 #include "UHH2/common/include/AdditionalSelections.h"
-#include "UHH2/common/include/TriggerSelection.h"
 #include "UHH2/common/include/ObjectIdUtils.h"
 #include "UHH2/common/include/ElectronIds.h"
 #include "UHH2/common/include/MuonIds.h"
@@ -26,6 +25,7 @@
 #include "UHH2/HighPtSingleTop/include/SingleTopGen_tWch.h"
 #include "UHH2/HighPtSingleTop/include/METXYCorrections.h"
 #include "UHH2/HighPtSingleTop/include/MyEventHists.h"
+#include "UHH2/HighPtSingleTop/include/LeptonAndTriggerScaleFactors.h"
 
 
 using namespace std;
@@ -41,12 +41,14 @@ namespace uhh2 {
 
   private:
 
+    bool debug;
+
     Year year;
 
     unique_ptr<CommonModules> common_modules;
 
     unique_ptr<AnalysisModule> clnr_muon, clnr_elec, clnr_hotvr, hotvr_jec_module, clnr_jetLeptonOverlap;
-    unique_ptr<AnalysisModule> primarylep;
+    unique_ptr<AnalysisModule> primarylep, sf_lepton;
     unique_ptr<AnalysisModule> SingleTopGen_tWchProd;
     unique_ptr<AnalysisModule> met_xy_correction;
 
@@ -55,7 +57,8 @@ namespace uhh2 {
     unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
     unique_ptr<Selection> slct_met, slct_1hotvr;
 
-    unique_ptr<AndHists> hist_common, hist_trigger, hist_cleaning, hist_1lepton, hist_met, hist_1hotvr;
+    unique_ptr<MttHist> hist_mtt_before, hist_mtt_after;
+    unique_ptr<AndHists> hist_common, hist_cleaning, hist_1lepton, hist_leptonSF, hist_jetleptonoverlapremoval, hist_metXYcorrection, hist_met, hist_hotvrJEC, hist_hotvrCleaner, hist_1hotvr;
 
     bool is_data, is_mc, is_muon, is_elec;
     string dataset_version, met_name, jet_collection;
@@ -68,15 +71,14 @@ namespace uhh2 {
     // KEYS //
     //------//
 
+    debug = string2lowercase(ctx.get("Debug", "false")) == "true";
+
     year = extract_year(ctx);
 
-    is_data = ctx.get("dataset_type") == "DATA";
-    is_mc   = ctx.get("dataset_type") == "MC";
     is_muon = ctx.get("analysis_channel") == "muo";
     is_elec = ctx.get("analysis_channel") == "ele";
 
-    if(!(is_data || is_mc)) throw runtime_error("HighPtSingleTopPreSelectionModule: Dataset is labeled as neither DATA nor MC. Please check the XML config file!");
-    if(!(is_muon || is_elec)) throw runtime_error("HighPtSingleTopPreSelectionModule: Analysis channel ( ELECTRON / MUON ) not correctly given. Please check the XML config file!");
+    if(!(is_muon || is_elec)) throw runtime_error("HighPtSingleTopPreSelectionModule: Analysis channel ( ele / muo ) not correctly given. Please check the XML config file!");
 
     dataset_version = ctx.get("dataset_version");
     met_name = ctx.get("METName");
@@ -133,9 +135,9 @@ namespace uhh2 {
     TopJetId hotvrID = AndId<TopJet>(PtEtaCut(hotvrPt_min, hotvrEta_max), DeltaRCut(ctx, hotvrDeltaRToLepton_min)); // through away all HOTVR jets with lepton close by <-- Roman's recommendation from October 16, 2019
 
 
-    //----------------//
-    // EVENT CLEANING //
-    //----------------//
+    //--------------------------//
+    // CLEANING AND CORRECTIONS //
+    //--------------------------//
 
     common_modules.reset(new CommonModules());
     common_modules->change_pf_id(jetPFID);
@@ -147,6 +149,7 @@ namespace uhh2 {
     common_modules->switch_jetPtSorter(true);
     common_modules->init(ctx);
 
+    met_xy_correction.reset(new METXYCorrections(ctx));
     hotvr_jec_module.reset(new HOTVRJetCorrectionModule(ctx));
 
     clnr_muon.reset(new MuonCleaner(muonID));
@@ -160,9 +163,7 @@ namespace uhh2 {
     //------------//
 
     slct_lumi.reset(new LumiSelection(ctx));
-
     slct_mttbarGenCut.reset(new MttbarGenSelection(0, 700));
-
     slct_1muon.reset(new NMuonSelection(1, 1));
     slct_0muon.reset(new NMuonSelection(0, 0));
     slct_1elec.reset(new NElectronSelection(1, 1));
@@ -175,9 +176,16 @@ namespace uhh2 {
     // HISTOGRAMS //
     //------------//
 
+    hist_mtt_before.reset(new MttHist(ctx, "0_MttBefore"));
+    hist_mtt_after.reset(new MttHist(ctx, "0_MttAfter"));
     hist_common.reset(new AndHists(ctx, "0_Common"));
     hist_1lepton.reset(new AndHists(ctx, "1_OneLepton"));
+    hist_leptonSF.reset(new AndHists(ctx, "1_LeptonSFs"));
+    hist_jetleptonoverlapremoval.reset(new AndHists(ctx, "1_JetLeptonCleaner"));
+    hist_metXYcorrection.reset(new AndHists(ctx, "1_METXYCorrection"));
     hist_met.reset(new AndHists(ctx, "2_MET"));
+    hist_hotvrJEC.reset(new AndHists(ctx, "2_HotvrJEC"));
+    hist_hotvrCleaner.reset(new AndHists(ctx, "2_HotvrCleaner"));
     hist_1hotvr.reset(new AndHists(ctx, "3_OneHotvr"));
 
 
@@ -186,7 +194,7 @@ namespace uhh2 {
     //---------------//
 
     primarylep.reset(new PrimaryLepton(ctx));
-    met_xy_correction.reset(new METXYCorrections(ctx));
+    sf_lepton.reset(new LeptonScaleFactors(ctx));
   }
 
 
@@ -196,25 +204,36 @@ namespace uhh2 {
 
   bool HighPtSingleTopPreSelectionModule::process(Event & event) {
 
-    /* No event weights will be applied in this Module!!! Except for (via CommonModules):
-       - MC lumi weight
-       - MC pileup reweight
-       I.e. the histograms filled here have little to no physical meaning! Be aware of that!
+    /* Event weights applied within this Module:
+       - MC lumi weight (via CommonModules)
+       - MC pileup reweight (via CommonModules)
+       - MC muon id/isolation and electron id/reco scale factors
+       Scale factors are not saved after the processing is done and need to be re-applied during the main selection!
     */
 
-    // Lumi selection
-    if(is_data && !slct_lumi->passes(event)) return false;
+    if(debug) {
+      cout << endl;
+      cout << "+-----------+" << endl;
+      cout << "| NEW EVENT |" << endl;
+      cout << "+-----------+" << endl;
+    }
 
-    // Mttbar gencut
-    if(dataset_version.find("TTbar_M0to700") == 0 && !slct_mttbarGenCut->passes(event)) return false;
-    if(dataset_version.find("TTbar_M700toInf") == 0 && slct_mttbarGenCut->passes(event)) return false;
+    if(debug) cout << "Lumi selection" << endl;
+    if(event.isRealData && !slct_lumi->passes(event)) return false;
 
-    // Initial cleaning, MET+PV filter, and lumi+PU weights
+    if(debug) cout << "Mttbar gencut for the inclusive TTbar sample" << endl;
+    if(dataset_version.find("TTbar") == 0) {
+      hist_mtt_before->fill(event);
+      if(dataset_version.find("Mtt0to700") != string::npos && !slct_mttbarGenCut->passes(event)) return false;
+      if(dataset_version.find("Mtt700toInf") != string::npos && slct_mttbarGenCut->passes(event)) return false;
+      hist_mtt_after->fill(event);
+    }
+
+    if(debug) cout << "CommonModules: Initial cleaning, MET+PV filter, and lumi+PU weights" << endl;
     if(!common_modules->process(event)) return false;
     hist_common->fill(event);
-    if(met_name == "slimmedMETs") met_xy_correction->process(event); // only apply XY corrections if using PF MET
 
-    // Single-lepton selection and veto on additional leptons
+    if(debug) cout << "Single-lepton selection and veto on additional leptons" << endl;
     if(is_muon)
       {
         if(!(slct_1muon->passes(event) && slct_0elec->passes(event))) return false;
@@ -227,17 +246,36 @@ namespace uhh2 {
         clnr_elec->process(event);
         if(!slct_1elec->passes(event)) return false;
       }
-    primarylep->process(event);
-    clnr_jetLeptonOverlap->process(event);
     hist_1lepton->fill(event);
 
-    // MET selection
+    if(debug) cout << "Apply lepton id/iso/reco scale factors" << endl;
+    sf_lepton->process(event);
+    hist_leptonSF->fill(event);
+
+    if(debug) cout << "Remove AK4 jets overlapping with the lepton" << endl;
+    primarylep->process(event);
+    clnr_jetLeptonOverlap->process(event);
+    hist_jetleptonoverlapremoval->fill(event);
+
+    if(debug) cout << "Correct MET XY" << endl;
+    if(met_name == "slimmedMETs") { // only apply XY corrections if using PF MET; Puppi MET does not need XY corrections
+      met_xy_correction->process(event);
+      hist_metXYcorrection->fill(event);
+    }
+
+    if(debug) cout << "MET selection" << endl;
     if(!slct_met->passes(event)) return false;
     hist_met->fill(event);
 
-    // At least one HOTVR jet
+    if(debug) cout << "Correct HOTVR jets" << endl;
     hotvr_jec_module->process(event);
+    hist_hotvrJEC->fill(event);
+
+    if(debug) cout << "Clean HOTVR jets" << endl;
     clnr_hotvr->process(event);
+    hist_hotvrCleaner->fill(event);
+
+    if(debug) cout << "At least one HOTVR jet" << endl;
     if(!slct_1hotvr->passes(event)) return false;
     hist_1hotvr->fill(event);
 

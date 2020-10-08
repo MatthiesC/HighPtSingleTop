@@ -28,8 +28,31 @@ CountingHist::CountingHist(Context & ctx, const string & dirname):
 void CountingHist::fill(const Event & event) {
 
   hist_counting->Fill(0., event.weight);
+}
 
-  return;
+
+MttHist::MttHist(Context & ctx, const string & dirname):
+  Hists(ctx, dirname) {
+
+  hist_mtt = book<TH1F>("mtt", "Generated m_{t#bar{t}}", 2000, 0, 2000);
+}
+
+
+void MttHist::fill(const Event & event) {
+
+  double mtt = -1;
+  LorentzVector top = {0.,0.,0.,0.}, antitop = {0.,0.,0.,0.};
+  for (const auto & genpart : *event.genparticles){
+    if (genpart.pdgId() == 6) {
+      top = genpart.v4();
+    }
+    else if(genpart.pdgId() == -6) {
+      antitop = genpart.v4();
+    }
+  }
+  mtt = (top+antitop).M();
+
+  hist_mtt->Fill(mtt, event.weight);
 }
 
 

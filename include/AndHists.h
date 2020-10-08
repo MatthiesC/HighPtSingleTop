@@ -23,16 +23,30 @@ namespace uhh2 {
     TH1F *hist_counting;
   };
 
+
+  class MttHist: public Hists {
+
+  public:
+    MttHist(uhh2::Context & ctx, const std::string & dirname);
+
+    virtual void fill(const uhh2::Event & event);
+    virtual ~MttHist() {};
+
+  private:
+    TH1F *hist_mtt;
+  };
+
+
   class AndHists: public Hists {
 
   public:
-    AndHists(uhh2::Context &ctx, const std::string & dirname);
+    AndHists(uhh2::Context & ctx, const std::string & dirname);
 
     virtual void fill(const uhh2::Event & event);
     virtual ~AndHists();
     void add_hist(uhh2::Hists *hist);
-    void add_WTagHists(uhh2::Context &ctx, const bool & var_binned=true);
-    void add_TopTagHists(uhh2::Context &ctx, const bool & var_binned=true);
+    void add_WTagHists(uhh2::Context & ctx, const bool & var_binned=true);
+    void add_TopTagHists(uhh2::Context & ctx, const bool & var_binned=true);
     std::string get_dirname();
 
   private:
@@ -44,10 +58,11 @@ namespace uhh2 {
     TH1F *nevt, *wevt;
   };
 
+
   class BinnedDNNHists: public Hists {
 
   public:
-    BinnedDNNHists(uhh2::Context &ctx, const std::string & dirname, const std::vector<std::string> inputs, const std::vector<DNNInput> inputs_info);
+    BinnedDNNHists(uhh2::Context & ctx, const std::string & dirname, const std::vector<std::string> inputs, const std::vector<DNNInput> inputs_info);
 
     virtual void fill(const uhh2::Event & event);
     virtual ~BinnedDNNHists();
