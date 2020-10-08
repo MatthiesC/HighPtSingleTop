@@ -49,18 +49,16 @@ namespace uhh2 {
 
     unique_ptr<AnalysisModule> clnr_muon, clnr_elec, clnr_hotvr, hotvr_jec_module, clnr_jetLeptonOverlap;
     unique_ptr<AnalysisModule> primarylep, sf_lepton;
-    unique_ptr<AnalysisModule> SingleTopGen_tWchProd;
     unique_ptr<AnalysisModule> met_xy_correction;
 
-    unique_ptr<Selection> slct_mttbarGenCut, slct_tWgenSignal;
-    unique_ptr<Selection> slct_lumi;
+    unique_ptr<Selection> slct_mttbarGenCut;
     unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
     unique_ptr<Selection> slct_met, slct_1hotvr;
 
     unique_ptr<MttHist> hist_mtt_before, hist_mtt_after;
     unique_ptr<AndHists> hist_common, hist_cleaning, hist_1lepton, hist_leptonSF, hist_jetleptonoverlapremoval, hist_metXYcorrection, hist_met, hist_hotvrJEC, hist_hotvrCleaner, hist_1hotvr;
 
-    bool is_data, is_mc, is_muon, is_elec;
+    bool is_muon, is_elec;
     string dataset_version, met_name, jet_collection;
   };
 
@@ -162,7 +160,6 @@ namespace uhh2 {
     // SELECTIONS //
     //------------//
 
-    slct_lumi.reset(new LumiSelection(ctx));
     slct_mttbarGenCut.reset(new MttbarGenSelection(0, 700));
     slct_1muon.reset(new NMuonSelection(1, 1));
     slct_0muon.reset(new NMuonSelection(0, 0));
@@ -218,9 +215,6 @@ namespace uhh2 {
       cout << "+-----------+" << endl;
     }
 
-    if(debug) cout << "Lumi selection" << endl;
-    if(event.isRealData && !slct_lumi->passes(event)) return false;
-
     if(debug) cout << "Mttbar gencut for the inclusive TTbar sample" << endl;
     if(dataset_version.find("TTbar") == 0) {
       hist_mtt_before->fill(event);
@@ -229,7 +223,7 @@ namespace uhh2 {
       hist_mtt_after->fill(event);
     }
 
-    if(debug) cout << "CommonModules: Initial cleaning, MET+PV filter, and lumi+PU weights" << endl;
+    if(debug) cout << "CommonModules: Lumi selection, initial cleaning, MET+PV filter, and lumi+PU weights" << endl;
     if(!common_modules->process(event)) return false;
     hist_common->fill(event);
 
