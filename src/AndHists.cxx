@@ -12,6 +12,7 @@
 #include "UHH2/HighPtSingleTop/include/MyMuonHists.h"
 #include "UHH2/HighPtSingleTop/include/WTagHists.h"
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
+#include "UHH2/HighPtSingleTop/include/MyAk8Hists.h"
 
 
 using namespace std;
@@ -87,6 +88,12 @@ void AndHists::fill(const Event & event) {
 void AndHists::add_hist(Hists *hist) {
 
   hists_vector.push_back(hist);
+}
+
+
+void AndHists::add_Ak8Hists(Context & ctx, const string & ak8_handle_name) {
+
+  hists_vector.push_back(new MyAk8Hists(ctx, m_dirname + "_Ak8Hists", ak8_handle_name));
 }
 
 

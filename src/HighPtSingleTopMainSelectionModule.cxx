@@ -58,10 +58,11 @@ namespace uhh2 {
     unique_ptr<DNNSetup> dnn_setup;
 
     unique_ptr<Selection> slct_WJetsHeavy, slct_tW_TopToHad, slct_tW_TopToEle, slct_tW_TopToMuo, slct_tW_TopToTau, slct_tW_WToHad, slct_tW_WToEle, slct_tW_WToMuo, slct_tW_WToTau;
+    unique_ptr<HEMIssueSelection> slct_hemissue;
     unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_0wtag, slct_1wtag, slct_oneijet_top, slct_onexjet_W, slct_oneAk8jet, slct_oneAk4jet;
     // unique_ptr<Selection> slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_oneijet, slct_noxjet, slct_1bxjet;
 
-    unique_ptr<AndHists> hist_presel, hist_preselSF, hist_trigger, hist_triggerSF;
+    unique_ptr<AndHists> hist_presel, hist_preselSF, hist_hemissue, hist_trigger, hist_triggerSF;
     unique_ptr<Hists> hist_ak8_preCorr, hist_ak8_postCorr, hist_ak8_postCleaning;
     unique_ptr<AndHists> hist_TopTag_Begin, hist_TopTag_HotvrSF, hist_TopTag_End;
     unique_ptr<AndHists> hist_WTag_Begin, hist_WTag_DeepAk8SF, hist_WTag_End;
@@ -255,27 +256,39 @@ namespace uhh2 {
     hist_ak8_postCorr.reset(new MyAk8Hists(ctx, "2_Ak8Setup_PostCorr", ctx.get("Ak8recCollection"))); // AK8 handles not yet set, use additional branch directly
     hist_ak8_postCleaning.reset(new MyAk8Hists(ctx, "2_Ak8Setup_PostCleaning"));
 
+    hist_hemissue.reset(new AndHists(ctx, "2_HEM"));
+    hist_hemissue->add_Ak8Hists(ctx);
+
     hist_TopTag_Begin.reset(new AndHists(ctx, "3_TopTag_Begin"));
     hist_TopTag_Begin->add_TopTagHists(ctx);
+    hist_TopTag_Begin->add_Ak8Hists(ctx);
     hist_TopTag_HotvrSF.reset(new AndHists(ctx, "3_TopTag_HotvrSF"));
     hist_TopTag_HotvrSF->add_TopTagHists(ctx);
+    hist_TopTag_HotvrSF->add_Ak8Hists(ctx);
     hist_TopTag_End.reset(new AndHists(ctx, "3_TopTag_End"));
     hist_TopTag_End->add_TopTagHists(ctx);
+    hist_TopTag_End->add_Ak8Hists(ctx);
 
     hist_WTag_Begin.reset(new AndHists(ctx, "3_WTag_Begin"));
     hist_WTag_Begin->add_WTagHists(ctx);
+    hist_WTag_Begin->add_Ak8Hists(ctx);
     hist_WTag_DeepAk8SF.reset(new AndHists(ctx, "3_WTag_DeepAk8SF"));
     hist_WTag_DeepAk8SF->add_WTagHists(ctx);
+    hist_WTag_DeepAk8SF->add_Ak8Hists(ctx);
     hist_WTag_End.reset(new AndHists(ctx, "3_WTag_End"));
     hist_WTag_End->add_WTagHists(ctx);
+    hist_WTag_End->add_Ak8Hists(ctx);
 
     hist_Validation_Begin.reset(new AndHists(ctx, "3_Validation_Begin"));
+    hist_Validation_Begin->add_Ak8Hists(ctx);
     hist_Validation_Ak8Cut.reset(new AndHists(ctx, "3_Validation_Ak8Cut"));
     hist_Validation_Ak8Cut->add_TopTagHists(ctx);
     hist_Validation_Ak8Cut->add_WTagHists(ctx);
+    hist_Validation_Ak8Cut->add_Ak8Hists(ctx);
     hist_Validation_End.reset(new AndHists(ctx, "3_Validation_End"));
     hist_Validation_End->add_TopTagHists(ctx);
     hist_Validation_End->add_WTagHists(ctx);
+    hist_Validation_End->add_Ak8Hists(ctx);
 
     // hist_decaymatch.reset(new MatchHists(ctx, "MatchHists_Full"));
     // hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
@@ -385,6 +398,13 @@ namespace uhh2 {
     handle_ak8jets->process(event);
     hist_ak8_postCleaning->fill(event);
     handle_wtaggedjets->process(event);
+
+    if(debug) cout << "Handle HEM15/16 issue for 2018" << endl;
+    if(slct_hemissue->passes(event)) {
+      if(event.isRealData) return false;
+      else event.weight *= slct_hemissue->MCWeight();
+    }
+    hist_hemissue->fill(event);
 
     if(debug) cout << "Set handles for b-tagged jets and leptonic W boson hypothesis" << endl;
     handle_btaggedjets->process(event);

@@ -9,6 +9,7 @@ using namespace uhh2;
 
 PrefiringWeights::PrefiringWeights(Context & ctx) {
 
+  year = extract_year(ctx);
   string syst_direction_ = ctx.get("SystDirection_Prefiring", "nominal");
 
   if(syst_direction_ == "up") {
@@ -24,26 +25,45 @@ PrefiringWeights::PrefiringWeights(Context & ctx) {
 
 bool PrefiringWeights::process(Event & event) {
 
-  if(syst_direction == 1) {
-    event.weight *= event.prefiringWeightUp;
-  }
-  else if(syst_direction == -1) {
-    event.weight *= event.prefiringWeightDown;
-  }
-  else {
-    event.weight *= event.prefiringWeight;
+  if(!event.isRealData && (year == Year::is2016v3 || year == Year::is2017v2)) {
+    if(syst_direction == 1) {
+      event.weight *= event.prefiringWeightUp;
+    }
+    else if(syst_direction == -1) {
+      event.weight *= event.prefiringWeightDown;
+    }
+    else {
+      event.weight *= event.prefiringWeight;
+    }
   }
 
   return true;
 }
 
 
-// BadHCALSelection::BadHCALSelection(Context & ctx) {
-//
-//
-// }
-//
-// bool BadHCALSelection::process(Event & event) {
-//
-//   return true;
-// }
+HEMIssueSelection::HEMIssueSelection(Context & ctx, const string & h_name_ak8jets) {
+
+  year = extract_year(ctx);
+  h_ak8jets = ctx.get_handle<vector<TopJet>>(h_name_ak8jets);
+}
+
+// return true for events which are affected by the HEM issue
+bool HEMIssueSelection::passes(const Event & event) {
+
+  if(year == Year::is2018 && ((event.isRealData && event.run >= m_runnumber) || !event.isRealData)) {
+    for(const Electron & e : *event.electrons) {
+      if(e.v4().Phi() > m_phi.first && e.v4().Phi() < m_phi.second && e.v4().Eta() > m_eta.first && e.v4().Eta() < m_eta.second) return true;
+    }
+    for(const Jet & j : *event.jets) {
+      if(j.v4().Phi() > m_phi.first && j.v4().Phi() < m_phi.second && j.v4().Eta() > m_eta.first && j.v4().Eta() < m_eta.second) return true;
+    }
+    for(const TopJet & t : *event.topjets) {
+      if(t.v4().Phi() > m_phi.first && t.v4().Phi() < m_phi.second && t.v4().Eta() > m_eta.first && t.v4().Eta() < m_eta.second) return true;
+    }
+    for(const TopJet & a : event.get(h_ak8jets)) {
+      if(a.v4().Phi() > m_phi.first && a.v4().Phi() < m_phi.second && a.v4().Eta() > m_eta.first && a.v4().Eta() < m_eta.second) return true;
+    }
+  }
+
+  return false;
+}
