@@ -26,6 +26,7 @@
 #include "UHH2/HighPtSingleTop/include/METXYCorrections.h"
 #include "UHH2/HighPtSingleTop/include/MyEventHists.h"
 #include "UHH2/HighPtSingleTop/include/LeptonAndTriggerScaleFactors.h"
+#include "UHH2/HighPtSingleTop/include/HcalAndEcalModules.h"
 
 
 using namespace std;
@@ -48,7 +49,7 @@ namespace uhh2 {
     unique_ptr<CommonModules> common_modules;
 
     unique_ptr<AnalysisModule> clnr_muon, clnr_elec, clnr_hotvr, hotvr_jec_module, clnr_jetLeptonOverlap;
-    unique_ptr<AnalysisModule> primarylep, sf_lepton;
+    unique_ptr<AnalysisModule> primarylep, sf_lepton, sf_prefiring;
     unique_ptr<AnalysisModule> met_xy_correction;
 
     unique_ptr<Selection> slct_mttbarGenCut;
@@ -56,7 +57,7 @@ namespace uhh2 {
     unique_ptr<Selection> slct_met, slct_1hotvr;
 
     unique_ptr<MttHist> hist_mtt_before, hist_mtt_after;
-    unique_ptr<AndHists> hist_common, hist_cleaning, hist_1lepton, hist_leptonSF, hist_jetleptonoverlapremoval, hist_metXYcorrection, hist_met, hist_hotvrJEC, hist_hotvrCleaner, hist_1hotvr;
+    unique_ptr<AndHists> hist_common, hist_cleaning, hist_prefiring, hist_1lepton, hist_leptonSF, hist_jetleptonoverlapremoval, hist_metXYcorrection, hist_met, hist_hotvrJEC, hist_hotvrCleaner, hist_1hotvr;
 
     bool is_muon, is_elec;
     string dataset_version, met_name, jet_collection;
@@ -176,6 +177,7 @@ namespace uhh2 {
     hist_mtt_before.reset(new MttHist(ctx, "0_MttBefore"));
     hist_mtt_after.reset(new MttHist(ctx, "0_MttAfter"));
     hist_common.reset(new AndHists(ctx, "0_Common"));
+    hist_prefiring.reset(new AndHists(ctx, "0_PrefiringSFs"));
     hist_1lepton.reset(new AndHists(ctx, "1_OneLepton"));
     hist_leptonSF.reset(new AndHists(ctx, "1_LeptonSFs"));
     hist_jetleptonoverlapremoval.reset(new AndHists(ctx, "1_JetLeptonCleaner"));
@@ -192,6 +194,7 @@ namespace uhh2 {
 
     primarylep.reset(new PrimaryLepton(ctx));
     sf_lepton.reset(new LeptonScaleFactors(ctx));
+    sf_prefiring.reset(new PrefiringWeights(ctx));
   }
 
 
@@ -226,6 +229,10 @@ namespace uhh2 {
     if(debug) cout << "CommonModules: Lumi selection, initial cleaning, MET+PV filter, and lumi+PU weights" << endl;
     if(!common_modules->process(event)) return false;
     hist_common->fill(event);
+
+    if(debug) cout << "Apply prefiring weights" << endl;
+    sf_prefiring->process(event);
+    hist_prefiring->fill(event);
 
     if(debug) cout << "Single-lepton selection and veto on additional leptons" << endl;
     if(is_muon)

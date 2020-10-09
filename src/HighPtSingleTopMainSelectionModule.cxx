@@ -30,6 +30,7 @@
 #include "UHH2/HighPtSingleTop/include/WTagHists.h"
 #include "UHH2/HighPtSingleTop/include/ReconstructionAlgorithms.h"
 #include "UHH2/HighPtSingleTop/include/LeptonAndTriggerScaleFactors.h"
+#include "UHH2/HighPtSingleTop/include/HcalAndEcalModules.h"
 
 #include "lwtnn/LightweightNeuralNetwork.hh"
 #include "lwtnn/parse_json.hh"
@@ -50,7 +51,7 @@ namespace uhh2 {
 
     bool debug, empty_output_tree;
 
-    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_toptag, sf_deepjet, scale_variation;
+    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_prefiring, sf_toptag, sf_deepjet, scale_variation;
     unique_ptr<AnalysisModule> handle_primarylep, handle_hadronictop, handle_toptaggedjet, handle_wtaggedjet, handle_btaggedjets, handle_ak4InExJets_top, handle_ak4InExJets_W, handle_wboson, handle_pseudotop, SingleTopGen_tWchProd;
     unique_ptr<Ak8Corrections> ak8corrections;
     unique_ptr<AnalysisModule> ak8cleaning, handle_ak8jets, handle_wtaggedjets;
@@ -142,11 +143,7 @@ namespace uhh2 {
     sf_pileup.reset(new MCPileupReweight(ctx, syst_pileup));
     sf_lepton.reset(new LeptonScaleFactors(ctx));
     sf_trigger.reset(new TriggerScaleFactors(ctx));
-    // only 2016 muon scale factors linked here, TODO later: distinguish between years and ele/muon
-    // checkout Alex' genius: /nfs/dust/cms/user/froehlia/CMSSW_10_2_10/src/UHH2/BstarToTW/src/BstarToTWSystematics.cxx
-    // sf_muon_trig.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/uhh2-102X-v2/CMSSW_10_2_16/src/UHH2/common/data/2016/MuonTrigger_EfficienciesAndSF_average_RunBtoH.root", "IsoMu24_OR_IsoTkMu24_PtEtaBins", 0.5, "muon_trigger", true, syst_muon_trigger));
-    // sf_muon_id.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/uhh2-102X-v2/CMSSW_10_2_16/src/UHH2/common/data/2016/MuonID_EfficienciesAndSF_average_RunBtoH.root", "MC_NUM_TightID_DEN_genTracks_PAR_pt_eta", 1, "muon_tightID", true, syst_muon_id));
-    // sf_muon_iso.reset(new MCMuonScaleFactor(ctx, "/nfs/dust/cms/user/matthies/uhh2-102X-v2/CMSSW_10_2_16/src/UHH2/common/data/2016/MuonIso_EfficienciesAndSF_average_RunBtoH.root", "TightISO_TightID_pt_eta", 1, "muon_isolation", true, syst_muon_iso));
+    sf_prefiring.reset(new PrefiringWeights(ctx));
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_toptag));
     sf_deepjet.reset(new MCBTagDiscriminantReweighting(ctx, btag_algo, "jets", syst_btag));
@@ -368,6 +365,7 @@ namespace uhh2 {
     sf_pileup->process(event);
     hist_presel->fill(event);
     sf_lepton->process(event);
+    sf_prefiring->process(event);
     hist_preselSF->fill(event);
 
     if(debug) cout << "Select trigger paths and apply trigger scale factors" << endl;
