@@ -220,6 +220,7 @@ class xmlCreator:
             file.write('''<Item Name="ScaleVariationMuR" Value="none"/>\n''')
             file.write('''<Item Name="ScaleVariationMuF" Value="none"/>\n''')
             file.write('''<Item Name="SystDirection_Pileup" Value="nominal"/>\n''')
+            file.write('''<Item Name="SystDirection_Prefiring" Value="nominal"/>\n''')
             if self.is_muo:
                file.write('''<Item Name="SystDirection_MuonTrigger" Value="nominal"/>\n''')
                file.write('''<Item Name="SystDirection_MuonId" Value="nominal"/>\n''')

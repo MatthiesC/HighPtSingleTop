@@ -12,3 +12,12 @@ class PrefiringWeights: public uhh2::AnalysisModule {
  private:
   int syst_direction;
 };
+
+// class BadHCALSelection: public uhh2::AnalysisModule {
+//  public:
+//   explicit BadHCALSelection(uhh2::Context & ctx);
+//   virtual bool process(uhh2::Event & event) override;
+//
+//  private:
+//   // nothing
+// };

@@ -9,10 +9,12 @@ using namespace uhh2;
 
 PrefiringWeights::PrefiringWeights(Context & ctx) {
 
-  if(ctx.get("SystDirection_Prefiring") == "up") {
+  string syst_direction_ = ctx.get("SystDirection_Prefiring", "nominal");
+
+  if(syst_direction_ == "up") {
     syst_direction = 1;
   }
-  else if(ctx.get("SystDirection_Prefiring") == "down") {
+  else if(syst_direction_ == "down") {
     syst_direction = -1;
   }
   else {
@@ -34,3 +36,14 @@ bool PrefiringWeights::process(Event & event) {
 
   return true;
 }
+
+
+// BadHCALSelection::BadHCALSelection(Context & ctx) {
+//
+//
+// }
+//
+// bool BadHCALSelection::process(Event & event) {
+//
+//   return true;
+// }

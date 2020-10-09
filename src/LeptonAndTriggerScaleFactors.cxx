@@ -21,10 +21,10 @@ using namespace uhh2;
 MuonIdIsoScaleFactors2016::MuonIdIsoScaleFactors2016(Context & ctx) {
 
   string filepath_sf_id = ctx.get("uhh2Dir")+"HighPtSingleTop/data/ScaleFactors/2016/MuonID_EfficienciesAndSF_average_RunBtoH.root";
-  m_sf_id.reset(new MCMuonScaleFactor(ctx, filepath_sf_id, "MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio", 0.0, "tight_id", false, ctx.get("SystDirection_MuonId")));
+  m_sf_id.reset(new MCMuonScaleFactor(ctx, filepath_sf_id, "MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio", 0.0, "tight_id", false, ctx.get("SystDirection_MuonId", "nominal")));
 
   string filepath_sf_iso = ctx.get("uhh2Dir")+"HighPtSingleTop/data/ScaleFactors/2016/MuonIso_EfficienciesAndSF_average_RunBtoH.root";
-  m_sf_iso.reset(new MCMuonScaleFactor(ctx, filepath_sf_iso, "TightISO_TightID_pt_eta/abseta_pt_ratio", 0.0, "isolation", false, ctx.get("SystDirection_MuonIso")));
+  m_sf_iso.reset(new MCMuonScaleFactor(ctx, filepath_sf_iso, "TightISO_TightID_pt_eta/abseta_pt_ratio", 0.0, "isolation", false, ctx.get("SystDirection_MuonIso", "nominal")));
 }
 
 bool MuonIdIsoScaleFactors2016::process(Event & event) {
@@ -39,10 +39,10 @@ bool MuonIdIsoScaleFactors2016::process(Event & event) {
 MuonIdIsoScaleFactors2017::MuonIdIsoScaleFactors2017(Context & ctx) {
 
   string filepath_sf_id = ctx.get("uhh2Dir")+"HighPtSingleTop/data/ScaleFactors/2017/MuonID_94X_RunBCDEF_SF_ID.root";
-  m_sf_id.reset(new MCMuonScaleFactor(ctx, filepath_sf_id, "NUM_TightID_DEN_genTracks_pt_abseta", 0.0, "tight_id", true, ctx.get("SystDirection_MuonId")));
+  m_sf_id.reset(new MCMuonScaleFactor(ctx, filepath_sf_id, "NUM_TightID_DEN_genTracks_pt_abseta", 0.0, "tight_id", true, ctx.get("SystDirection_MuonId", "nominal")));
 
   string filepath_sf_iso = ctx.get("uhh2Dir")+"HighPtSingleTop/data/ScaleFactors/2017/MuonIso_94X_RunBCDEF_SF_ISO.root";
-  m_sf_iso.reset(new MCMuonScaleFactor(ctx, filepath_sf_iso, "NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta", 0.0, "isolation", true, ctx.get("SystDirection_MuonIso")));
+  m_sf_iso.reset(new MCMuonScaleFactor(ctx, filepath_sf_iso, "NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta", 0.0, "isolation", true, ctx.get("SystDirection_MuonIso", "nominal")));
 }
 
 bool MuonIdIsoScaleFactors2017::process(Event & event) {
@@ -57,10 +57,10 @@ bool MuonIdIsoScaleFactors2017::process(Event & event) {
 MuonIdIsoScaleFactors2018::MuonIdIsoScaleFactors2018(Context & ctx) {
 
   string filepath_sf_id = ctx.get("uhh2Dir")+"HighPtSingleTop/data/ScaleFactors/2018/Muon_ID_SF_RunABCD.root";
-  m_sf_id.reset(new MCMuonScaleFactor(ctx, filepath_sf_id, "NUM_TightID_DEN_TrackerMuons_pt_abseta", 0.0, "tight_id", true, ctx.get("SystDirection_MuonId")));
+  m_sf_id.reset(new MCMuonScaleFactor(ctx, filepath_sf_id, "NUM_TightID_DEN_TrackerMuons_pt_abseta", 0.0, "tight_id", true, ctx.get("SystDirection_MuonId", "nominal")));
 
   string filepath_sf_iso = ctx.get("uhh2Dir")+"HighPtSingleTop/data/ScaleFactors/2018/Muon_Iso_SF_RunABCD.root";
-  m_sf_iso.reset(new MCMuonScaleFactor(ctx, filepath_sf_iso, "NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta", 0.0, "isolation", true, ctx.get("SystDirection_MuonIso")));
+  m_sf_iso.reset(new MCMuonScaleFactor(ctx, filepath_sf_iso, "NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta", 0.0, "isolation", true, ctx.get("SystDirection_MuonIso", "nominal")));
 }
 
 bool MuonIdIsoScaleFactors2018::process(Event & event) {
@@ -75,10 +75,10 @@ bool MuonIdIsoScaleFactors2018::process(Event & event) {
 ElectronIdRecoScaleFactors2016::ElectronIdRecoScaleFactors2016(Context & ctx) {
 
   string filepath_sf_id = ctx.get("uhh2Dir")+"HighPtSingleTop/data/ScaleFactors/2016/2016LegacyReReco_ElectronTight_Fall17V2.root";
-  m_sf_id.reset(new MCElecScaleFactor(ctx, filepath_sf_id, 0.0, "tight_id", ctx.get("SystDirection_ElectronId")));
+  m_sf_id.reset(new MCElecScaleFactor(ctx, filepath_sf_id, 0.0, "tight_id", ctx.get("SystDirection_ElectronId", "nominal")));
 
   string filepath_sf_reco = ctx.get("uhh2Dir")+"HighPtSingleTop/data/ScaleFactors/2016/EGM2D_BtoH_GT20GeV_RecoSF_Legacy2016.root";
-  m_sf_reco.reset(new MCElecScaleFactor(ctx, filepath_sf_reco, 0.0, "reco", ctx.get("SystDirection_ElectronReco")));
+  m_sf_reco.reset(new MCElecScaleFactor(ctx, filepath_sf_reco, 0.0, "reco", ctx.get("SystDirection_ElectronReco", "nominal")));
 }
 
 bool ElectronIdRecoScaleFactors2016::process(Event & event) {
@@ -93,10 +93,10 @@ bool ElectronIdRecoScaleFactors2016::process(Event & event) {
 ElectronIdRecoScaleFactors2017::ElectronIdRecoScaleFactors2017(Context & ctx) {
 
   string filepath_sf_id = ctx.get("uhh2Dir")+"HighPtSingleTop/data/ScaleFactors/2017/2017_ElectronTight.root";
-  m_sf_id.reset(new MCElecScaleFactor(ctx, filepath_sf_id, 0.0, "tight_id", ctx.get("SystDirection_ElectronId")));
+  m_sf_id.reset(new MCElecScaleFactor(ctx, filepath_sf_id, 0.0, "tight_id", ctx.get("SystDirection_ElectronId", "nominal")));
 
   string filepath_sf_reco = ctx.get("uhh2Dir")+"HighPtSingleTop/data/ScaleFactors/2017/egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root";
-  m_sf_reco.reset(new MCElecScaleFactor(ctx, filepath_sf_reco, 0.0, "reco", ctx.get("SystDirection_ElectronReco")));
+  m_sf_reco.reset(new MCElecScaleFactor(ctx, filepath_sf_reco, 0.0, "reco", ctx.get("SystDirection_ElectronReco", "nominal")));
 }
 
 bool ElectronIdRecoScaleFactors2017::process(Event & event) {
@@ -111,10 +111,10 @@ bool ElectronIdRecoScaleFactors2017::process(Event & event) {
 ElectronIdRecoScaleFactors2018::ElectronIdRecoScaleFactors2018(Context & ctx) {
 
   string filepath_sf_id = ctx.get("uhh2Dir")+"HighPtSingleTop/data/ScaleFactors/2018/2018_ElectronTight.root";
-  m_sf_id.reset(new MCElecScaleFactor(ctx, filepath_sf_id, 0.0, "tight_id", ctx.get("SystDirection_ElectronId")));
+  m_sf_id.reset(new MCElecScaleFactor(ctx, filepath_sf_id, 0.0, "tight_id", ctx.get("SystDirection_ElectronId", "nominal")));
 
   string filepath_sf_reco = ctx.get("uhh2Dir")+"HighPtSingleTop/data/ScaleFactors/2018/egammaEffi.txt_EGM2D_updatedAll.root";
-  m_sf_reco.reset(new MCElecScaleFactor(ctx, filepath_sf_reco, 0.0, "reco", ctx.get("SystDirection_ElectronReco")));
+  m_sf_reco.reset(new MCElecScaleFactor(ctx, filepath_sf_reco, 0.0, "reco", ctx.get("SystDirection_ElectronReco", "nominal")));
 }
 
 bool ElectronIdRecoScaleFactors2018::process(Event & event) {
@@ -194,10 +194,11 @@ ElectronTriggerWeights::ElectronTriggerWeights(Context & ctx) {
   g_sf_pt1.reset((TGraphAsymmErrors*)file_pt1->Get("ScaleFactors"));
   g_sf_pt2.reset((TGraphAsymmErrors*)file_pt2->Get("ScaleFactors"));
 
-  if(ctx.get("SystDirection_ElectronTrigger") == "up") {
+  string syst_direction_ = ctx.get("SystDirection_ElectronTrigger", "nominal");
+  if(syst_direction_ == "up") {
     syst_direction = 1;
   }
-  else if(ctx.get("SystDirection_ElectronTrigger") == "down") {
+  else if(syst_direction_ == "down") {
     syst_direction = -1;
   }
   else {
@@ -314,10 +315,11 @@ MuonTriggerWeights::MuonTriggerWeights(Context & ctx) {
   g_sf_1p2to2p1.reset((TGraphAsymmErrors*)file_1p2to2p1->Get("ScaleFactors"));
   g_sf_2p1to2p4.reset((TGraphAsymmErrors*)file_2p1to2p4->Get("ScaleFactors"));
 
-  if(ctx.get("SystDirection_MuonTrigger") == "up") {
+  string syst_direction_ = ctx.get("SystDirection_MuonTrigger", "nominal");
+  if(syst_direction_ == "up") {
     syst_direction = 1;
   }
-  else if(ctx.get("SystDirection_MuonTrigger") == "down") {
+  else if(syst_direction_ == "down") {
     syst_direction = -1;
   }
   else {
