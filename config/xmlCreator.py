@@ -36,15 +36,18 @@ class configContainer:
       }
 
       self.yearVars['targetLumis'] = {
-         '2016': 35922.,
-         '2017': 41530.,
-         '2018': 59740.,
+         '2016': 35921.87,
+         '2017': 41528.99,
+         '2018': 59740.56,
       }
 
       self.yearVars['lumiFiles'] = {
-         '2016': self.uhh2Dir+'common/data/2016/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.root',
-         '2017': self.uhh2Dir+'common/data/2017/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.root',
-         '2018': self.uhh2Dir+'common/data/2018/Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.root',
+         # '2016': self.uhh2Dir+'common/data/2016/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.root',
+         # '2017': self.uhh2Dir+'common/data/2017/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.root',
+         # '2018': self.uhh2Dir+'common/data/2018/Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.root',
+         '2016': self.uhh2Dir+'HighPtSingleTop/data/GoldenJSONs/Cert_271036-284044_13TeV_ReReco_07Aug2017_Collisions16_JSON.root',
+         '2017': self.uhh2Dir+'HighPtSingleTop/data/GoldenJSONs/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.root',
+         '2018': self.uhh2Dir+'HighPtSingleTop/data/GoldenJSONs/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.root',
       }
 
       self.yearVars['hotvrSFFiles'] = {
