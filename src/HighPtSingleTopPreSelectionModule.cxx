@@ -52,7 +52,7 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> primarylep, sf_lepton, sf_prefiring;
     unique_ptr<AnalysisModule> met_xy_correction;
 
-    unique_ptr<Selection> slct_mttbarGenCut;
+    unique_ptr<Selection> slct_lumi, slct_mttbarGenCut;
     unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
     unique_ptr<Selection> slct_met, slct_1hotvr;
 
@@ -146,6 +146,7 @@ namespace uhh2 {
     common_modules->switch_metcorrection(true);
     common_modules->switch_jetlepcleaner(false); // switch off jet lepton cleaning <-- Roman's recommendation from October 16, 2019
     common_modules->switch_jetPtSorter(true);
+    common_modules->disable_lumisel(); // done manually
     common_modules->init(ctx);
 
     met_xy_correction.reset(new METXYCorrections(ctx));
@@ -161,6 +162,7 @@ namespace uhh2 {
     // SELECTIONS //
     //------------//
 
+    slct_lumi.reset(new LumiSelection(ctx));
     slct_mttbarGenCut.reset(new MttbarGenSelection(0, 700));
     slct_1muon.reset(new NMuonSelection(1, 1));
     slct_0muon.reset(new NMuonSelection(0, 0));
@@ -217,6 +219,9 @@ namespace uhh2 {
       cout << "| NEW EVENT |" << endl;
       cout << "+-----------+" << endl;
     }
+
+    if(debug) cout << "Lumi selection (need to do this manually before CommonModules)" << endl; // else getting error for some data samples, e.g. "RunSwitcher cannot handle run number 275656 for year 2016"
+    if(event.isRealData && !slct_lumi->passes(event)) return false;
 
     if(debug) cout << "Mttbar gencut for the inclusive TTbar sample" << endl;
     if(dataset_version.find("TTbar") == 0) {
