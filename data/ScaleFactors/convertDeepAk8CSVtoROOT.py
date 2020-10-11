@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import sys
-import ROOT as root
 from collections import OrderedDict
+import ROOT as root
+import numpy as np
 
 class ScaleFactor:
 
@@ -36,7 +37,10 @@ class ScaleFactor:
             if(y not in x): x.append(y)
 
 
+### READ CSV FILE:
+
 infilename = sys.argv[1]
+print 'Input file:', infilename
 
 dummy = None
 sf_list = list()
@@ -61,27 +65,58 @@ print "Versions:", dummy.list_version
 print "Mistagging rates:", dummy.list_mistagging_rate
 print "Pt intervals:" , dummy.list_pt_intervals
 
-sf_dict = dict()
+sf_dict = OrderedDict()
 for o in dummy.list_object:
-    sf_dict[o] = dict()
+    sf_dict[o] = OrderedDict()
     for y in dummy.list_year:
-        sf_dict[o][y] = dict()
+        sf_dict[o][y] = OrderedDict()
         for v in dummy.list_version:
-            sf_dict[o][y][v] = dict()
+            sf_dict[o][y][v] = OrderedDict()
             for m in dummy.list_mistagging_rate:
-                sf_dict[o][y][v][m] = dict()
-
-# print sf_dict
+                sf_dict[o][y][v][m] = OrderedDict()
 
 for sf in sf_list:
     pt_bin_key = str(sf.pt_low)+'to'+str(sf.pt_high)
-    values = dict()
+    values = OrderedDict()
     values["sf"] = sf.sf
     values["sf_err_up"] = sf.sf_err_up
     values["sf_err_down"] = sf.sf_err_down
     sf_dict[sf.object][sf.year][sf.version][sf.mistagging_rate][pt_bin_key] = values
 
-print sf_dict
 
+### CONVERT CSV TO ROOT:
 
-### TODO: convert sf_dict to root file!!!
+outfilename = infilename+'.root'
+print 'Creating ROOT file:', outfilename
+outfile = root.TFile.Open(outfilename, "RECREATE")
+outfile.cd()
+
+for o in sf_dict.keys():
+    for y in sf_dict[o].keys():
+        for v in sf_dict[o][y].keys():
+            for m in sf_dict[o][y][v].keys():
+                list_pt_center = list()
+                list_pt_err_low = list()
+                list_pt_err_high = list()
+                list_sf = list()
+                list_sf_err_up = list()
+                list_sf_err_down = list()
+                for pt_bin in sf_dict[o][y][v][m].keys():
+                    pt_low = float(pt_bin.split('to')[0])
+                    pt_high = float(pt_bin.split('to')[1])
+                    pt_center = pt_low + (pt_high - pt_low) / 2.
+                    list_pt_center.append(pt_center)
+                    list_pt_err_low.append(pt_center - pt_low)
+                    list_pt_err_high.append(pt_high - pt_center)
+                    list_sf.append(sf_dict[o][y][v][m][pt_bin]['sf'])
+                    list_sf_err_up.append(sf_dict[o][y][v][m][pt_bin]['sf_err_up'])
+                    list_sf_err_down.append(sf_dict[o][y][v][m][pt_bin]['sf_err_down'])
+                if len(list_pt_err_low)==0: continue # check if combination of o/y/v/m actually has tagging scale factors
+                graph = root.TGraphAsymmErrors(len(list_pt_center), np.array(list_pt_center, dtype='double'), np.array(list_sf, dtype='double'), np.array(list_pt_err_low, dtype='double'), np.array(list_pt_err_high, dtype='double'), np.array(list_sf_err_down, dtype='double'), np.array(list_sf_err_up, dtype='double'))
+                graph_name = '_'.join([o, y, v, m])
+                graph.SetName(graph_name)
+                graph.SetTitle(infilename.split('/')[-1].split('_')[0]+'_'+graph_name)
+                graph.Write()
+
+outfile.Close()
+print 'Done.'
