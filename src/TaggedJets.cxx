@@ -78,8 +78,8 @@ WTaggedJets::WTaggedJets(Context & ctx,
   year(extract_year(ctx)),
   b_massDecorrelated(b_massDecorrelated_)
 {
-  if(year == Year::is2016v3) { b_massDecorrelated ? wps = wps_W_2016_MD : wps = wps_W_2016; }
-  else if(year == Year::is2017v2) { b_massDecorrelated ? wps = wps_W_2017_MD : wps = wps_W_2017; }
+  if(year == Year::is2016v3 || year == Year::is2016v2) { b_massDecorrelated ? wps = wps_W_2016_MD : wps = wps_W_2016; }
+  else if(year == Year::is2017v2 || year == Year::is2017v1) { b_massDecorrelated ? wps = wps_W_2017_MD : wps = wps_W_2017; }
   else if(year == Year::is2018) { b_massDecorrelated ? wps = wps_W_2018_MD : wps = wps_W_2018; }
   else { throw runtime_error("WTaggedJets: Provided year information not valid."); }
   m_working_point = working_point;
