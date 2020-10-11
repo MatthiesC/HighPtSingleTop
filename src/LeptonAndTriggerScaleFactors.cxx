@@ -179,7 +179,7 @@ ElectronTriggerWeights::ElectronTriggerWeights(Context & ctx) {
   else throw runtime_error("ElectronTriggerWeights: invalid year");
 
   unique_ptr<TFile> file_pt1, file_pt2;
-  TString path = ctx.get("uhh2Dir");
+  TString path = ctx.get("uhh2Dir")+"/HighPtSingleTop/data/ScaleFactors";
   if(yeartag == "2016") {
     file_pt1.reset(new TFile(path+"/"+yeartag+"/ElectronTriggerScaleFactors_eta_ele_binned_official_pt30to175_withsyst.root","READ"));
     file_pt2.reset(new TFile(path+"/"+yeartag+"/ElectronTriggerScaleFactors_eta_ele_binned_official_pt175toInf.root","READ"));
@@ -304,7 +304,7 @@ MuonTriggerWeights::MuonTriggerWeights(Context & ctx) {
   else throw runtime_error("MuonTriggerWeights: invalid year");
 
   unique_ptr<TFile> file_0to0p9, file_0p9to1p2, file_1p2to2p1, file_2p1to2p4;
-  TString path = ctx.get("uhh2Dir");
+  TString path = ctx.get("uhh2Dir")+"/HighPtSingleTop/data/ScaleFactors";
   file_0to0p9.reset(new TFile(path+"/"+yeartag+"/MuonTriggerScaleFactors_pt_mu_binned_official_eta0to0p9_withsyst.root","READ"));
   file_0p9to1p2.reset(new TFile(path+"/"+yeartag+"/MuonTriggerScaleFactors_pt_mu_binned_official_eta0p9to1p2_withsyst.root","READ"));
   file_1p2to2p1.reset(new TFile(path+"/"+yeartag+"/MuonTriggerScaleFactors_pt_mu_binned_official_eta1p2to2p1_withsyst.root","READ"));
