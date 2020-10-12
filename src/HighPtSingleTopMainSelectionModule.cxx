@@ -31,6 +31,7 @@
 #include "UHH2/HighPtSingleTop/include/ReconstructionAlgorithms.h"
 #include "UHH2/HighPtSingleTop/include/LeptonAndTriggerScaleFactors.h"
 #include "UHH2/HighPtSingleTop/include/HcalAndEcalModules.h"
+#include "UHH2/HighPtSingleTop/include/DeepAK8ScaleFactor.h"
 
 #include "lwtnn/LightweightNeuralNetwork.hh"
 #include "lwtnn/parse_json.hh"
@@ -51,7 +52,7 @@ namespace uhh2 {
 
     bool debug, empty_output_tree;
 
-    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_prefiring, sf_toptag, sf_deepjet, scale_variation;
+    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_prefiring, sf_toptag, sf_wtag, sf_deepjet, scale_variation;
     unique_ptr<AnalysisModule> handle_primarylep, handle_hadronictop, handle_toptaggedjet, handle_wtaggedjet, handle_btaggedjets, handle_ak4InExJets_top, handle_ak4InExJets_W, handle_wboson, handle_pseudotop, SingleTopGen_tWchProd;
     unique_ptr<Ak8Corrections> ak8corrections;
     unique_ptr<AnalysisModule> ak8cleaning, handle_ak8jets, handle_wtaggedjets;
@@ -102,7 +103,6 @@ namespace uhh2 {
 
     string syst_pileup = ctx.get("SystDirection_Pileup");
     string syst_toptag = ctx.get("SystDirection_HOTVRTopTagSF");
-    string syst_wtag  = ctx.get("SystDirection_DeepAK8WTagSF");
     string syst_btag  = ctx.get("SystDirection_DeepJetBTagSF");
 
     string neural_net_filepath  = ctx.get("NeuralNetFile_tTag");
@@ -147,6 +147,7 @@ namespace uhh2 {
     sf_prefiring.reset(new PrefiringWeights(ctx));
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_toptag));
+    sf_wtag.reset(new DeepAK8ScaleFactor(ctx, "W", false, wtag_workingpoint)); // false = don't use mass-decorrelated (MD) but nominal DeepAK8
     sf_deepjet.reset(new MCBTagDiscriminantReweighting(ctx, btag_algo, "jets", syst_btag));
 
 
@@ -215,6 +216,7 @@ namespace uhh2 {
     slct_tW_WToTau.reset(new tWgenSelection(ctx, "WToTau"));
 
     slct_trigger.reset(new HighPtSingleTopTriggerSelection(ctx));
+    slct_hemissue.reset(new HEMIssueSelection(ctx));
 
     slct_0toptag.reset(new NTopJetSelection(0, 0, StandardHOTVRTopTagID));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
@@ -514,8 +516,6 @@ namespace uhh2 {
     }
 
 
-
-
     // Split tW signal into 3-merged, 2-merged, 1-merged, 0-merged (== how many top decay products ended up inside t-tagged HOTVR jet)
     // if(debug) cout << "Split tW signal into 3-merged, 2-merged, 1-merged, 0-merged (== how many top decay products ended up inside t-tagged HOTVR jet)" << endl;
     // if(_1toptag && dataset_version.find("ST_tW") == 0) {
@@ -548,6 +548,7 @@ namespace uhh2 {
 
 
     // End of Module
+    if(debug) cout << "End of module reached. Yay!" << endl;
     return !empty_output_tree;
   }
 
