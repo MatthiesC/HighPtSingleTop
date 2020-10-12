@@ -4,6 +4,8 @@ import os
 import sys
 import csv
 from collections import OrderedDict
+import argparse
+from itertools import permutations
 # import xml.etree.ElementTree as ET
 
 
@@ -31,8 +33,8 @@ class configContainer:
 
       self.yearVars['preselFileSplit'] = {
          '2016': '30',
-         '2017': '30',
-         '2018': '30',
+         '2017': '42',
+         '2018': '50',
       }
 
       self.yearVars['targetLumis'] = {
@@ -74,6 +76,22 @@ class configContainer:
             '2018': self.uhh2Dir+'',
          },
       }
+
+   @staticmethod
+   def read_database(years: list, channels: list):
+
+      used_samples = OrderedDict()
+      for year in years:
+         used_samples[year] = OrderedDict()
+         for channel in channels:
+            used_samples[year][channel] = list()
+            with open('database.csv', 'r') as file:
+               reader = csv.DictReader(file)
+               for row in reader:
+                  use_me = row['use_me']=='True' and row['year']==year and (row['channel']==channel or row['channel']=='both')
+                  if use_me:
+                     used_samples[year][channel].append(sampleEntity(row))
+      configContainer.used_samples = used_samples
 
 
 class sampleEntity:
@@ -121,7 +139,7 @@ class xmlCreator:
       if selection not in ['presel', 'mainsel']:
          sys.exit('Given value of argument "selection" not valid. Abort.')
       self.selection = selection
-      self.is_mainsel = True if selection is 'mainsel' else False
+      self.is_mainsel = True if selection=='mainsel' else False
 
       if year not in ['2016', '2017', '2018']:
          sys.exit('Given value of argument "year" not valid. Abort.')
@@ -131,7 +149,7 @@ class xmlCreator:
       if channel not in ['ele', 'muo']:
          sys.exit('Given value of argument "channel" not valid. Abort.')
       self.channel = channel
-      self.is_muo = True if channel is 'muo' else False
+      self.is_muo = True if channel=='muo' else False
 
       self.outputDirBase = self.uhh2Dir+'HighPtSingleTop/output/'
       if not os.path.isdir(self.outputDirBase):
@@ -142,7 +160,6 @@ class xmlCreator:
       os.makedirs(self.xmlFilePathBase, exist_ok=True)
       self.xmlFilePath = self.xmlFilePathBase+self.xmlFileName
 
-
    def write_xml(self):
 
       with open(self.xmlFilePath, 'w') as file:
@@ -152,9 +169,9 @@ class xmlCreator:
          file.write('''\n''')
          file.write('''<!ENTITY TargetLumi "'''+str(self.yearVars['targetLumis'][self.year])+'''">\n''')
          if self.is_mainsel:
-            file.write('''<!ENTITY PRESELdir "'''+(self.outputDirBase+'presel/'+self.year+'/'+self.channel+'/')+'''">\n''')
+            file.write('''<!ENTITY PRESELdir "'''+(self.outputDirBase+'presel/'+self.year+'/'+self.channel+'/NOMINAL/')+'''">\n''')
             file.write('''<!ENTITY PRESELfilename "uhh2.AnalysisModuleRunner">\n''')
-         file.write('''<!ENTITY OUTPUTdir "'''+(self.outputDirBase+self.selection+'/'+self.year+'/'+self.channel+'/')+'''">\n''')
+         file.write('''<!ENTITY OUTPUTdir "'''+(self.outputDirBase+self.selection+'/'+self.year+'/'+self.channel+'/NOMINAL/')+'''">\n''')
          file.write('''<!ENTITY b_Cacheable "False">\n''')
          file.write('''<!ENTITY NEVT "-1">\n''')
          file.write('''<!ENTITY YEARsuffix "_'''+self.year+self.yearVersion+'''">\n''')
@@ -257,7 +274,6 @@ class xmlCreator:
 
       return self.xmlFilePath
 
-
    def delete_xml(self):
 
       os.remove(self.xmlFilePath)
@@ -265,26 +281,42 @@ class xmlCreator:
 
 if __name__=='__main__':
 
-   used_samples = OrderedDict()
+   selections = ['presel', 'mainsel']
    years = ['2016', '2017', '2018']
    channels = ['ele', 'muo']
 
-   for year in years:
-      used_samples[year] = OrderedDict()
-      for channel in channels:
-         used_samples[year][channel] = list()
-         with open('database.csv', 'r') as file:
-            reader = csv.DictReader(file)
-            for row in reader:
-               use_me = row['use_me']=='True' and row['year']==year and (row['channel']==channel or row['channel']=='both')
-               if use_me:
-                  used_samples[year][channel].append(sampleEntity(row))
+   parser = argparse.ArgumentParser()
+   parser.add_argument('--all', action='store_true', help='Create XML files for all selections, years, and channels.')
+   parser.add_argument('--syst', action='store_true', help='Create XML files for systematic uncertainties.')
+   parser.add_argument('-s', '--selections', choices=selections, nargs='*', default=[])
+   parser.add_argument('-y', '--years', choices=years, nargs='*', default=[])
+   parser.add_argument('-c', '--channels', choices=channels, nargs='*', default=[])
+   args = parser.parse_args(sys.argv[1:])
 
-   configContainer.used_samples = used_samples
+   if(args.all == True):
+      if(len(args.selections) + len(args.years) + len(args.channels) != 0):
+         sys.exit('Not allowed to use "--all" option jointly with manually given selection, year, or channel argument. Exit.')
+      args.selections = selections
+      args.years = years
+      args.channels = channels
+   else:
+      for p in permutations([args.selections, args.years, args.channels]):
+         if p[0] and (not p[1] or not p[2]):
+            sys.exit('You specified arguments for at least one of the three options: "--selections", "--years", "--channels", but not for all three of them. Exit.')
 
-   for year in years:
-      for channel in channels:
-         for selection in ['presel', 'mainsel']:
+   print('Going to create XML files for:')
+   print('  Selections: '+', '.join(str(x) for x in args.selections))
+   print('  Years: '+', '.join(str(x) for x in args.years))
+   print('  Channels: '+', '.join(str(x) for x in args.channels))
+
+   configContainer.read_database(args.years, args.channels)
+
+   for selection in args.selections:
+      for year in args.years:
+         for channel in args.channels:
             x = xmlCreator(selection, year, channel)
-            x.write_xml()
-            #x.write_systematics_files with help of ElementTree
+            xmlFileName_nominal = x.write_xml()
+            print('Created '+xmlFileName_nominal)
+            if args.syst:
+               print('Still need to do systematics.')
+            # x.write_systematics_files with help of ElementTree
