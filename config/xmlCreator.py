@@ -18,7 +18,7 @@ class configContainer:
    userMail = str()
    yearVars = dict()
    used_samples = OrderedDict()
-   systematics = list()
+
 
    def __init__(self):
 
@@ -32,6 +32,7 @@ class configContainer:
          '2018': '',
       }
 
+      # Set these values such that there are no more than 2,500 jobs per preselection. This way, you can submit two preselections in parallel to avoid going over 5,000 jobs (current user limit for NAF)
       self.yearVars['preselFileSplit'] = {
          '2016': '30',
          '2017': '42',
@@ -78,6 +79,9 @@ class configContainer:
          },
       }
 
+      self.systematics = list()
+
+
    @staticmethod
    def read_database(years: list, channels: list):
 
@@ -94,25 +98,28 @@ class configContainer:
                      used_samples[year][channel].append(sampleEntity(row))
       configContainer.used_samples = used_samples
 
-   @staticmethod
-   def setup_systematics():
 
-      systematics = list()
-      systematics.append(systEntity('jec', 'jecsmear_direction', selections=['presel', 'mainsel']))
-      systematics.append(systEntity('jer', 'jersmear_direction', selections=['presel', 'mainsel']))
-      systematics.append(systEntity('mur', 'ScaleVariationMuR'))
-      systematics.append(systEntity('muf', 'ScaleVariationMuF'))
-      systematics.append(systEntity('pileup', 'SystDirection_Pileup'))
-      systematics.append(systEntity('prefiring', 'SystDirection_Prefiring', years=['2016', '2017']))
-      systematics.append(systEntity('muontrigger', 'SystDirection_MuonTrigger', channels=['muo']))
-      systematics.append(systEntity('muonid', 'SystDirection_MuonId', channels=['muo']))
-      systematics.append(systEntity('muoniso', 'SystDirection_MuonIso', channels=['muo']))
-      systematics.append(systEntity('electrontrigger', 'SystDirection_ElectronTrigger', channels=['ele']))
-      systematics.append(systEntity('electronid', 'SystDirection_ElectronId', channels=['ele']))
-      systematics.append(systEntity('electronreco', 'SystDirection_ElectronReco', channels=['ele']))
-      systematics.append(systEntity('ttag', 'SystDirection_HOTVRTopTagSF'))
-      systematics.append(systEntity('wtag', 'SystDirection_DeepAK8WTagSF'))
-      systematics.append(systEntity('deepjet', 'SystDirection_DeepJetBTagSF'))
+   def setup_systematics(self, selection: str, year: str, channel: str):
+
+      self.systematics.append(systEntity('jec', 'jecsmear_direction')) # During presel, ak4 jets (and thus, hotvr subjets) are affected. During mainsel, ak8 jets are affected.
+      self.systematics.append(systEntity('jer', 'jersmear_direction')) # During presel, ak4 jets (and thus, hotvr subjets) are affected. During mainsel, ak8 jets are affected.
+      if selection=='mainsel':
+         self.systematics.append(systEntity('mur', 'ScaleVariationMuR'))
+         self.systematics.append(systEntity('muf', 'ScaleVariationMuF'))
+         self.systematics.append(systEntity('pileup', 'SystDirection_Pileup'))
+         if year in ['2016', '2017']:
+            self.systematics.append(systEntity('prefiring', 'SystDirection_Prefiring'))
+         if channel=='muo':
+            self.systematics.append(systEntity('muontrigger', 'SystDirection_MuonTrigger'))
+            self.systematics.append(systEntity('muonid', 'SystDirection_MuonId'))
+            self.systematics.append(systEntity('muoniso', 'SystDirection_MuonIso'))
+         elif channel=='ele':
+            self.systematics.append(systEntity('electrontrigger', 'SystDirection_ElectronTrigger'))
+            self.systematics.append(systEntity('electronid', 'SystDirection_ElectronId'))
+            self.systematics.append(systEntity('electronreco', 'SystDirection_ElectronReco'))
+         self.systematics.append(systEntity('ttag', 'SystDirection_HOTVRTopTagSF'))
+         self.systematics.append(systEntity('wtag', 'SystDirection_DeepAK8WTagSF'))
+         # self.systematics.append(systEntity('deepjet', 'SystDirection_DeepJetBTagSF')) # TODO: Check how to properly vary deepjet shapes
 
 
 class sampleEntity:
@@ -148,14 +155,12 @@ class systEntity:
 
    '''Container to hold information about a systematic uncertainty'''
 
-   def __init__(self, shortName: str, ctxName: str, directions=['up', 'down'], selections=['mainsel'], years=['2016', '2017', '2018'], channels=['ele', 'muo']):
+   def __init__(self, shortName: str, ctxName: str, defaultValue='nominal', directions=['up', 'down']):
 
       self.shortName = shortName
       self.ctxName = ctxName
+      self.defaultValue = defaultValue
       self.directions = directions
-      self.selections = selections
-      self.years = years
-      self.channels = channels
 
 
 class xmlCreator:
@@ -170,6 +175,8 @@ class xmlCreator:
       self.userMail = confCon.userMail
       self.yearVars = confCon.yearVars
       self.sample_list = confCon.used_samples[year][channel]
+      confCon.setup_systematics(selection, year, channel)
+      self.systematics = confCon.systematics
 
       if selection not in ['presel', 'mainsel']:
          sys.exit('Given value of argument "selection" not valid. Abort.')
@@ -196,6 +203,8 @@ class xmlCreator:
       self.xmlFilePath = self.xmlFilePathBase+self.xmlFileName
 
       self.write_xml_successful = False
+      self.systXmlFilePaths = list()
+
 
    def write_xml(self):
 
@@ -267,32 +276,15 @@ class xmlCreator:
             file.write('''<Item Name="pileup_directory_data_down" Value="'''+self.uhh2Dir+'common/data/'+self.year+'''/MyDataPileupHistogram'''+self.year+'''_66017.root"/>\n''')
             file.write('''\n''')
             file.write('''<Item Name="HOTVRTopTagSFs" Value="'''+self.yearVars['hotvrSFFiles'][self.year]+'''"/>\n''')
-            file.write('''<Item Name="DeepAK8WTagSFs" Value="'''+self.uhh2Dir+'''HighPtSingleTop/data/ScaleFactors/201X/DeepAK8V2_Top_W_SFs.csv"/>\n''')
+            file.write('''<Item Name="DeepAK8WTagSFs" Value="'''+self.uhh2Dir+'''HighPtSingleTop/data/ScaleFactors/201X/DeepAK8V2_Top_W_SFs.csv.root"/>\n''')
             file.write('''<Item Name="BTagCalibration" Value="'''+self.yearVars['deepjetSFFiles'][self.year]+'''"/>\n''')
             file.write('''\n''')
             file.write('''<Item Name="NeuralNetFile_tTag" Value="'''+self.yearVars['NNFiles']['tTag'][self.year]+'''"/>\n''')
             file.write('''<Item Name="NeuralNetFile_WTag" Value="'''+self.yearVars['NNFiles']['WTag'][self.year]+'''"/>\n''')
-            file.write('''\n''')
-            file.write('''<!-- Keys for systematic uncertainties -->\n''')
-            file.write('''<Item Name="ScaleVariationMuR" Value="none"/>\n''')
-            file.write('''<Item Name="ScaleVariationMuF" Value="none"/>\n''')
-            file.write('''<Item Name="SystDirection_Pileup" Value="nominal"/>\n''')
-            file.write('''<Item Name="SystDirection_Prefiring" Value="nominal"/>\n''')
-            if self.is_muo:
-               file.write('''<Item Name="SystDirection_MuonTrigger" Value="nominal"/>\n''')
-               file.write('''<Item Name="SystDirection_MuonId" Value="nominal"/>\n''')
-               file.write('''<Item Name="SystDirection_MuonIso" Value="nominal"/>\n''')
-            else:
-               file.write('''<Item Name="SystDirection_ElectronTrigger" Value="nominal"/>\n''')
-               file.write('''<Item Name="SystDirection_ElectronId" Value="nominal"/>\n''')
-               file.write('''<Item Name="SystDirection_ElectronReco" Value="nominal"/>\n''')
-            file.write('''<Item Name="SystDirection_HOTVRTopTagSF" Value="nominal"/>\n''')
-            file.write('''<Item Name="SystDirection_DeepAK8WTagSF" Value="nominal"/>\n''')
-            file.write('''<Item Name="SystDirection_DeepJetBTagSF" Value="nominal"/>\n''')
          file.write('''\n''')
-         file.write('''<!-- Keys for JES/JER smearing. During preselection, AK4 (and HOTVR) jets are affected. During main selection, AK8 jets are affected. -->\n''')
-         file.write('''<Item Name="jecsmear_direction" Value="nominal"/>\n''')
-         file.write('''<Item Name="jersmear_direction" Value="nominal"/>\n''')
+         file.write('''<!-- Keys for systematic uncertainties -->\n''')
+         for syst in self.systematics:
+            file.write('''<Item Name="'''+syst.ctxName+'''" Value="'''+syst.defaultValue+'''"/>\n''')
          file.write('''\n''')
          file.write('''<!-- Tell AnalysisModuleRunner NOT to use the MC event weight from SFrame; rather let MCLumiWeight (called via CommonModules) calculate the MC event weight. The MC event weight assigned by MCLumiWeight is InputData.Lumi / Cycle.TargetLumi. -->\n''')
          file.write('''<Item Name="use_sframe_weight" Value="false"/>\n''')
@@ -311,19 +303,43 @@ class xmlCreator:
 
       self.write_xml_successful = True
 
+      print('Created '+self.xmlFilePath)
+
       return self.xmlFilePath
 
-   def delete_xml(self):
 
-      os.remove(self.xmlFilePath)
-
-   def write_systematics_xml(self, direction: str):
+   def write_systematics_xml(self, syst: systEntity):
 
       if not self.write_xml_successful:
          sys.exit('xmlCreator::write_xml() not called. Danger of parsing potentially outdated XML file. Exit.')
 
-      systXmlFilePath = self.xmlFilePath.replace('.xml', '_')+'_'.join(['syst', syst.shortName, direction])+'.xml'
-      xml_tree = et.parse(self.xmlFilePath)
+      for direction in syst.directions:
+         systXmlFilePath = self.xmlFilePath.replace('.xml', '_')+'_'.join(['syst', syst.shortName, direction])+'.xml'
+         infile = open(self.xmlFilePath, 'r')
+         with open(systXmlFilePath, 'w') as outfile:
+            for line in infile:
+               newline = line
+               if newline.startswith('<!ENTITY PRESELdir') or newline.startswith('<!ENTITY OUTPUTdir'):
+                  newline = newline.replace('/nominal/', '/'+'_'.join(['syst', syst.shortName, direction])+'/')
+               elif newline.startswith('<ConfigSGE'):
+                  newline = newline.replace('"/>', '_'+'_'.join(['syst', syst.shortName, direction])+'"/>')
+               elif newline.startswith('<Item Name="'+syst.ctxName):
+                  newline = newline.replace(syst.defaultValue, direction)
+               outfile.write(newline)
+         infile.close()
+
+         print('Created '+systXmlFilePath)
+
+         self.systXmlFilePaths.append(systXmlFilePath)
+
+
+   def write_all_systematics_xmls(self):
+
+      for syst in self.systematics:
+
+         self.write_systematics_xml(syst)
+
+      return self.systXmlFilePaths
 
 
 if __name__=='__main__':
@@ -367,13 +383,11 @@ if __name__=='__main__':
    print('  Channels: '+', '.join(str(x) for x in args.channels))
 
    configContainer.read_database(args.years, args.channels)
-   configContainer.setup_systematics()
 
    for selection in args.selections:
       for year in args.years:
          for channel in args.channels:
             x = xmlCreator(selection, year, channel)
-            # xmlFileName_nominal = x.write_xml()
-            # print('Created '+xmlFileName_nominal)
+            x.write_xml()
             if args.syst:
-               x.write_systematics_xml()
+               x.write_all_systematics_xmls()
