@@ -6,7 +6,6 @@ import csv
 from collections import OrderedDict
 import argparse
 from itertools import permutations
-import xml.etree.ElementTree as et
 
 
 class configContainer:
