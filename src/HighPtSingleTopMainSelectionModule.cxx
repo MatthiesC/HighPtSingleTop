@@ -31,7 +31,7 @@
 #include "UHH2/HighPtSingleTop/include/ReconstructionAlgorithms.h"
 #include "UHH2/HighPtSingleTop/include/LeptonAndTriggerScaleFactors.h"
 #include "UHH2/HighPtSingleTop/include/HcalAndEcalModules.h"
-#include "UHH2/HighPtSingleTop/include/DeepAK8ScaleFactor.h"
+#include "UHH2/HighPtSingleTop/include/TaggingScaleFactors.h"
 
 #include "lwtnn/LightweightNeuralNetwork.hh"
 #include "lwtnn/parse_json.hh"
@@ -52,7 +52,9 @@ namespace uhh2 {
 
     bool debug, empty_output_tree;
 
-    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_prefiring, sf_toptag, sf_wtag, sf_deepjet, scale_variation;
+    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_prefiring, sf_deepjet, scale_variation;
+    unique_ptr<MyHOTVRScaleFactor> sf_toptag;
+    unique_ptr<DeepAK8ScaleFactor> sf_wtag;
     unique_ptr<AnalysisModule> handle_primarylep, handle_hadronictop, handle_toptaggedjet, handle_wtaggedjet, handle_btaggedjets, handle_ak4InExJets_top, handle_ak4InExJets_W, handle_wboson, handle_pseudotop, SingleTopGen_tWchProd;
     unique_ptr<Ak8Corrections> ak8corrections;
     unique_ptr<AnalysisModule> ak8cleaning, handle_ak8jets, handle_wtaggedjets;
@@ -101,9 +103,9 @@ namespace uhh2 {
 
     dataset_version = ctx.get("dataset_version");
 
-    string syst_pileup = ctx.get("SystDirection_Pileup");
-    string syst_toptag = ctx.get("SystDirection_HOTVRTopTagSF");
-    string syst_btag  = ctx.get("SystDirection_DeepJetBTagSF");
+    string syst_pileup = ctx.get("SystDirection_Pileup", "nominal");
+    string syst_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
+    string syst_btag = ctx.get("SystDirection_DeepJetBTagSF", "nominal");
 
     string neural_net_filepath  = ctx.get("NeuralNetFile_tTag");
 
@@ -146,7 +148,7 @@ namespace uhh2 {
     sf_trigger.reset(new TriggerScaleFactors(ctx));
     sf_prefiring.reset(new PrefiringWeights(ctx));
     scale_variation.reset(new MCScaleVariation(ctx));
-    sf_toptag.reset(new HOTVRScaleFactor(ctx, StandardHOTVRTopTagID, syst_toptag));
+    sf_toptag.reset(new MyHOTVRScaleFactor(ctx, StandardHOTVRTopTagID));
     sf_wtag.reset(new DeepAK8ScaleFactor(ctx, "W", false, wtag_workingpoint)); // false = don't use mass-decorrelated (MD) but nominal DeepAK8
     sf_deepjet.reset(new MCBTagDiscriminantReweighting(ctx, btag_algo, "jets", syst_btag));
 
@@ -439,6 +441,7 @@ namespace uhh2 {
       if(debug) cout << "SR t(had)W(lep):  Fill final control histograms" << endl;
       hist_TopTag_End->fill(event);
 
+      sf_wtag->process_dummy(event);
       event.set(h_which_region, 1);
       is_TopTagRegion = true;
     }
@@ -450,7 +453,7 @@ namespace uhh2 {
       if(debug) cout << "SR t(lep)W(had):  Fill initial control histograms" << endl;
       hist_WTag_Begin->fill(event);
       if(debug) cout << "SR t(lep)W(had):  Apply DeepAK8 W-tagging scale factors" << endl;
-      //TODO: sf_wtag->process(event);
+      sf_wtag->process(event);
       if(debug) cout << "SR t(had)W(lep):  Fill control histograms after DeepAK8 scale factors" << endl;
       hist_WTag_DeepAk8SF->fill(event);
       if(debug) cout << "SR t(lep)W(had):  Require at least one AK4 jet outside W jet as potential candidate for the b jet from leptonic top quark" << endl;
@@ -458,6 +461,7 @@ namespace uhh2 {
       if(debug) cout << "SR t(lep)W(had):  Fill final control histograms" << endl;
       hist_WTag_End->fill(event);
 
+      sf_toptag->process_dummy(event);
       event.set(h_which_region, 2);
       is_WTagRegion = true;
     }
@@ -479,6 +483,8 @@ namespace uhh2 {
       if(debug) cout << "VR:  Fill final control histograms" << endl;
       hist_Validation_End->fill(event);
 
+      sf_toptag->process_dummy(event);
+      sf_wtag->process_dummy(event);
       event.set(h_which_region, 3);
       is_ValidationRegion = true;
     }
