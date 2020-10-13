@@ -6,7 +6,7 @@ import csv
 from collections import OrderedDict
 import argparse
 from itertools import permutations
-# import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as et
 
 
 class configContainer:
@@ -18,6 +18,7 @@ class configContainer:
    userMail = str()
    yearVars = dict()
    used_samples = OrderedDict()
+   systematics = list()
 
    def __init__(self):
 
@@ -93,6 +94,26 @@ class configContainer:
                      used_samples[year][channel].append(sampleEntity(row))
       configContainer.used_samples = used_samples
 
+   @staticmethod
+   def setup_systematics():
+
+      systematics = list()
+      systematics.append(systEntity('jec', 'jecsmear_direction', selections=['presel', 'mainsel']))
+      systematics.append(systEntity('jer', 'jersmear_direction', selections=['presel', 'mainsel']))
+      systematics.append(systEntity('mur', 'ScaleVariationMuR'))
+      systematics.append(systEntity('muf', 'ScaleVariationMuF'))
+      systematics.append(systEntity('pileup', 'SystDirection_Pileup'))
+      systematics.append(systEntity('prefiring', 'SystDirection_Prefiring', years=['2016', '2017']))
+      systematics.append(systEntity('muontrigger', 'SystDirection_MuonTrigger', channels=['muo']))
+      systematics.append(systEntity('muonid', 'SystDirection_MuonId', channels=['muo']))
+      systematics.append(systEntity('muoniso', 'SystDirection_MuonIso', channels=['muo']))
+      systematics.append(systEntity('electrontrigger', 'SystDirection_ElectronTrigger', channels=['ele']))
+      systematics.append(systEntity('electronid', 'SystDirection_ElectronId', channels=['ele']))
+      systematics.append(systEntity('electronreco', 'SystDirection_ElectronReco', channels=['ele']))
+      systematics.append(systEntity('ttag', 'SystDirection_HOTVRTopTagSF'))
+      systematics.append(systEntity('wtag', 'SystDirection_DeepAK8WTagSF'))
+      systematics.append(systEntity('deepjet', 'SystDirection_DeepJetBTagSF'))
+
 
 class sampleEntity:
 
@@ -121,6 +142,20 @@ class sampleEntity:
                self.mainsel_versions.append(self.nickName.replace('_T', '_TopTo'+tDecay+'_WTo'+wDecay+'_T'))
       else:
          self.mainsel_versions.append(self.nickName)
+
+
+class systEntity:
+
+   '''Container to hold information about a systematic uncertainty'''
+
+   def __init__(self, shortName: str, ctxName: str, directions=['up', 'down'], selections=['mainsel'], years=['2016', '2017', '2018'], channels=['ele', 'muo']):
+
+      self.shortName = shortName
+      self.ctxName = ctxName
+      self.directions = directions
+      self.selections = selections
+      self.years = years
+      self.channels = channels
 
 
 class xmlCreator:
@@ -160,6 +195,8 @@ class xmlCreator:
       os.makedirs(self.xmlFilePathBase, exist_ok=True)
       self.xmlFilePath = self.xmlFilePathBase+self.xmlFileName
 
+      self.write_xml_successful = False
+
    def write_xml(self):
 
       with open(self.xmlFilePath, 'w') as file:
@@ -169,9 +206,9 @@ class xmlCreator:
          file.write('''\n''')
          file.write('''<!ENTITY TargetLumi "'''+str(self.yearVars['targetLumis'][self.year])+'''">\n''')
          if self.is_mainsel:
-            file.write('''<!ENTITY PRESELdir "'''+(self.outputDirBase+'presel/'+self.year+'/'+self.channel+'/NOMINAL/')+'''">\n''')
+            file.write('''<!ENTITY PRESELdir "'''+(self.outputDirBase+'presel/'+self.year+'/'+self.channel+'/nominal/')+'''">\n''')
             file.write('''<!ENTITY PRESELfilename "uhh2.AnalysisModuleRunner">\n''')
-         file.write('''<!ENTITY OUTPUTdir "'''+(self.outputDirBase+self.selection+'/'+self.year+'/'+self.channel+'/NOMINAL/')+'''">\n''')
+         file.write('''<!ENTITY OUTPUTdir "'''+(self.outputDirBase+self.selection+'/'+self.year+'/'+self.channel+'/nominal/')+'''">\n''')
          file.write('''<!ENTITY b_Cacheable "False">\n''')
          file.write('''<!ENTITY NEVT "-1">\n''')
          file.write('''<!ENTITY YEARsuffix "_'''+self.year+self.yearVersion+'''">\n''')
@@ -272,11 +309,21 @@ class xmlCreator:
          file.write('''</Cycle>\n''')
          file.write('''</JobConfiguration>\n''')
 
+      self.write_xml_successful = True
+
       return self.xmlFilePath
 
    def delete_xml(self):
 
       os.remove(self.xmlFilePath)
+
+   def write_systematics_xml(self, direction: str):
+
+      if not self.write_xml_successful:
+         sys.exit('xmlCreator::write_xml() not called. Danger of parsing potentially outdated XML file. Exit.')
+
+      systXmlFilePath = self.xmlFilePath.replace('.xml', '_')+'_'.join(['syst', syst.shortName, direction])+'.xml'
+      xml_tree = et.parse(self.xmlFilePath)
 
 
 if __name__=='__main__':
@@ -285,12 +332,14 @@ if __name__=='__main__':
    years = ['2016', '2017', '2018']
    channels = ['ele', 'muo']
 
+   if not sys.argv[1:]: sys.exit('No arguments provided. Exit.')
    parser = argparse.ArgumentParser()
    parser.add_argument('--all', action='store_true', help='Create XML files for all selections, years, and channels.')
    parser.add_argument('--syst', action='store_true', help='Create XML files for systematic uncertainties.')
    parser.add_argument('-s', '--selections', choices=selections, nargs='*', default=[])
    parser.add_argument('-y', '--years', choices=years, nargs='*', default=[])
    parser.add_argument('-c', '--channels', choices=channels, nargs='*', default=[])
+   parser.add_argument('-a', '--auto-complete', action='store_true', help='Auto-complete arguments if not all arguments for selections, years, and channels are given. E.g. if only selections and channels are given, assume that you want to create XML files for all years.')
    args = parser.parse_args(sys.argv[1:])
 
    if(args.all == True):
@@ -299,10 +348,18 @@ if __name__=='__main__':
       args.selections = selections
       args.years = years
       args.channels = channels
+      if(args.auto_complete):
+         print('Warning: You already specified "--all". Therefore, "--auto-complete" will not have any effect.')
    else:
-      for p in permutations([args.selections, args.years, args.channels]):
-         if p[0] and (not p[1] or not p[2]):
-            sys.exit('You specified arguments for at least one of the three options: "--selections", "--years", "--channels", but not for all three of them. Exit.')
+      if args.auto_complete:
+         print('Auto-completing arguments.')
+         if not args.selections: args.selections = selections
+         if not args.years: args.years = years
+         if not args.channels: args.channels = channels
+      else:
+         for p in permutations([args.selections, args.years, args.channels]):
+            if p[0] and (not p[1] or not p[2]):
+               sys.exit('You specified arguments for at least one of the three options: "--selections", "--years", "--channels", but not for all three of them. Also, you did not specify "--auto-complete" to compensate for this. Exit.')
 
    print('Going to create XML files for:')
    print('  Selections: '+', '.join(str(x) for x in args.selections))
@@ -310,13 +367,13 @@ if __name__=='__main__':
    print('  Channels: '+', '.join(str(x) for x in args.channels))
 
    configContainer.read_database(args.years, args.channels)
+   configContainer.setup_systematics()
 
    for selection in args.selections:
       for year in args.years:
          for channel in args.channels:
             x = xmlCreator(selection, year, channel)
-            xmlFileName_nominal = x.write_xml()
-            print('Created '+xmlFileName_nominal)
+            # xmlFileName_nominal = x.write_xml()
+            # print('Created '+xmlFileName_nominal)
             if args.syst:
-               print('Still need to do systematics.')
-            # x.write_systematics_files with help of ElementTree
+               x.write_systematics_xml()
