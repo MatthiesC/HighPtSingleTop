@@ -321,10 +321,12 @@ class xmlCreator:
                newline = line
                if newline.startswith('<!ENTITY PRESELdir') or newline.startswith('<!ENTITY OUTPUTdir'):
                   newline = newline.replace('/nominal/', '/'+'_'.join(['syst', syst.shortName, direction])+'/')
-               elif newline.startswith('<ConfigSGE'):
+               if newline.startswith('<ConfigSGE'):
                   newline = newline.replace('"/>', '_'+'_'.join(['syst', syst.shortName, direction])+'"/>')
-               elif newline.startswith('<Item Name="'+syst.ctxName):
+               if newline.startswith('<Item Name="'+syst.ctxName):
                   newline = newline.replace(syst.defaultValue, direction)
+               if self.is_mainsel and newline.startswith('<Item Name="EmptyOutputTree"'):
+                  newline = newline.replace('false', 'true')
                outfile.write(newline)
          infile.close()
 
