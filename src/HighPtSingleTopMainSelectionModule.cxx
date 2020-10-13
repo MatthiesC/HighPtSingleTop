@@ -73,20 +73,17 @@ namespace uhh2 {
 
     //unique_ptr<Hists> hist_count_TopHadWLep_before, hist_count_TopHadWLep_after, hist_count_TopLepWHad_before, hist_count_TopLepWHad_after, hist_count_Validation_before, hist_count_Validation_after;
     // unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
-    unique_ptr<BinnedDNNHists> hist_dnn;
-    // unique_ptr<BinnedDNNHists> hist_dnn_noxjet_YES, hist_dnn_noxjet_NO, hist_dnn_0bxjet, hist_dnn_1bxjet, hist_dnn_0toptag;
+    // unique_ptr<BinnedDNNHists> hist_dnn;
 
     string dataset_version;
 
-    TopJetId StandardHOTVRTopTagID;
+    // vector<Event::Handle<double>> h_dnn_inputs;
 
-    vector<Event::Handle<double>> h_dnn_inputs;
-
-    unique_ptr<lwt::LightweightNeuralNetwork> NeuralNetwork;
-    vector<string> dnn_config_inputNames;
-    string dnn_config_outputName;
-    vector<Event::Handle<double>> m_input_handles;
-    Event::Handle<double> h_dnn_output_val;
+    // unique_ptr<lwt::LightweightNeuralNetwork> NeuralNetwork;
+    // vector<string> dnn_config_inputNames;
+    // string dnn_config_outputName;
+    // vector<Event::Handle<double>> m_input_handles;
+    // Event::Handle<double> h_dnn_output_val;
     Event::Handle<int> h_which_region;
   };
 
@@ -131,7 +128,7 @@ namespace uhh2 {
     // IDENTIFICATIONS //
     //-----------------//
 
-    StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
+    TopJetId StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
     BTag::algo btag_algo = BTag::DEEPJET;
     BTag::wp btag_workingpoint = BTag::WP_MEDIUM; // working point needed by some histogram classes ("analysis b-tag workingpoint"); should be removed at some point
     JetId BJetID = BTag(btag_algo, btag_workingpoint);
@@ -178,28 +175,28 @@ namespace uhh2 {
     handle_wtaggedjet.reset(new WTaggedJet(ctx));
     handle_ak4InExJets_W.reset(new InExAK4Jets(ctx, btag_algo, btag_workingpoint, "_W", "WTaggedJet", false));
 
-    dnn_setup.reset(new DNNSetup(ctx, h_dnn_inputs, 3, 8, StandardHOTVRTopTagID, BJetID, 0.));
+    h_which_region = ctx.declare_event_output<int>("which_region"); // need to declare this event output before initializing DNNSetup class
 
-    ifstream neural_net_file(neural_net_filepath);
-    auto dnn_config = lwt::parse_json(neural_net_file);
-    NeuralNetwork.reset(new lwt::LightweightNeuralNetwork(dnn_config.inputs, dnn_config.layers, dnn_config.outputs));
-    cout << "Number of used DNN inputs: " << dnn_config.inputs.size() << endl;
-    for(uint i = 0; i < dnn_config.inputs.size(); i++) {
-      const auto & input = dnn_config.inputs.at(i);
-      cout << "input.name: " << input.name << endl;
-      dnn_config_inputNames.push_back(input.name);
-    }
-    for(uint i = 0; i < dnn_config.outputs.size(); i++) {
-      const auto & output = dnn_config.outputs.at(i);
-      cout << "output.name: " << output << endl;
-      dnn_config_outputName = output;
-    }
-    for(uint i = 0; i < dnn_config_inputNames.size(); i++) {
-      m_input_handles.push_back(ctx.get_handle<double>(dnn_config_inputNames.at(i)));
-    }
-    h_dnn_output_val = ctx.declare_event_output<double>("DNN_Output");
+    dnn_setup.reset(new DNNSetup(ctx));
 
-    h_which_region = ctx.declare_event_output<int>("which_region");
+    // ifstream neural_net_file(neural_net_filepath);
+    // auto dnn_config = lwt::parse_json(neural_net_file);
+    // NeuralNetwork.reset(new lwt::LightweightNeuralNetwork(dnn_config.inputs, dnn_config.layers, dnn_config.outputs));
+    // cout << "Number of used DNN inputs: " << dnn_config.inputs.size() << endl;
+    // for(uint i = 0; i < dnn_config.inputs.size(); i++) {
+    //   const auto & input = dnn_config.inputs.at(i);
+    //   cout << "input.name: " << input.name << endl;
+    //   dnn_config_inputNames.push_back(input.name);
+    // }
+    // for(uint i = 0; i < dnn_config.outputs.size(); i++) {
+    //   const auto & output = dnn_config.outputs.at(i);
+    //   cout << "output.name: " << output << endl;
+    //   dnn_config_outputName = output;
+    // }
+    // for(uint i = 0; i < dnn_config_inputNames.size(); i++) {
+    //   m_input_handles.push_back(ctx.get_handle<double>(dnn_config_inputNames.at(i)));
+    // }
+    // h_dnn_output_val = ctx.declare_event_output<double>("DNN_Output");
 
 
     //------------//
@@ -227,8 +224,6 @@ namespace uhh2 {
 
     slct_oneijet_top.reset(new NObjectsSelection(ctx, 1, -1, "InJets_Top"));
     slct_onexjet_W.reset(new NObjectsSelection(ctx, 1, -1, "ExJets_W"));
-    //slct_noxjet.reset(new NObjectsSelection(ctx, 0, 0, "TopExJets"));
-    //slct_1bxjet.reset(new NObjectsSelection(ctx, 1, -1, "TopExBJetsTight"));
     slct_oneAk8jet.reset(new MyNTopJetsSelection(ctx, 1, -1, "Ak8Jets"));
     slct_oneAk4jet.reset(new NJetSelection(1, -1));
 
@@ -298,12 +293,7 @@ namespace uhh2 {
     // hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
     // hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
 
-    hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists_TopTag", dnn_config_inputNames, dnn_setup->inputs_info()));
-    //hist_dnn_noxjet_YES.reset(new BinnedDNNHists(ctx, "DNNHists_NoXJet_YES", dnn_config_inputNames, dnn_setup->inputs_info()));
-    //hist_dnn_noxjet_NO.reset(new BinnedDNNHists(ctx, "DNNHists_NoXJet_NO", dnn_config_inputNames, dnn_setup->inputs_info()));
-    //hist_dnn_0bxjet.reset(new BinnedDNNHists(ctx, "DNNHists_0bXJet", dnn_config_inputNames, dnn_setup->inputs_info()));
-    //hist_dnn_1bxjet.reset(new BinnedDNNHists(ctx, "DNNHists_1bXJet", dnn_config_inputNames, dnn_setup->inputs_info()));
-    //hist_dnn_0toptag.reset(new BinnedDNNHists(ctx, "DNNHists_0TopTag", dnn_config_inputNames, dnn_setup->inputs_info()));
+    // hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists_TopTag", dnn_config_inputNames, dnn_setup->inputs_info()));
 }
 
 
@@ -499,18 +489,20 @@ namespace uhh2 {
 
     // DNN-related code starts here...
 
+    dnn_setup->process(event);
+
     if(is_TopTagRegion) {
-      if(debug) cout << "Set event handles used as input for DNN training" << endl;
-      dnn_setup->process(event);
-      if(debug) cout << "Application of a trained DNN" << endl;
-      map<string, double> inputs_map;
-      for(uint i = 0; i < dnn_config_inputNames.size(); i++) {
-        inputs_map[dnn_config_inputNames.at(i)] = (double)event.get(m_input_handles.at(i));
-      }
-      auto dnn_output_vals = NeuralNetwork->compute(inputs_map);
-      event.set(h_dnn_output_val, (double)dnn_output_vals[dnn_config_outputName]);
-      if(debug) cout << "Histograms of DNN inputs and DNN output" << endl;
-      hist_dnn->fill(event);
+      // if(debug) cout << "Set event handles used as input for DNN training" << endl;
+      // dnn_setup->process(event);
+      // if(debug) cout << "Application of a trained DNN" << endl;
+      // map<string, double> inputs_map;
+      // for(uint i = 0; i < dnn_config_inputNames.size(); i++) {
+      //   inputs_map[dnn_config_inputNames.at(i)] = (double)event.get(m_input_handles.at(i));
+      // }
+      // auto dnn_output_vals = NeuralNetwork->compute(inputs_map);
+      // event.set(h_dnn_output_val, (double)dnn_output_vals[dnn_config_outputName]);
+      // if(debug) cout << "Histograms of DNN inputs and DNN output" << endl;
+      // hist_dnn->fill(event);
     }
 
     else if(is_WTagRegion) {
@@ -555,7 +547,9 @@ namespace uhh2 {
 
     // End of Module
     if(debug) cout << "End of module reached. Yay!" << endl;
-    return !empty_output_tree;
+    bool keep_event(true);
+    if(empty_output_tree || !(is_TopTagRegion || is_WTagRegion)) keep_event = false;
+    return keep_event;
   }
 
 

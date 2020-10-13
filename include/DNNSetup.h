@@ -32,31 +32,41 @@ class DNNSetup: public uhh2::AnalysisModule {
 
  public:
 
-  explicit DNNSetup(uhh2::Context & ctx, std::vector<uhh2::Event::Handle<double>> & h_dnn_inputs, const unsigned int & n_hotvr, const unsigned int & n_jets, const TopJetId & topJetId, const JetId & bJetId, const double & zero_padding_value = -10);
+  explicit DNNSetup(uhh2::Context & ctx, const double & zero_padding_value = 0.);
   virtual bool process(uhh2::Event & event) override;
+  void calculate_inputs_for_ttag_dnn(uhh2::Event & event);
+  void set_dummy_inputs_for_ttag_dnn(uhh2::Event & event);
+  void calculate_inputs_for_wtag_dnn(uhh2::Event & event);
+  void set_dummy_inputs_for_wtag_dnn(uhh2::Event & event);
 
-  std::vector<std::string> inputs() { return m_input_names; };
-  std::vector<DNNInput> inputs_info() { return m_inputs_info; };
+  std::vector<std::string> get_input_names_ttag() { return m_input_names_ttag; };
+  std::vector<std::string> get_input_names_wtag() { return m_input_names_wtag; };
+  std::vector<DNNInput> get_inputs_info_ttag() { return m_inputs_info_ttag; };
+  std::vector<DNNInput> get_inputs_info_wtag() { return m_inputs_info_wtag; };
 
  private:
 
-  std::vector<uhh2::Event::Handle<double>> m_h_dnn_inputs;
+  double m_zeropadding;
 
-  uhh2::Event::Handle<TopJet> h_toptaggedjet;
-  uhh2::Event::Handle<FlavorParticle> h_primlep;
-  uhh2::Event::Handle<LorentzVector> h_pseudotop;
-  uhh2::Event::Handle<LorentzVector> h_wboson;
-  uhh2::Event::Handle<std::vector<Jet>> h_xjets;
-  uhh2::Event::Handle<std::vector<Jet>> h_ijets;
+  uhh2::Event::Handle<int> m_h_which_region;
 
-  uhh2::Event::Handle<double> h_event_weight;
-  uhh2::Event::Handle<double> h_toptag_pt;
+  uhh2::Event::Handle<TopJet> m_h_tjet;
+  uhh2::Event::Handle<TopJet> m_h_wjet;
+  uhh2::Event::Handle<FlavorParticle> m_h_primlep;
+  uhh2::Event::Handle<LorentzVector> m_h_wboson;
+  uhh2::Event::Handle<LorentzVector> m_h_pseudotop;
+  uhh2::Event::Handle<std::vector<Jet>> m_h_xjets_tjet;
+  uhh2::Event::Handle<std::vector<Jet>> m_h_ijets_tjet;
+  uhh2::Event::Handle<std::vector<Jet>> m_h_xjets_wjet;
+  uhh2::Event::Handle<std::vector<Jet>> m_h_ijets_wjet;
 
-  const unsigned int m_n_hotvr, m_n_jets; // How many HOTVR/AK4 jets shall be considered?
-  const TopJetId m_topjetid;
-  const JetId m_bjetid;
-  const double m_zeropadding;
+  uhh2::Event::Handle<double> m_h_event_weight;
 
-  std::vector<DNNInput> template_event, template_hotvr, template_jet, template_lepton, template_custom, m_inputs_info;
-  std::vector<std::string> m_input_names;
+  // uhh2::Event::Handle<double> h_event_weight;
+  // uhh2::Event::Handle<double> h_tjet_pt;
+
+  std::vector<DNNInput> m_inputs_template_ttag, m_inputs_template_wtag, m_inputs_info_ttag, m_inputs_info_wtag;
+  std::vector<std::string> m_input_names_ttag, m_input_names_wtag;
+
+  std::vector<uhh2::Event::Handle<double>> m_h_dnn_inputs_ttag, m_h_dnn_inputs_wtag;
 };
