@@ -45,8 +45,8 @@ DNNSetup::DNNSetup(Context & ctx, const double & zero_padding_value) {
   * Define DNN inputs for t-tag region:
   */
 
-  m_inputs_template_ttag.push_back(DNNInput("channel", "Channel [e = #minus1, #mu = +1]", -2.5, 2.5));
-  m_inputs_template_ttag.push_back(DNNInput("year", "Year [2016 = #minus1, 2017 = 0, 2018 = +1]", -2.5, 2.5));
+  m_inputs_template_ttag.push_back(DNNInput("channel", "Channel [e = #minus1, #mu = +1]", -2.5, 2.5, 5));
+  m_inputs_template_ttag.push_back(DNNInput("year", "Year [2016 = #minus1, 2017 = 0, 2018 = +1]", -2.5, 2.5, 5));
   m_inputs_template_ttag.push_back(DNNInput("met_pt", "Missing p_{T} [GeV]", 0, 1000));
   m_inputs_template_ttag.push_back(DNNInput("met_phi", "#phi(MET) [rad]", -M_PI, M_PI));
   m_inputs_template_ttag.push_back(DNNInput("lepton_pt", "Lepton p_{T} [GeV]", 0, 1000));
@@ -106,8 +106,8 @@ DNNSetup::DNNSetup(Context & ctx, const double & zero_padding_value) {
   * Define DNN inputs for W-tag region:
   */
 
-  m_inputs_template_wtag.push_back(DNNInput("channel", "Channel [e = #minus1, #mu = +1]", -2.5, 2.5));
-  m_inputs_template_wtag.push_back(DNNInput("year", "Year [2016 = #minus1, 2017 = 0, 2018 = +1]", -2.5, 2.5));
+  m_inputs_template_wtag.push_back(DNNInput("channel", "Channel [e = #minus1, #mu = +1]", -2.5, 2.5, 5));
+  m_inputs_template_wtag.push_back(DNNInput("year", "Year [2016 = #minus1, 2017 = 0, 2018 = +1]", -2.5, 2.5, 5));
   m_inputs_template_wtag.push_back(DNNInput("met_pt", "Missing p_{T} [GeV]", 0, 1000));
   m_inputs_template_wtag.push_back(DNNInput("met_phi", "#phi(MET) [rad]", -M_PI, M_PI));
   m_inputs_template_wtag.push_back(DNNInput("lepton_pt", "Lepton p_{T} [GeV]", 0, 1000));
