@@ -2,8 +2,8 @@
 
 #include "UHH2/core/include/AnalysisModule.h"
 #include "UHH2/core/include/Event.h"
-#include "UHH2/common/include/JetIds.h"
-#include "UHH2/common/include/TopJetIds.h"
+
+#include "UHH2/common/include/Utils.h"
 
 
 class DNNInput {
@@ -34,10 +34,6 @@ class DNNSetup: public uhh2::AnalysisModule {
 
   explicit DNNSetup(uhh2::Context & ctx, const double & zero_padding_value = 0.);
   virtual bool process(uhh2::Event & event) override;
-  void calculate_inputs_for_ttag_dnn(uhh2::Event & event);
-  void set_dummy_inputs_for_ttag_dnn(uhh2::Event & event);
-  void calculate_inputs_for_wtag_dnn(uhh2::Event & event);
-  void set_dummy_inputs_for_wtag_dnn(uhh2::Event & event);
 
   std::vector<std::string> get_input_names_ttag() { return m_input_names_ttag; };
   std::vector<std::string> get_input_names_wtag() { return m_input_names_wtag; };
@@ -46,7 +42,16 @@ class DNNSetup: public uhh2::AnalysisModule {
 
  private:
 
+  void calculate_inputs_for_ttag_dnn(uhh2::Event & event);
+  void set_dummy_inputs_for_ttag_dnn(uhh2::Event & event);
+  void calculate_inputs_for_wtag_dnn(uhh2::Event & event);
+  void set_dummy_inputs_for_wtag_dnn(uhh2::Event & event);
+
   double m_zeropadding;
+
+  Year m_year;
+  int m_year_int;
+  int m_channel_int;
 
   uhh2::Event::Handle<int> m_h_which_region;
 
@@ -61,6 +66,8 @@ class DNNSetup: public uhh2::AnalysisModule {
   uhh2::Event::Handle<std::vector<Jet>> m_h_ijets_wjet;
 
   uhh2::Event::Handle<double> m_h_event_weight;
+  uhh2::Event::Handle<double> m_h_tjet_pt;
+  uhh2::Event::Handle<double> m_h_wjet_pt;
 
   // uhh2::Event::Handle<double> h_event_weight;
   // uhh2::Event::Handle<double> h_tjet_pt;

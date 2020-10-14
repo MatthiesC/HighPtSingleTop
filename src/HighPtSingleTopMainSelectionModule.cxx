@@ -25,6 +25,7 @@
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
 #include "UHH2/HighPtSingleTop/include/TaggedJets.h"
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
+#include "UHH2/HighPtSingleTop/include/DNNHists.h"
 #include "UHH2/HighPtSingleTop/include/MatchHists.h"
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
 #include "UHH2/HighPtSingleTop/include/WTagHists.h"
@@ -73,7 +74,8 @@ namespace uhh2 {
 
     //unique_ptr<Hists> hist_count_TopHadWLep_before, hist_count_TopHadWLep_after, hist_count_TopLepWHad_before, hist_count_TopLepWHad_after, hist_count_Validation_before, hist_count_Validation_after;
     // unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
-    // unique_ptr<BinnedDNNHists> hist_dnn;
+    // unique_ptr<BinnedDNNHists> hist_dnn_ttag;
+    unique_ptr<DNNHists> hist_dnn_TopTag, hist_dnn_WTag, hist_dnn_ValidationTopTag, hist_dnn_ValidationWTag;
 
     string dataset_version;
 
@@ -104,7 +106,7 @@ namespace uhh2 {
     string syst_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
     string syst_btag = ctx.get("SystDirection_DeepJetBTagSF", "nominal");
 
-    string neural_net_filepath  = ctx.get("NeuralNetFile_tTag");
+    string neural_net_filepath = ctx.get("NeuralNetFile_tTag");
 
 
     //---------------------//
@@ -294,7 +296,11 @@ namespace uhh2 {
     // hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
 
     // hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists_TopTag", dnn_config_inputNames, dnn_setup->inputs_info()));
-}
+    hist_dnn_TopTag.reset(new DNNHists(ctx, "DNNHists_TopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag()));
+    hist_dnn_WTag.reset(new DNNHists(ctx, "DNNHists_WTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag()));
+    hist_dnn_ValidationTopTag.reset(new DNNHists(ctx, "DNNHists_ValidationTopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag()));
+    hist_dnn_ValidationWTag.reset(new DNNHists(ctx, "DNNHists_ValidationWTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag()));
+  }
 
 
   //------------//
@@ -431,7 +437,7 @@ namespace uhh2 {
       if(debug) cout << "SR t(had)W(lep):  Fill final control histograms" << endl;
       hist_TopTag_End->fill(event);
 
-      sf_wtag->process_dummy(event);
+      sf_wtag->process_dummy(event); // Need to call event.set() since all scale factor weights are stored into output tree. Else, an error occurs
       event.set(h_which_region, 1);
       is_TopTagRegion = true;
     }
@@ -503,14 +509,18 @@ namespace uhh2 {
       // event.set(h_dnn_output_val, (double)dnn_output_vals[dnn_config_outputName]);
       // if(debug) cout << "Histograms of DNN inputs and DNN output" << endl;
       // hist_dnn->fill(event);
+      hist_dnn_TopTag->fill(event);
     }
 
     else if(is_WTagRegion) {
       // do stuff
+      hist_dnn_WTag->fill(event);
     }
 
     else if(is_ValidationRegion) {
       // do stuff
+      hist_dnn_ValidationTopTag->fill(event);
+      hist_dnn_ValidationWTag->fill(event);
     }
 
 
@@ -549,7 +559,8 @@ namespace uhh2 {
     if(debug) cout << "End of module reached. Yay!" << endl;
     bool keep_event(true);
     if(empty_output_tree || !(is_TopTagRegion || is_WTagRegion)) keep_event = false;
-    return keep_event;
+    // return keep_event;
+    return is_WTagRegion;
   }
 
 
