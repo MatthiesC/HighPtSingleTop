@@ -66,7 +66,7 @@ namespace uhh2 {
     unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_0wtag, slct_1wtag, slct_oneijet_top, slct_onexjet_W, slct_oneAk8jet, slct_oneAk4jet;
     // unique_ptr<Selection> slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_oneijet, slct_noxjet, slct_1bxjet;
 
-    unique_ptr<AndHists> hist_presel, hist_preselSF, hist_hemissue, hist_trigger, hist_triggerSF;
+    unique_ptr<AndHists> hist_presel_noweights, hist_presel_lumiSF, hist_presel_pileupSF, hist_presel_leptonSF, hist_presel_prefiringSF, hist_hemissue, hist_trigger, hist_triggerSF;
     unique_ptr<Hists> hist_ak8_preCorr, hist_ak8_postCorr, hist_ak8_postCleaning;
     unique_ptr<AndHists> hist_TopTag_Begin, hist_TopTag_HotvrSF, hist_TopTag_End;
     unique_ptr<AndHists> hist_WTag_Begin, hist_WTag_DeepAk8SF, hist_WTag_End;
@@ -96,9 +96,9 @@ namespace uhh2 {
     // KEYS //
     //------//
 
-    debug = string2lowercase(ctx.get("Debug", "false")) == "true";
+    debug = string2bool(ctx.get("Debug"));
 
-    empty_output_tree = string2lowercase(ctx.get("EmptyOutputTree")) == "true";
+    empty_output_tree = string2bool(ctx.get("EmptyOutputTree"));
 
     dataset_version = ctx.get("dataset_version");
 
@@ -245,8 +245,11 @@ namespace uhh2 {
     //------------//
 
     // Control distributions after last module's preselection; lumi, PU, and lepton id/reco scale factors are applied
-    hist_presel.reset(new AndHists(ctx, "1_PreSel"));
-    hist_preselSF.reset(new AndHists(ctx, "1_PreSelSF"));
+    hist_presel_noweights.reset(new AndHists(ctx, "1_PreSel_0_noweights"));
+    hist_presel_lumiSF.reset(new AndHists(ctx, "1_PreSel_1_lumiSF"));
+    hist_presel_pileupSF.reset(new AndHists(ctx, "1_PreSel_2_pileupSF"));
+    hist_presel_leptonSF.reset(new AndHists(ctx, "1_PreSel_3_leptonSF"));
+    hist_presel_prefiringSF.reset(new AndHists(ctx, "1_PreSel_4_prefiringSF"));
 
     // Control distributions after trigger selection and respective scale factors
     hist_trigger.reset(new AndHists(ctx, "2_Trigger"));
@@ -374,12 +377,15 @@ namespace uhh2 {
 
     if(debug) cout << "Apply lumi, pileup, and lepton id/iso/reco scale factors" << endl;
     scale_variation->process(event);
+    hist_presel_noweights->fill(event);
     sf_lumi->process(event);
+    hist_presel_lumiSF->fill(event);
     sf_pileup->process(event);
-    hist_presel->fill(event);
+    hist_presel_pileupSF->fill(event);
     sf_lepton->process(event);
+    hist_presel_leptonSF->fill(event);
     sf_prefiring->process(event);
-    hist_preselSF->fill(event);
+    hist_presel_prefiringSF->fill(event);
 
     if(debug) cout << "Select trigger paths and apply trigger scale factors" << endl;
     if(!slct_trigger->passes(event)) return false;
@@ -559,8 +565,7 @@ namespace uhh2 {
     if(debug) cout << "End of module reached. Yay!" << endl;
     bool keep_event(true);
     if(empty_output_tree || !(is_TopTagRegion || is_WTagRegion)) keep_event = false;
-    // return keep_event;
-    return is_WTagRegion;
+    return keep_event;
   }
 
 
