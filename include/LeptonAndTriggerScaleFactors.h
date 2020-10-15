@@ -62,6 +62,15 @@ class ElectronIdRecoScaleFactors2018: public uhh2::AnalysisModule {
   std::unique_ptr<AnalysisModule> m_sf_id, m_sf_reco;
 };
 
+class LeptonDummyScaleFactors: public uhh2::AnalysisModule {
+ public:
+  explicit LeptonDummyScaleFactors(uhh2::Context & ctx);
+  virtual bool process(uhh2::Event & event);
+
+ private:
+  std::vector<uhh2::Event::Handle<float>> m_handles;
+};
+
 class LeptonScaleFactors: public uhh2::AnalysisModule {
  public:
   explicit LeptonScaleFactors(uhh2::Context & ctx);
@@ -69,6 +78,7 @@ class LeptonScaleFactors: public uhh2::AnalysisModule {
 
  private:
   std::unique_ptr<YearSwitcher> m_sf_lepton;
+  std::unique_ptr<uhh2::AnalysisModule> m_sf_dummy;
 };
 
 class ElectronTriggerWeights: public uhh2::AnalysisModule {
@@ -96,6 +106,15 @@ class MuonTriggerWeights: public uhh2::AnalysisModule {
   uhh2::Event::Handle<float> h_muo_weight, h_muo_weight_up, h_muo_weight_down;
 };
 
+class TriggerDummyScaleFactors: public uhh2::AnalysisModule {
+ public:
+  explicit TriggerDummyScaleFactors(uhh2::Context & ctx);
+  virtual bool process(uhh2::Event & event);
+
+ private:
+  std::vector<uhh2::Event::Handle<float>> m_handles;
+};
+
 class TriggerScaleFactors: public uhh2::AnalysisModule {
  public:
   explicit TriggerScaleFactors(uhh2::Context & ctx);
@@ -103,4 +122,5 @@ class TriggerScaleFactors: public uhh2::AnalysisModule {
 
  private:
   std::unique_ptr<uhh2::AnalysisModule> m_sf_trigger;
+  std::unique_ptr<uhh2::AnalysisModule> m_sf_dummy;
 };

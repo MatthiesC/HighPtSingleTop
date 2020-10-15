@@ -126,9 +126,48 @@ bool ElectronIdRecoScaleFactors2018::process(Event & event) {
 }
 
 
+/*
+*  If you want to hadd analysis trees from the electron and the muon channel, the lists of both output trees need to match.
+*  In the electron channel however we do not set muon id and muon iso scale factor outputs. Thus, in the electron channel,
+*  we need to declare these as in the class MCMuonScaleFactor and fill them with dummy values. Vice versa for the muon channel.
+*/
+LeptonDummyScaleFactors::LeptonDummyScaleFactors(Context & ctx) {
+
+  if(ctx.get("analysis_channel") == "ele") {
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_tight_id"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_tight_id_up"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_tight_id_down"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_isolation"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_isolation_up"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_isolation_down"));
+  }
+  else if(ctx.get("analysis_channel") == "muo") {
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_tight_id"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_tight_id_up"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_tight_id_down"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_reco"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_reco_up"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_reco_down"));
+  }
+  else {
+    throw invalid_argument("LeptonDummyScaleFactors: invalid analysis channel");
+  }
+}
+
+bool LeptonDummyScaleFactors::process(Event & event) {
+
+  for(uint i = 0; i < m_handles.size(); i++) {
+    event.set(m_handles.at(i), 1.);
+  }
+
+  return true;
+}
+
+
 LeptonScaleFactors::LeptonScaleFactors(Context & ctx) {
 
   m_sf_lepton.reset(new YearSwitcher(ctx));
+  m_sf_dummy.reset(new LeptonDummyScaleFactors(ctx));
 
   if(ctx.get("analysis_channel") == "ele") {
     m_sf_lepton->setup2016(std::make_shared<ElectronIdRecoScaleFactors2016>(ctx));
@@ -147,7 +186,10 @@ LeptonScaleFactors::LeptonScaleFactors(Context & ctx) {
 
 bool LeptonScaleFactors::process(Event & event) {
 
-  return m_sf_lepton->process(event);
+  m_sf_lepton->process(event);
+  m_sf_dummy->process(event);
+
+  return true;
 }
 
 
@@ -445,7 +487,41 @@ bool MuonTriggerWeights::process(Event & event){
 }
 
 
+/*
+*  If you want to hadd analysis trees from the electron and the muon channel, the lists of both output trees need to match.
+*  In the electron channel however we do not set muon trigger scale factor outputs. Thus, in the electron channel,
+*  we need to declare these as in the class MuonTriggerWeights and fill them with dummy values. Vice versa for the muon channel.
+*/
+TriggerDummyScaleFactors::TriggerDummyScaleFactors(Context & ctx) {
+
+  if(ctx.get("analysis_channel") == "ele") {
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_trigger"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_trigger_up"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_trigger_down"));
+  }
+  else if(ctx.get("analysis_channel") == "muo") {
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_trigger"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_trigger_up"));
+    m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_trigger_down"));
+  }
+  else {
+    throw invalid_argument("TriggerDummyScaleFactors: invalid analysis channel");
+  }
+}
+
+bool TriggerDummyScaleFactors::process(Event & event) {
+
+  for(uint i = 0; i < m_handles.size(); i++) {
+    event.set(m_handles.at(i), 1.);
+  }
+
+  return true;
+}
+
+
 TriggerScaleFactors::TriggerScaleFactors(Context & ctx) {
+
+  m_sf_dummy.reset(new TriggerDummyScaleFactors(ctx));
 
   if(ctx.get("analysis_channel") == "ele") {
     m_sf_trigger.reset(new ElectronTriggerWeights(ctx));
@@ -460,5 +536,8 @@ TriggerScaleFactors::TriggerScaleFactors(Context & ctx) {
 
 bool TriggerScaleFactors::process(Event & event) {
 
-  return m_sf_trigger->process(event);
+  m_sf_trigger->process(event);
+  m_sf_dummy->process(event);
+
+  return true;
 }
