@@ -59,7 +59,7 @@ namespace uhh2 {
     unique_ptr<MttHist> hist_mtt_before, hist_mtt_after;
     unique_ptr<AndHists> hist_common, hist_cleaning, hist_prefiring, hist_1lepton, hist_leptonSF, hist_jetleptonoverlapremoval, hist_metXYcorrection, hist_met, hist_hotvrJEC, hist_hotvrCleaner, hist_1hotvr;
 
-    bool is_muon, is_elec;
+    bool is_muo, is_ele;
     string dataset_version, met_name, jet_collection;
   };
 
@@ -70,14 +70,14 @@ namespace uhh2 {
     // KEYS //
     //------//
 
-    debug = string2lowercase(ctx.get("Debug", "false")) == "true";
+    debug = string2bool(ctx.get("Debug"));
 
     year = extract_year(ctx);
 
-    is_muon = ctx.get("analysis_channel") == "muo";
-    is_elec = ctx.get("analysis_channel") == "ele";
+    is_muo = ctx.get("analysis_channel") == "muo";
+    is_ele = ctx.get("analysis_channel") == "ele";
 
-    if(!(is_muon || is_elec)) throw runtime_error("HighPtSingleTopPreSelectionModule: Analysis channel ( ele / muo ) not correctly given. Please check the XML config file!");
+    if(!(is_muo || is_ele)) throw runtime_error("HighPtSingleTopPreSelectionModule: Analysis channel ( ele / muo ) not correctly given. Please check the XML config file!");
 
     dataset_version = ctx.get("dataset_version");
     met_name = ctx.get("METName");
@@ -240,13 +240,13 @@ namespace uhh2 {
     hist_prefiring->fill(event);
 
     if(debug) cout << "Single-lepton selection and veto on additional leptons" << endl;
-    if(is_muon)
+    if(is_muo)
       {
         if(!(slct_1muon->passes(event) && slct_0elec->passes(event))) return false;
         clnr_muon->process(event);
         if(!slct_1muon->passes(event)) return false;
       }
-    else if(is_elec)
+    else if(is_ele)
       {
         if(!(slct_1elec->passes(event) && slct_0muon->passes(event))) return false;
         clnr_elec->process(event);
