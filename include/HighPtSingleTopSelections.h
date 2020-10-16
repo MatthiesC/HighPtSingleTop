@@ -96,9 +96,9 @@ namespace uhh2 {
     unsigned int m_mergedQuarks;
   };
 
-  class NObjectsSelection: public uhh2::Selection {
+  class MyNJetSelection: public uhh2::Selection {
   public:
-    NObjectsSelection(uhh2::Context & ctx, int n_min, int n_max, std::string objects_handle_name);
+    MyNJetSelection(uhh2::Context & ctx, int n_min, int n_max, std::string objects_handle_name);
     virtual bool passes(const uhh2::Event & event) override;
   private:
     uhh2::Event::Handle<std::vector<Jet>> h_objects;
@@ -106,10 +106,9 @@ namespace uhh2 {
     int m_n_max;
   };
 
-  // TODO: Merge this class with the one above...
-  class MyNTopJetsSelection: public uhh2::Selection {
+  class MyNTopJetSelection: public uhh2::Selection {
   public:
-    MyNTopJetsSelection(uhh2::Context & ctx, int n_min, int n_max, std::string objects_handle_name);
+    MyNTopJetSelection(uhh2::Context & ctx, int n_min, int n_max, std::string objects_handle_name);
     virtual bool passes(const uhh2::Event & event) override;
   private:
     uhh2::Event::Handle<std::vector<TopJet>> h_objects;
