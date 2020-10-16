@@ -157,7 +157,7 @@ LeptonDummyScaleFactors::LeptonDummyScaleFactors(Context & ctx) {
 bool LeptonDummyScaleFactors::process(Event & event) {
 
   for(uint i = 0; i < m_handles.size(); i++) {
-    event.set(m_handles.at(i), 1.);
+    event.set(m_handles.at(i), -1.);
   }
 
   return true;
@@ -512,7 +512,7 @@ TriggerDummyScaleFactors::TriggerDummyScaleFactors(Context & ctx) {
 bool TriggerDummyScaleFactors::process(Event & event) {
 
   for(uint i = 0; i < m_handles.size(); i++) {
-    event.set(m_handles.at(i), 1.);
+    event.set(m_handles.at(i), -1.);
   }
 
   return true;
