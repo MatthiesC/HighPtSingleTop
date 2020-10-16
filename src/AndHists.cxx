@@ -13,6 +13,7 @@
 #include "UHH2/HighPtSingleTop/include/WTagHists.h"
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
 #include "UHH2/HighPtSingleTop/include/MyAk8Hists.h"
+#include "UHH2/HighPtSingleTop/include/TaggedJetsHists.h"
 
 
 using namespace std;
@@ -114,6 +115,12 @@ void AndHists::add_TopTagHists(Context & ctx, const bool & var_binned) {
     hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists_Pt0to300", 0, 300));
     hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists_Pt300toInf", 300));
   }
+}
+
+
+void AndHists::add_TaggedJetsHists(Context & ctx, const string & h_name_taggedjet, const string & h_name_postfix) {
+
+  hists_vector.push_back(new TaggedJetsHists(ctx, m_dirname + "_TaggedJetsHists" + h_name_postfix, h_name_taggedjet, h_name_postfix));
 }
 
 

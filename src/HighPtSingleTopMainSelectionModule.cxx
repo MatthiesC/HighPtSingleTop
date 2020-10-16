@@ -56,14 +56,15 @@ namespace uhh2 {
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_prefiring, sf_deepjet, scale_variation;
     unique_ptr<MyHOTVRScaleFactor> sf_toptag;
     unique_ptr<DeepAK8ScaleFactor> sf_wtag;
-    unique_ptr<AnalysisModule> handle_primarylep, handle_hadronictop, handle_toptaggedjet, handle_wtaggedjet, handle_btaggedjets, handle_ak4InExJets_top, handle_ak4InExJets_W, handle_wboson, handle_pseudotop, SingleTopGen_tWchProd;
+    unique_ptr<AnalysisModule> handle_primarylep, handle_hadronictop, handle_toptaggedjet, handle_wtaggedjet, handle_btaggedjets, handle_toptaggedjets, handle_ak4InExJets_top, handle_ak4InExJets_W, handle_wboson, handle_pseudotop, SingleTopGen_tWchProd;
     unique_ptr<Ak8Corrections> ak8corrections;
     unique_ptr<AnalysisModule> ak8cleaning, handle_ak8jets, handle_wtaggedjets;
     unique_ptr<DNNSetup> dnn_setup;
 
     unique_ptr<Selection> slct_WJetsHeavy, slct_tW_TopToHad, slct_tW_TopToEle, slct_tW_TopToMuo, slct_tW_TopToTau, slct_tW_WToHad, slct_tW_WToEle, slct_tW_WToMuo, slct_tW_WToTau;
     unique_ptr<HEMIssueSelection> slct_hemissue;
-    unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_0wtag, slct_1wtag, slct_oneijet_top, slct_onexjet_W, slct_oneAk8jet, slct_oneAk4jet;
+    unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_oneAk8jet, slct_oneAk4jet;
+    unique_ptr<Selection> slct_0wtag, slct_1wtag, slct_oneijet_top, slct_onexjet_W;
     // unique_ptr<Selection> slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_oneijet, slct_noxjet, slct_1bxjet;
 
     unique_ptr<AndHists> hist_presel_noweights, hist_presel_lumiSF, hist_presel_pileupSF, hist_presel_leptonSF, hist_presel_prefiringSF, hist_hemissue, hist_trigger, hist_triggerSF;
@@ -167,10 +168,11 @@ namespace uhh2 {
     handle_ak8jets.reset(new Ak8Jets(ctx));
     handle_wtaggedjets.reset(new WTaggedJets(ctx, wtag_workingpoint));
     handle_btaggedjets.reset(new BTaggedJets(ctx, btag_algo, btag_workingpoint));
+    handle_toptaggedjets.reset(new TopTaggedJets(ctx, StandardHOTVRTopTagID));
     handle_wboson.reset(new WBosonLeptonic(ctx));
     handle_pseudotop.reset(new PseudoTopLeptonic(ctx, true)); // true = don't use b jets but all jets
 
-    handle_toptaggedjet.reset(new TopTaggedJet(ctx, StandardHOTVRTopTagID));
+    handle_toptaggedjet.reset(new TopTaggedJet(ctx));
     handle_ak4InExJets_top.reset(new InExAK4Jets(ctx, btag_algo, btag_workingpoint, "_Top", "TopTaggedJet", true));
     handle_hadronictop.reset(new HadronicTop(ctx));
 
@@ -221,12 +223,12 @@ namespace uhh2 {
 
     slct_0toptag.reset(new NTopJetSelection(0, 0, StandardHOTVRTopTagID));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
-    slct_0wtag.reset(new MyNTopJetsSelection(ctx, 0, 0, "WJets"));
-    slct_1wtag.reset(new MyNTopJetsSelection(ctx, 1, 1, "WJets"));
+    slct_0wtag.reset(new MyNTopJetSelection(ctx, 0, 0, "WJets"));
+    slct_1wtag.reset(new MyNTopJetSelection(ctx, 1, 1, "WJets"));
 
-    slct_oneijet_top.reset(new NObjectsSelection(ctx, 1, -1, "InJets_Top"));
-    slct_onexjet_W.reset(new NObjectsSelection(ctx, 1, -1, "ExJets_W"));
-    slct_oneAk8jet.reset(new MyNTopJetsSelection(ctx, 1, -1, "Ak8Jets"));
+    slct_oneijet_top.reset(new MyNJetSelection(ctx, 1, -1, "InJets_Top"));
+    slct_onexjet_W.reset(new MyNJetSelection(ctx, 1, -1, "ExJets_W"));
+    slct_oneAk8jet.reset(new MyNTopJetSelection(ctx, 1, -1, "Ak8Jets"));
     slct_oneAk4jet.reset(new NJetSelection(1, -1));
 
 
@@ -272,6 +274,7 @@ namespace uhh2 {
     hist_TopTag_End.reset(new AndHists(ctx, "3_TopTag_End"));
     hist_TopTag_End->add_TopTagHists(ctx);
     hist_TopTag_End->add_Ak8Hists(ctx);
+    hist_TopTag_End->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
 
     hist_WTag_Begin.reset(new AndHists(ctx, "3_WTag_Begin"));
     hist_WTag_Begin->add_WTagHists(ctx);
@@ -282,6 +285,7 @@ namespace uhh2 {
     hist_WTag_End.reset(new AndHists(ctx, "3_WTag_End"));
     hist_WTag_End->add_WTagHists(ctx);
     hist_WTag_End->add_Ak8Hists(ctx);
+    hist_WTag_End->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
 
     hist_Validation_Begin.reset(new AndHists(ctx, "3_Validation_Begin"));
     hist_Validation_Begin->add_Ak8Hists(ctx);
@@ -293,6 +297,8 @@ namespace uhh2 {
     hist_Validation_End->add_TopTagHists(ctx);
     hist_Validation_End->add_WTagHists(ctx);
     hist_Validation_End->add_Ak8Hists(ctx);
+    hist_Validation_End->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
+    hist_Validation_End->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
 
     // hist_decaymatch.reset(new MatchHists(ctx, "MatchHists_Full"));
     // hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
@@ -412,8 +418,9 @@ namespace uhh2 {
     }
     hist_hemissue->fill(event);
 
-    if(debug) cout << "Set handles for b-tagged jets and leptonic W boson hypothesis" << endl;
+    if(debug) cout << "Set handles for b-tagged AK4 jets, t-tagged HOTVR jets, and leptonic W boson hypothesis" << endl;
     handle_btaggedjets->process(event);
+    handle_toptaggedjets->process(event);
     handle_wboson->process(event); // the leptonic one!
 
     if(debug) cout << "Set some booleans for analysis regions" << endl;
@@ -428,65 +435,68 @@ namespace uhh2 {
     // Caveat: The order of analysis modules in the following if-statements is crucial and should be changed with care only!
 
     if(b_1toptag) { // don't veto w-tags since this might hurt the signal efficiency
-      if(debug) cout << "SR t(had)W(lep):  Set handles for top tag and AK4 jets inside/outside top jet" << endl;
+      sf_wtag->process_dummy(event); // Need to call event.set() since all scale factor weights are stored into output tree. Else, an error occurs
+
+      if(debug) cout << "SR t(had)W(lep): Set handles for top tag and AK4 jets inside/outside top jet" << endl;
       handle_toptaggedjet->process(event);
       handle_ak4InExJets_top->process(event);
-      if(debug) cout << "SR t(had)W(lep):  Fill initial control histograms" << endl;
+      if(debug) cout << "SR t(had)W(lep): Fill initial control histograms" << endl;
       hist_TopTag_Begin->fill(event);
-      if(debug) cout << "SR t(had)W(lep):  Apply HOTVR top-tagging scale factors" << endl;
+      if(debug) cout << "SR t(had)W(lep): Apply HOTVR top-tagging scale factors" << endl;
       handle_hadronictop->process(event);
       sf_toptag->process(event);
-      if(debug) cout << "SR t(had)W(lep):  Fill control histograms after HOTVR scale factors" << endl;
+      if(debug) cout << "SR t(had)W(lep): Fill control histograms after HOTVR scale factors" << endl;
       hist_TopTag_HotvrSF->fill(event);
-      if(debug) cout << "SR t(had)W(lep):  Throw away very few events which do not have at least one AK4 jet within top jet" << endl;
+      if(debug) cout << "SR t(had)W(lep): Throw away very few events which do not have at least one AK4 jet within top jet" << endl;
       if(!slct_oneijet_top->passes(event)) return false; // Need to have at least one AK4 jet for pseudotop and also makes sense to have at least one AK4 jet inside HOTVR jet
-      if(debug) cout << "SR t(had)W(lep):  Fill final control histograms" << endl;
+      if(debug) cout << "SR t(had)W(lep): Fill final control histograms" << endl;
       hist_TopTag_End->fill(event);
 
-      sf_wtag->process_dummy(event); // Need to call event.set() since all scale factor weights are stored into output tree. Else, an error occurs
       event.set(h_which_region, 1);
       is_TopTagRegion = true;
     }
 
     else if(b_0toptag && b_1wtag) {
-      if(debug) cout << "SR t(lep)W(had):  Set handles for W tag and AK4 jets inside/outside W jet" << endl;
+      sf_toptag->process_dummy(event);
+
+      if(debug) cout << "SR t(lep)W(had): Set handles for W tag and AK4 jets inside/outside W jet" << endl;
       handle_wtaggedjet->process(event);
       handle_ak4InExJets_W->process(event);
-      if(debug) cout << "SR t(lep)W(had):  Fill initial control histograms" << endl;
+      if(debug) cout << "SR t(lep)W(had): Fill initial control histograms" << endl;
       hist_WTag_Begin->fill(event);
-      if(debug) cout << "SR t(lep)W(had):  Apply DeepAK8 W-tagging scale factors" << endl;
+      if(debug) cout << "SR t(lep)W(had): Apply DeepAK8 W-tagging scale factors" << endl;
       sf_wtag->process(event);
-      if(debug) cout << "SR t(had)W(lep):  Fill control histograms after DeepAK8 scale factors" << endl;
+      if(debug) cout << "SR t(had)W(lep): Fill control histograms after DeepAK8 scale factors" << endl;
       hist_WTag_DeepAk8SF->fill(event);
-      if(debug) cout << "SR t(lep)W(had):  Require at least one AK4 jet outside W jet as potential candidate for the b jet from leptonic top quark" << endl;
+      if(debug) cout << "SR t(lep)W(had): Require at least one AK4 jet outside W jet as potential candidate for the b jet from leptonic top quark" << endl;
       if(!slct_onexjet_W->passes(event)) return false; // Need to have at least one AK4 jet for pseudotop and also makes sense due to decay mode (additional AK4 jet potentially represents b jet from leptonic top quark)
-      if(debug) cout << "SR t(lep)W(had):  Fill final control histograms" << endl;
+      if(debug) cout << "SR t(lep)W(had): Fill final control histograms" << endl;
       hist_WTag_End->fill(event);
 
-      sf_toptag->process_dummy(event);
       event.set(h_which_region, 2);
       is_WTagRegion = true;
     }
 
     else if(b_0toptag && b_0wtag) {
-      if(debug) cout << "VR:  Fill initial control histograms" << endl;
+      sf_toptag->process_dummy(event);
+      sf_wtag->process_dummy(event);
+
+      if(debug) cout << "VR: Fill initial control histograms" << endl;
       hist_Validation_Begin->fill(event);
-      if(debug) cout << "VR:  Require at least one AK8 jet" << endl;
+      if(debug) cout << "VR: Require at least one AK8 jet" << endl;
       if(!slct_oneAk8jet->passes(event)) return false; // Need to have at least one AK8 jet as W-tag substitute. For the t-tag substitute, we already required one HOTVR jet during the preselection...
-      if(debug) cout << "VR:  Set handles" << endl;
+      if(debug) cout << "VR: Set handles" << endl;
       handle_toptaggedjet->process(event); // leading HOTVR jet
       handle_wtaggedjet->process(event); // leading AK8 jet
       handle_ak4InExJets_top->process(event);
       handle_ak4InExJets_W->process(event);
-      if(debug) cout << "VR:  Fill control histograms after AK8 / before AK4 cut" << endl;
+      if(debug) cout << "VR: Fill control histograms after AK8 / before AK4 cut" << endl;
       hist_Validation_Ak8Cut->fill(event);
-      if(debug) cout << "VR:  Require at least one AK4 jet" << endl;
+      if(debug) cout << "VR: Require at least one AK4 jet" << endl;
       if(!slct_oneAk4jet->passes(event)) return false; // Need at least one AK4 jet for pseudotop
-      if(debug) cout << "VR:  Fill final control histograms" << endl;
+      if(debug) cout << "VR: Fill final control histograms" << endl;
       hist_Validation_End->fill(event);
 
-      sf_toptag->process_dummy(event);
-      sf_wtag->process_dummy(event);
       event.set(h_which_region, 3);
       is_ValidationRegion = true;
     }
