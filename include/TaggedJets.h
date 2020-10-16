@@ -8,19 +8,35 @@
 #include "UHH2/common/include/Utils.h"
 
 
-class TopTaggedJet: public uhh2::AnalysisModule {
+class TopTaggedJets: public uhh2::AnalysisModule {
  public:
-  explicit TopTaggedJet(uhh2::Context & ctx,
+  explicit TopTaggedJets(uhh2::Context & ctx,
 			TopJetId topjetid,
-			const std::string & h_name="TopTaggedJet");
+			const std::string & h_name="TopTaggedJets");
+
+  virtual bool process(uhh2::Event & event) override;
+
+  virtual ~TopTaggedJets();
+
+ private:
+  uhh2::Event::Handle<std::vector<TopJet>> h_toptaggedjets;
+  TopJetId m_topjetid;
+};
+
+
+// class to tag the t HOTVR jet; if there is no t tag, the leading HOTVR jet is used
+class TopTaggedJet: public uhh2::AnalysisModule {
+public:
+  explicit TopTaggedJet(uhh2::Context & ctx,
+           const std::string & h_name="TopTaggedJet");
 
   virtual bool process(uhh2::Event & event) override;
 
   virtual ~TopTaggedJet();
 
- private:
+private:
+  uhh2::Event::Handle<std::vector<TopJet>> h_toptaggedjets;
   uhh2::Event::Handle<TopJet> h_toptaggedjet;
-  TopJetId m_topjetid;
 };
 
 

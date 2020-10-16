@@ -1,39 +1,62 @@
 #include "UHH2/HighPtSingleTop/include/TaggedJets.h"
 
 #include "UHH2/common/include/Utils.h"
+#include "UHH2/common/include/NSelections.h"
 
 using namespace uhh2;
 using namespace std;
 
 
-TopTaggedJet::TopTaggedJet(Context & ctx,
+TopTaggedJets::TopTaggedJets(Context & ctx,
 			   TopJetId topjetid,
 			   const std::string & h_name):
-  h_toptaggedjet(ctx.get_handle<TopJet>(h_name)),
+  h_toptaggedjets(ctx.get_handle<vector<TopJet>>(h_name)),
   m_topjetid(topjetid)
 {}
 
 
-bool TopTaggedJet::process(uhh2::Event & event) {
+bool TopTaggedJets::process(uhh2::Event & event) {
   assert(event.topjets);
 
-  vector<TopJet> topjets = *event.topjets;
+  vector<TopJet> hotvrjets = *event.topjets;
 
-  TopJet toptaggedjet;
-  bool toptag_found = false;
+  vector<TopJet> toptaggedjets;
 
-  for(auto t : topjets) {
-    if(m_topjetid(t, event)) {
-      toptaggedjet = t;
-      toptag_found = true;
+  for(auto j : hotvrjets) {
+    if(m_topjetid(j, event)) {
+      toptaggedjets.push_back(j);
     }
   }
 
-  if(!toptag_found) { // Needed for the 0toptag validation region
-    toptaggedjet = topjets.at(0);
-  }
+  event.set(h_toptaggedjets, std::move(toptaggedjets));
+
+  return true;
+}
+
+
+TopTaggedJets::~TopTaggedJets() {}
+
+
+TopTaggedJet::TopTaggedJet(Context & ctx,
+			   const std::string & h_name):
+  h_toptaggedjets(ctx.get_handle<vector<TopJet>>("TopTaggedJets")),
+  h_toptaggedjet(ctx.get_handle<TopJet>(h_name))
+{}
+
+
+bool TopTaggedJet::process(Event & event) {
+  assert(event.topjets);
+
+  vector<TopJet> hotvrjets = *event.topjets;
+  vector<TopJet> toptaggedjets = event.get(h_toptaggedjets);
+  TopJet toptaggedjet;
+
+  if(toptaggedjets.size() > 0) toptaggedjet = toptaggedjets.at(0);
+  else if(hotvrjets.size() > 0) toptaggedjet = hotvrjets.at(0);
+  else { throw runtime_error("TopTaggedJet: You need to require at least one HOTVR jet"); }
 
   event.set(h_toptaggedjet, std::move(toptaggedjet));
+
   return true;
 }
 
