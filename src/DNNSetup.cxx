@@ -217,6 +217,7 @@ void DNNSetup::calculate_inputs_for_ttag_dnn(Event & event) {
   sort_by_deepjet(ijets_sortedByDj);
 
   bool no_xjets = (xjets.size() == 0);
+  bool no_ijets = (ijets.size() == 0);
 
   MET met = *event.met;
   const vector<Electron> electrons = *event.electrons;
@@ -293,7 +294,7 @@ void DNNSetup::calculate_inputs_for_ttag_dnn(Event & event) {
   values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByDj.at(0).v4(), lepton.v4());
   values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByDj.at(0).v4(), topjet.v4());
   // values.at(i++) = (xjets.size() > 1) ? xjets_sortedByDj.at(1).btag_DeepJet() : m_zeropadding;
-  values.at(i++) = (ijets.size() > 0) ? ijets_sortedByDj.at(0).btag_DeepJet() : m_zeropadding;
+  values.at(i++) = no_ijets ? m_zeropadding : ijets_sortedByDj.at(0).btag_DeepJet();
   // values.at(i++) = (ijets.size() > 1) ? ijets_sortedByDj.at(1).btag_DeepJet() : m_zeropadding;
   if(no_xjets) {
     for(int j = 0; j < 5; j++) values.at(i++) = m_zeropadding;
@@ -338,6 +339,7 @@ void DNNSetup::calculate_inputs_for_wtag_dnn(Event & event) {
   sort_by_deepjet(ijets_sortedByDj);
 
   bool no_xjets = (xjets.size() == 0);
+  bool no_ijets = (ijets.size() == 0);
 
   MET met = *event.met;
   const vector<Electron> electrons = *event.electrons;
@@ -412,7 +414,7 @@ void DNNSetup::calculate_inputs_for_wtag_dnn(Event & event) {
   values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByDj.at(0).v4(), lepton.v4());
   values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByDj.at(0).v4(), wjet.v4());
   // values.at(i++) = (xjets.size() > 1) ? xjets_sortedByDj.at(1).btag_DeepJet() : m_zeropadding;
-  values.at(i++) = (ijets.size() > 0) ? ijets_sortedByDj.at(0).btag_DeepJet() : m_zeropadding;
+  values.at(i++) = no_ijets ? m_zeropadding : ijets_sortedByDj.at(0).btag_DeepJet();
   // values.at(i++) = (ijets.size() > 1) ? ijets_sortedByDj.at(1).btag_DeepJet() : m_zeropadding;
   if(no_xjets) {
     for(int j = 0; j < 5; j++) values.at(i++) = m_zeropadding;
