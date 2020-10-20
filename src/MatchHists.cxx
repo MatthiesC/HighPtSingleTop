@@ -8,139 +8,181 @@ using namespace std;
 using namespace uhh2;
 
 
-MatchHists::MatchHists(Context & ctx, const string & dirname, double arg_MIN_PT, double arg_MAX_PT):
+MatchHists::MatchHists(Context & ctx, const string & dirname, const string & object_name, double arg_MIN_PT, double arg_MAX_PT):
   Hists(ctx, dirname) {
 
   h_GENtW = ctx.get_handle<SingleTopGen_tWch>("h_GENtW");
-  h_toptaggedjet = ctx.get_handle<TopJet>("TopTaggedJet");
+  h_taggedjet = ctx.get_handle<TopJet>(object_name+"TaggedJet");
   h_primlep = ctx.get_handle<FlavorParticle>("PrimaryLepton");
 
   m_MIN_PT = arg_MIN_PT;
   m_MAX_PT = arg_MAX_PT;
 
-  int nBins = 100;
-  int nBins_dR = 100;
-  int nBins_dPhi = 128;
-  int nBins_lowRes = 50;
-  int nBins_dR_lowRes = 50;
-  int nBins_dPhi_lowRes = 64;
-  if(m_MIN_PT >= 350) { // threshold for lower resolution plots
-    nBins = nBins_lowRes;
-    nBins_dR = nBins_dR_lowRes;
-    nBins_dPhi = nBins_dPhi_lowRes;
-  }
-
-  hist_deltaR_topQuark_topRecoJet = book<TH1F>("deltaR_topQuark_topRecoJet", "#DeltaR(gen. t quark, rec. t jet)", nBins_dR, 0, 5);
-  hist_deltaPhi_topQuark_topRecoJet = book<TH1F>("deltaPhi_topQuark_topRecoJet", "#Delta#phi(gen. t quark, rec. t jet)", nBins_dPhi, 0, M_PI);
-  hist_deltaR_topQuark_recoLepton = book<TH1F>("deltaR_topQuark_recoLepton", "#DeltaR(gen. t quark, rec. lepton)", nBins_dR, 0, 5);
-  hist_deltaPhi_topQuark_recoLepton = book<TH1F>("deltaPhi_topQuark_recoLepton", "#Delta#phi(gen. t quark, rec. lepton)", nBins_dPhi, 0, M_PI);
-
-  hist_deltaR_WBoson_topRecoJet = book<TH1F>("deltaR_WBoson_topRecoJet", "#DeltaR(gen. assoc. W, rec. t jet)", nBins_dR, 0, 5);
-  hist_deltaPhi_WBoson_topRecoJet = book<TH1F>("deltaPhi_WBoson_topRecoJet", "#Delta#phi(gen. assoc. W, rec. t jet)", nBins_dPhi, 0, M_PI);
-  hist_deltaR_WBoson_recoLepton = book<TH1F>("deltaR_WBoson_recoLepton", "#DeltaR(gen. assoc. W, rec. lepton)", nBins_dR, 0, 5);
-  hist_deltaPhi_WBoson_recoLepton = book<TH1F>("deltaPhi_WBoson_recoLepton", "#Delta#phi(gen. assoc. W, rec. lepton)", nBins_dPhi, 0, M_PI);
-
-  /* // This does not work... maybe implement pi Xaxis in SFramePlotter...
-  for(auto hist : {hist_deltaPhi_topQuark_topRecoJet, hist_deltaPhi_topQuark_topRecoJet, hist_deltaPhi_WBoson_topRecoJet, hist_deltaPhi_WBoson_recoLepton,
-        hist_deltaPhi_topQuark_topRecoJet_Pt0to400, hist_deltaPhi_topQuark_topRecoJet_Pt0to400, hist_deltaPhi_WBoson_topRecoJet_Pt0to400, hist_deltaPhi_WBoson_recoLepton_Pt0to400,
-        hist_deltaPhi_topQuark_topRecoJet_Pt400toInf, hist_deltaPhi_topQuark_topRecoJet_Pt400toInf, hist_deltaPhi_WBoson_topRecoJet_Pt400toInf, hist_deltaPhi_WBoson_recoLepton_Pt400toInf}) {
-    hist->GetXaxis()->SetNdivisions(-802);
-    hist->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1,"0");
-    hist->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"#pi/2");
-    hist->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1,"#pi");
-  }
-  */
+  is_TopTagRegion = (object_name == "Top");
+  is_WTagRegion = (object_name == "W");
 
   const int nx = 16;
-  hist_decayChannel = book<TH1F>("DecayChannel", "tW decay channel", nx, -0.5, 15.5);
-  const char *decayChannels[nx] = {"t_{e}W_{e}", "t_{#mu}W_{e}", "t_{#tau}W_{e}", "t_{h}W_{e}",
-                                   "t_{e}W_{#mu}", "t_{#mu}W_{#mu}", "t_{#tau}W_{#mu}", "t_{h}W_{#mu}",
-                                   "t_{e}W_{#tau}", "t_{#mu}W_{#tau}", "t_{#tau}W_{#tau}", "t_{h}W_{#tau}",
-				   "t_{e}W_{h}", "t_{#mu}W_{h}", "t_{#tau}W_{h}", "t_{h}W_{h}"};
-  for(int i=1; i<=nx; ++i) hist_decayChannel->GetXaxis()->SetBinLabel(i,decayChannels[i-1]);
+  const char *decayChannels[nx] = {"t_{e}W_{e}", "t_{#mu}W_{e}", "t_{#tau}W_{e}", "t_{h}W_{e}", "t_{e}W_{#mu}", "t_{#mu}W_{#mu}", "t_{#tau}W_{#mu}", "t_{h}W_{#mu}", "t_{e}W_{#tau}", "t_{#mu}W_{#tau}", "t_{#tau}W_{#tau}", "t_{h}W_{#tau}", "t_{e}W_{h}", "t_{#mu}W_{h}", "t_{#tau}W_{h}", "t_{h}W_{h}"};
 
-  hist_topRecoJet_pt = book<TH1F>("topRecoJet_pt", "t jet p_{T} [GeV]", nBins, 0, 1000);
-  hist_topRecoJet_eta = book<TH1F>("topRecoJet_eta", "t jet #eta", nBins, -2.5, 2.5);
-  hist_topRecoJet_mass = book<TH1F>("topRecoJet_mass", "t jet m_{jet} [GeV]", nBins, 130, 230); // 140 - 220
-  hist_topRecoJet_phi = book<TH1F>("topRecoJet_phi", "t jet #phi", nBins_dPhi, -M_PI, M_PI);
-  hist_topRecoJet_px = book<TH1F>("topRecoJet_px", "t jet p_{x} [GeV]", nBins, -2000, 2000);
-  hist_topRecoJet_py = book<TH1F>("topRecoJet_py", "t jet p_{y} [GeV]", nBins, -2000, 2000);
-  hist_topRecoJet_pz = book<TH1F>("topRecoJet_pz", "t jet p_{z} [GeV]", nBins, -5000, 5000);
-  hist_topRecoJet_energy = book<TH1F>("topRecoJet_energy", "t jet energy [GeV]", nBins, 0, 5000);
-  hist_topRecoJet_area = book<TH1F>("topRecoJet_area", "t jet area", nBins, 0, 20);
+  const int nBins = 100;
 
-  hist_topRecoJet_nsub = book<TH1F>("topRecoJet_nsub", "t jet N_{subjets}", 6, 1.5, 7.5); // 2 - 7
-  hist_topRecoJet_fpt = book<TH1F>("topRecoJet_fpt", "t jet f_{pT}(lead. subjet)", nBins, 0, 1);
-  hist_topRecoJet_mpair = book<TH1F>("topRecoJet_mpair", "t jet min. m_{ij} [GeV]", nBins, 0, 200);
-  hist_topRecoJet_tau32 = book<TH1F>("topRecoJet_tau32", "t jet #tau_{3}/#tau_{2}", nBins, 0, 1);
-  hist_topRecoJet_tau21 = book<TH1F>("topRecoJet_tau21", "t jet #tau_{2}/#tau_{1}", nBins, 0, 1);
-  hist_topRecoJet_tau1 = book<TH1F>("topRecoJet_tau1", "t jet #tau_{1}", nBins, 0, 1);
-  hist_topRecoJet_tau2 = book<TH1F>("topRecoJet_tau2", "t jet #tau_{2}", nBins, 0, 1);
-  hist_topRecoJet_tau3 = book<TH1F>("topRecoJet_tau3", "t jet #tau_{3}", nBins, 0, 1);
+  if(!(is_TopTagRegion || is_WTagRegion)) throw invalid_argument("MatchHists: Invalid object name.");
+  const string label_taggedjet = is_TopTagRegion ? "t jet" : (is_WTagRegion ? "W jet" : "");
 
-  hist_topRecoJet_dr_lepton = book<TH1F>("topRecoJet_dr_lepton", "#DeltaR(t jet, lepton)", nBins_dR, 0, 5);
-  hist_topRecoJet_dphi_lepton = book<TH1F>("topRecoJet_dphi_lepton", "#Delta#phi(t jet, lepton)", nBins_dPhi, 0, M_PI);
-  hist_topRecoJet_dphi_met = book<TH1F>("topRecoJet_dphi_met", "#Delta#phi(t jet, p_{T}^{miss})", nBins_dPhi, 0, M_PI);
-  hist_met_dphi_lepton = book<TH1F>("met_dphi_lepton", "#Delta#phi(p_{T}^{miss}, lepton)", nBins_dPhi, 0, M_PI);
+
+   // all matching scenarios
+
+  hist_all_decayChannel = book<TH1F>("all_DecayChannel", "tW decay channel", nx, -0.5, 15.5);
+  for(int i = 1; i <= nx; ++i) hist_all_decayChannel->GetXaxis()->SetBinLabel(i,decayChannels[i-1]);
+
+  hist_all_deltaR_taggedjet_gentop = book<TH1F>("all_deltaR_taggedjet_gentop", ("#DeltaR("+label_taggedjet+", gen. t quark)").c_str(), nBins, 0, 5);
+  hist_all_deltaR_taggedjet_genwass = book<TH1F>("all_deltaR_taggedjet_genwass", ("#DeltaR("+label_taggedjet+", gen. asso. W boson)").c_str(), nBins, 0, 5);
+  hist_all_deltaR_taggedjet_genwtop = book<TH1F>("all_deltaR_taggedjet_genwtop", ("#DeltaR("+label_taggedjet+", gen. W boson from t decay)").c_str(), nBins, 0, 5);
+  hist_all_deltaR_lepton_gentop = book<TH1F>("all_deltaR_lepton_gentop", ("#DeltaR("+label_taggedjet+", gen. t quark)").c_str(), nBins, 0, 5);
+  hist_all_deltaR_lepton_genwass = book<TH1F>("all_deltaR_lepton_genwass", ("#DeltaR("+label_taggedjet+", gen. asso. W boson)").c_str(), nBins, 0, 5);
+  hist_all_deltaR_lepton_genwtop = book<TH1F>("all_deltaR_lepton_genwtop", ("#DeltaR("+label_taggedjet+", gen. W boson from t decay)").c_str(), nBins, 0, 5);
+
+  // 3 quarks matching scenario
+
+  hist_3matched_decayChannel = book<TH1F>("3matched_DecayChannel", "tW decay channel", nx, -0.5, 15.5);
+  for(int i = 1; i <= nx; ++i) hist_3matched_decayChannel->GetXaxis()->SetBinLabel(i,decayChannels[i-1]);
+
+  hist_3matched_deltaR_taggedjet_gentop = book<TH1F>("3matched_deltaR_taggedjet_gentop", ("#DeltaR("+label_taggedjet+", gen. t quark)").c_str(), nBins, 0, 5);
+  hist_3matched_deltaR_taggedjet_genwass = book<TH1F>("3matched_deltaR_taggedjet_genwass", ("#DeltaR("+label_taggedjet+", gen. asso. W boson)").c_str(), nBins, 0, 5);
+  hist_3matched_deltaR_taggedjet_genwtop = book<TH1F>("3matched_deltaR_taggedjet_genwtop", ("#DeltaR("+label_taggedjet+", gen. W boson from t decay)").c_str(), nBins, 0, 5);
+  hist_3matched_deltaR_lepton_gentop = book<TH1F>("3matched_deltaR_lepton_gentop", ("#DeltaR("+label_taggedjet+", gen. t quark)").c_str(), nBins, 0, 5);
+  hist_3matched_deltaR_lepton_genwass = book<TH1F>("3matched_deltaR_lepton_genwass", ("#DeltaR("+label_taggedjet+", gen. asso. W boson)").c_str(), nBins, 0, 5);
+  hist_3matched_deltaR_lepton_genwtop = book<TH1F>("3matched_deltaR_lepton_genwtop", ("#DeltaR("+label_taggedjet+", gen. W boson from t decay)").c_str(), nBins, 0, 5);
+
+  // 2 quarks matching scenario
+
+  hist_2matched_decayChannel = book<TH1F>("2matched_DecayChannel", "tW decay channel", nx, -0.5, 15.5);
+  for(int i = 1; i <= nx; ++i) hist_2matched_decayChannel->GetXaxis()->SetBinLabel(i,decayChannels[i-1]);
+
+  hist_2matched_deltaR_taggedjet_gentop = book<TH1F>("2matched_deltaR_taggedjet_gentop", ("#DeltaR("+label_taggedjet+", gen. t quark)").c_str(), nBins, 0, 5);
+  hist_2matched_deltaR_taggedjet_genwass = book<TH1F>("2matched_deltaR_taggedjet_genwass", ("#DeltaR("+label_taggedjet+", gen. asso. W boson)").c_str(), nBins, 0, 5);
+  hist_2matched_deltaR_taggedjet_genwtop = book<TH1F>("2matched_deltaR_taggedjet_genwtop", ("#DeltaR("+label_taggedjet+", gen. W boson from t decay)").c_str(), nBins, 0, 5);
+  hist_2matched_deltaR_lepton_gentop = book<TH1F>("2matched_deltaR_lepton_gentop", ("#DeltaR("+label_taggedjet+", gen. t quark)").c_str(), nBins, 0, 5);
+  hist_2matched_deltaR_lepton_genwass = book<TH1F>("2matched_deltaR_lepton_genwass", ("#DeltaR("+label_taggedjet+", gen. asso. W boson)").c_str(), nBins, 0, 5);
+  hist_2matched_deltaR_lepton_genwtop = book<TH1F>("2matched_deltaR_lepton_genwtop", ("#DeltaR("+label_taggedjet+", gen. W boson from t decay)").c_str(), nBins, 0, 5);
+
+  // 1 quark matching scenario
+
+  hist_1matched_decayChannel = book<TH1F>("1matched_DecayChannel", "tW decay channel", nx, -0.5, 15.5);
+  for(int i = 1; i <= nx; ++i) hist_1matched_decayChannel->GetXaxis()->SetBinLabel(i,decayChannels[i-1]);
+
+  hist_1matched_deltaR_taggedjet_gentop = book<TH1F>("1matched_deltaR_taggedjet_gentop", ("#DeltaR("+label_taggedjet+", gen. t quark)").c_str(), nBins, 0, 5);
+  hist_1matched_deltaR_taggedjet_genwass = book<TH1F>("1matched_deltaR_taggedjet_genwass", ("#DeltaR("+label_taggedjet+", gen. asso. W boson)").c_str(), nBins, 0, 5);
+  hist_1matched_deltaR_taggedjet_genwtop = book<TH1F>("1matched_deltaR_taggedjet_genwtop", ("#DeltaR("+label_taggedjet+", gen. W boson from t decay)").c_str(), nBins, 0, 5);
+  hist_1matched_deltaR_lepton_gentop = book<TH1F>("1matched_deltaR_lepton_gentop", ("#DeltaR("+label_taggedjet+", gen. t quark)").c_str(), nBins, 0, 5);
+  hist_1matched_deltaR_lepton_genwass = book<TH1F>("1matched_deltaR_lepton_genwass", ("#DeltaR("+label_taggedjet+", gen. asso. W boson)").c_str(), nBins, 0, 5);
+  hist_1matched_deltaR_lepton_genwtop = book<TH1F>("1matched_deltaR_lepton_genwtop", ("#DeltaR("+label_taggedjet+", gen. W boson from t decay)").c_str(), nBins, 0, 5);
+
+  // 0 quarks matching scenario
+
+  hist_0matched_decayChannel = book<TH1F>("0matched_DecayChannel", "tW decay channel", nx, -0.5, 15.5);
+  for(int i = 1; i <= nx; ++i) hist_0matched_decayChannel->GetXaxis()->SetBinLabel(i,decayChannels[i-1]);
+
+  hist_0matched_deltaR_taggedjet_gentop = book<TH1F>("0matched_deltaR_taggedjet_gentop", ("#DeltaR("+label_taggedjet+", gen. t quark)").c_str(), nBins, 0, 5);
+  hist_0matched_deltaR_taggedjet_genwass = book<TH1F>("0matched_deltaR_taggedjet_genwass", ("#DeltaR("+label_taggedjet+", gen. asso. W boson)").c_str(), nBins, 0, 5);
+  hist_0matched_deltaR_taggedjet_genwtop = book<TH1F>("0matched_deltaR_taggedjet_genwtop", ("#DeltaR("+label_taggedjet+", gen. W boson from t decay)").c_str(), nBins, 0, 5);
+  hist_0matched_deltaR_lepton_gentop = book<TH1F>("0matched_deltaR_lepton_gentop", ("#DeltaR("+label_taggedjet+", gen. t quark)").c_str(), nBins, 0, 5);
+  hist_0matched_deltaR_lepton_genwass = book<TH1F>("0matched_deltaR_lepton_genwass", ("#DeltaR("+label_taggedjet+", gen. asso. W boson)").c_str(), nBins, 0, 5);
+  hist_0matched_deltaR_lepton_genwtop = book<TH1F>("0matched_deltaR_lepton_genwtop", ("#DeltaR("+label_taggedjet+", gen. W boson from t decay)").c_str(), nBins, 0, 5);
 }
 
 
-void MatchHists::fill(const uhh2::Event & event) {
+int MatchHists::get_number_of_matched_quarks(const TopJet & taggedjet, const vector<GenParticle> & daughters) {
+
+  int nMatched(0);
+  double deltaRmatch(0.8); // AK8 radius
+  if(is_TopTagRegion) deltaRmatch = min(1.5, max(0.1, 600.0 / (taggedjet.pt() * taggedjet.JEC_factor_raw()))); // HOTVR radius
+
+  for(GenParticle gp : daughters) {
+    if(deltaRmatch > deltaR(gp.v4(), taggedjet.v4())) ++nMatched;
+  }
+
+  return nMatched;
+}
+
+
+void MatchHists::fill(const Event & event) {
 
   if(!event.is_valid(h_GENtW)) return;
 
   const auto & GENtW = event.get(h_GENtW);
-  const auto & topjet = event.get(h_toptaggedjet);
-  const auto & primlep = event.get(h_primlep);
+  const auto & taggedjet = event.get(h_taggedjet);
+  const auto & lepton = event.get(h_primlep);
 
   const double w = event.weight;
 
-  if(topjet.v4().pt() >= m_MIN_PT && topjet.v4().pt() < m_MAX_PT) {
+  if(taggedjet.v4().pt() >= m_MIN_PT && taggedjet.v4().pt() < m_MAX_PT) {
 
-    // calc histogram fills here
-    hist_deltaR_topQuark_topRecoJet->Fill(uhh2::deltaR(GENtW.Top().v4(), topjet.v4()), w);
-    hist_deltaPhi_topQuark_topRecoJet->Fill(uhh2::deltaPhi(GENtW.Top().v4(), topjet.v4()), w);
-    hist_deltaR_topQuark_recoLepton->Fill(uhh2::deltaR(GENtW.Top().v4(), primlep.v4()), w);
-    hist_deltaPhi_topQuark_recoLepton->Fill(uhh2::deltaPhi(GENtW.Top().v4(), primlep.v4()), w);
+    hist_all_decayChannel->Fill(GENtW.DecayChannel(), w);
 
-    hist_deltaR_WBoson_topRecoJet->Fill(uhh2::deltaR(GENtW.WAss().v4(), topjet.v4()), w);
-    hist_deltaPhi_WBoson_topRecoJet->Fill(uhh2::deltaPhi(GENtW.WAss().v4(), topjet.v4()), w);
-    hist_deltaR_WBoson_recoLepton->Fill(uhh2::deltaR(GENtW.WAss().v4(), primlep.v4()), w);
-    hist_deltaPhi_WBoson_recoLepton->Fill(uhh2::deltaPhi(GENtW.WAss().v4(), primlep.v4()), w);
+    hist_all_deltaR_taggedjet_gentop->Fill(deltaR(GENtW.Top().v4(), taggedjet.v4()), w);
+    hist_all_deltaR_taggedjet_genwass->Fill(deltaR(GENtW.WAss().v4(), taggedjet.v4()), w);
+    hist_all_deltaR_taggedjet_genwtop->Fill(deltaR(GENtW.WTop().v4(), taggedjet.v4()), w);
+    hist_all_deltaR_lepton_gentop->Fill(deltaR(GENtW.Top().v4(), lepton.v4()), w);
+    hist_all_deltaR_lepton_genwass->Fill(deltaR(GENtW.WAss().v4(), lepton.v4()), w);
+    hist_all_deltaR_lepton_genwtop->Fill(deltaR(GENtW.WTop().v4(), lepton.v4()), w);
 
-    hist_decayChannel->Fill(GENtW.DecayChannel(), w);
+    vector<GenParticle> daughters;
+    if(is_TopTagRegion) {
+      daughters.push_back(GENtW.bTop());
+      daughters.push_back(GENtW.WTopDecay1());
+      daughters.push_back(GENtW.WTopDecay2());
+    }
+    else {
+      daughters.push_back(GENtW.WAssDecay1());
+      daughters.push_back(GENtW.WAssDecay2());
+    }
 
-    // Lorentz vector
-    hist_topRecoJet_pt->Fill(topjet.v4().Pt(), w);
-    hist_topRecoJet_eta->Fill(topjet.v4().Eta(), w);
-    hist_topRecoJet_mass->Fill(topjet.v4().M(), w);
-    hist_topRecoJet_phi->Fill(topjet.v4().Phi(), w);
-    hist_topRecoJet_px->Fill(topjet.v4().px(), w);
-    hist_topRecoJet_py->Fill(topjet.v4().py(), w);
-    hist_topRecoJet_pz->Fill(topjet.v4().pz(), w);
-    hist_topRecoJet_energy->Fill(topjet.v4().e(), w);
-    hist_topRecoJet_area->Fill(topjet.jetArea(), w);
+    const int nMatched = get_number_of_matched_quarks(taggedjet, daughters);
 
-    // Substructure variables
-    vector<Jet> subjets = topjet.subjets();
-    double m12 = (subjets.at(0).v4() + subjets.at(1).v4()).M();
-    double m13 = (subjets.at(0).v4() + subjets.at(2).v4()).M();
-    double m23 = (subjets.at(1).v4() + subjets.at(2).v4()).M();
-    double min_mass_ij = min(m12, min(m13, m23));
-    hist_topRecoJet_nsub->Fill(subjets.size(), w);
-    hist_topRecoJet_fpt->Fill(subjets.at(0).pt() / topjet.v4().Pt(), w);
-    hist_topRecoJet_mpair->Fill(min_mass_ij, w);
-    hist_topRecoJet_tau32->Fill(topjet.tau3_groomed() / topjet.tau2_groomed(), w);
-    hist_topRecoJet_tau21->Fill(topjet.tau2_groomed() / topjet.tau1_groomed(), w);
-    hist_topRecoJet_tau1->Fill(topjet.tau1_groomed(), w);
-    hist_topRecoJet_tau2->Fill(topjet.tau2_groomed(), w);
-    hist_topRecoJet_tau3->Fill(topjet.tau3_groomed(), w);
+    if(nMatched == 3) {
 
-    // Relative position
-    hist_topRecoJet_dr_lepton->Fill(uhh2::deltaR(topjet.v4(), primlep.v4()), w);
-    hist_topRecoJet_dphi_lepton->Fill(uhh2::deltaPhi(topjet.v4(), primlep.v4()), w);
-    hist_topRecoJet_dphi_met->Fill(uhh2::deltaPhi(topjet.v4(), event.met->v4()), w);
-    hist_met_dphi_lepton->Fill(uhh2::deltaPhi(event.met->v4(), primlep.v4()), w);
+      hist_3matched_decayChannel->Fill(GENtW.DecayChannel(), w);
+
+      hist_3matched_deltaR_taggedjet_gentop->Fill(deltaR(GENtW.Top().v4(), taggedjet.v4()), w);
+      hist_3matched_deltaR_taggedjet_genwass->Fill(deltaR(GENtW.WAss().v4(), taggedjet.v4()), w);
+      hist_3matched_deltaR_taggedjet_genwtop->Fill(deltaR(GENtW.WTop().v4(), taggedjet.v4()), w);
+      hist_3matched_deltaR_lepton_gentop->Fill(deltaR(GENtW.Top().v4(), lepton.v4()), w);
+      hist_3matched_deltaR_lepton_genwass->Fill(deltaR(GENtW.WAss().v4(), lepton.v4()), w);
+      hist_3matched_deltaR_lepton_genwtop->Fill(deltaR(GENtW.WTop().v4(), lepton.v4()), w);
+    }
+    else if(nMatched == 2) {
+
+      hist_2matched_decayChannel->Fill(GENtW.DecayChannel(), w);
+
+      hist_2matched_deltaR_taggedjet_gentop->Fill(deltaR(GENtW.Top().v4(), taggedjet.v4()), w);
+      hist_2matched_deltaR_taggedjet_genwass->Fill(deltaR(GENtW.WAss().v4(), taggedjet.v4()), w);
+      hist_2matched_deltaR_taggedjet_genwtop->Fill(deltaR(GENtW.WTop().v4(), taggedjet.v4()), w);
+      hist_2matched_deltaR_lepton_gentop->Fill(deltaR(GENtW.Top().v4(), lepton.v4()), w);
+      hist_2matched_deltaR_lepton_genwass->Fill(deltaR(GENtW.WAss().v4(), lepton.v4()), w);
+      hist_2matched_deltaR_lepton_genwtop->Fill(deltaR(GENtW.WTop().v4(), lepton.v4()), w);
+    }
+    else if(nMatched == 1) {
+
+      hist_1matched_decayChannel->Fill(GENtW.DecayChannel(), w);
+
+      hist_1matched_deltaR_taggedjet_gentop->Fill(deltaR(GENtW.Top().v4(), taggedjet.v4()), w);
+      hist_1matched_deltaR_taggedjet_genwass->Fill(deltaR(GENtW.WAss().v4(), taggedjet.v4()), w);
+      hist_1matched_deltaR_taggedjet_genwtop->Fill(deltaR(GENtW.WTop().v4(), taggedjet.v4()), w);
+      hist_1matched_deltaR_lepton_gentop->Fill(deltaR(GENtW.Top().v4(), lepton.v4()), w);
+      hist_1matched_deltaR_lepton_genwass->Fill(deltaR(GENtW.WAss().v4(), lepton.v4()), w);
+      hist_1matched_deltaR_lepton_genwtop->Fill(deltaR(GENtW.WTop().v4(), lepton.v4()), w);
+    }
+    else { // nMatched == 0
+
+      hist_0matched_decayChannel->Fill(GENtW.DecayChannel(), w);
+
+      hist_0matched_deltaR_taggedjet_gentop->Fill(deltaR(GENtW.Top().v4(), taggedjet.v4()), w);
+      hist_0matched_deltaR_taggedjet_genwass->Fill(deltaR(GENtW.WAss().v4(), taggedjet.v4()), w);
+      hist_0matched_deltaR_taggedjet_genwtop->Fill(deltaR(GENtW.WTop().v4(), taggedjet.v4()), w);
+      hist_0matched_deltaR_lepton_gentop->Fill(deltaR(GENtW.Top().v4(), lepton.v4()), w);
+      hist_0matched_deltaR_lepton_genwass->Fill(deltaR(GENtW.WAss().v4(), lepton.v4()), w);
+      hist_0matched_deltaR_lepton_genwtop->Fill(deltaR(GENtW.WTop().v4(), lepton.v4()), w);
+    }
   }
-
 }

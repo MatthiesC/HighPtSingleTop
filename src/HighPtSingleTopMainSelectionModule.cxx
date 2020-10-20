@@ -76,6 +76,7 @@ namespace uhh2 {
     //unique_ptr<Hists> hist_count_TopHadWLep_before, hist_count_TopHadWLep_after, hist_count_TopLepWHad_before, hist_count_TopLepWHad_after, hist_count_Validation_before, hist_count_Validation_after;
     // unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
     // unique_ptr<BinnedDNNHists> hist_dnn_ttag;
+    unique_ptr<MatchHists> hist_Matching_TopTag, hist_Matching_WTag, hist_Matching_ValidationTopTag, hist_Matching_ValidationWTag;
     unique_ptr<DNNHists> hist_dnn_TopTag, hist_dnn_WTag, hist_dnn_ValidationTopTag, hist_dnn_ValidationWTag;
 
     string dataset_version;
@@ -300,6 +301,11 @@ namespace uhh2 {
     hist_Validation_End->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
     hist_Validation_End->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
 
+    hist_Matching_TopTag.reset(new MatchHists(ctx, "Matching_TopTag", "Top"));
+    hist_Matching_WTag.reset(new MatchHists(ctx, "Matching_WTag", "W"));
+    hist_Matching_ValidationTopTag.reset(new MatchHists(ctx, "Matching_ValidationTopTag", "Top"));
+    hist_Matching_ValidationWTag.reset(new MatchHists(ctx, "Matching_ValidationWTag", "W"));
+
     // hist_decaymatch.reset(new MatchHists(ctx, "MatchHists_Full"));
     // hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
     // hist_decaymatch_Pt400toInf.reset(new MatchHists(ctx, "MatchHists_Pt400toInf", 400));
@@ -332,7 +338,8 @@ namespace uhh2 {
     if((dataset_version.find("WJetsLight") == 0) && slct_WJetsHeavy->passes(event)) return false;
 
     if(debug) cout << "Split up tW samples into decay channels" << endl;
-    if(dataset_version.find("ST_tW") == 0) {
+    bool is_tW = (dataset_version.find("ST_tW") == 0);
+    if(is_tW) {
 
       SingleTopGen_tWchProd->process(event);
 
@@ -452,6 +459,8 @@ namespace uhh2 {
       if(debug) cout << "SR t(had)W(lep): Fill final control histograms" << endl;
       hist_TopTag_End->fill(event);
 
+      if(is_tW) hist_Matching_TopTag->fill(event);
+
       event.set(h_which_region, 1);
       is_TopTagRegion = true;
     }
@@ -472,6 +481,8 @@ namespace uhh2 {
       if(!slct_onexjet_W->passes(event)) return false; // Need to have at least one AK4 jet for pseudotop and also makes sense due to decay mode (additional AK4 jet potentially represents b jet from leptonic top quark)
       if(debug) cout << "SR t(lep)W(had): Fill final control histograms" << endl;
       hist_WTag_End->fill(event);
+
+      if(is_tW) hist_Matching_WTag->fill(event);
 
       event.set(h_which_region, 2);
       is_WTagRegion = true;
@@ -496,6 +507,9 @@ namespace uhh2 {
       if(!slct_oneAk4jet->passes(event)) return false; // Need at least one AK4 jet for pseudotop
       if(debug) cout << "VR: Fill final control histograms" << endl;
       hist_Validation_End->fill(event);
+
+      if(is_tW) hist_Matching_ValidationTopTag->fill(event);
+      if(is_tW) hist_Matching_ValidationWTag->fill(event);
 
       event.set(h_which_region, 3);
       is_ValidationRegion = true;
