@@ -15,3 +15,5 @@ config/jobTempOutput_*
 src/misc/*
 include/misc/*
 output
+*.pyc
+**/__pycache__/*
