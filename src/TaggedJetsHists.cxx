@@ -4,7 +4,7 @@
 
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TH3F.h"
+// #include "TH3F.h"
 
 using namespace std;
 using namespace uhh2;
@@ -32,29 +32,31 @@ TaggedJetsHists::TaggedJetsHists(Context & ctx, const string & dirname, const st
   m_MIN_PT = arg_MIN_PT;
   m_MAX_PT = arg_MAX_PT;
 
-  hist_n_all = book<TH1F>("n_all", "N(jets)", 10, -0.5, 10.5);
-  hist_n_all_bloose = book<TH1F>("n_all_bloose", "N(loose b jets)", 10, -0.5, 10.5);
-  hist_n_all_bmedium = book<TH1F>("n_all_bmedium", "N(medium b jets)", 10, -0.5, 10.5);
-  hist_n_all_btight = book<TH1F>("n_all_btight", "N(tight b jets)", 10, -0.5, 10.5);
+  const int nBins = 11;
 
-  hist_n_all_b_loose_medium_2d = book<TH2F>("n_all_b_loose_medium_2d", "N(b jets) (x: loose, y: medium)", 10, -0.5, 10.5, 10, -0.5, 10.5);
-  hist_n_all_b_loose_tight_2d = book<TH2F>("n_all_b_loose_tight_2d", "N(b jets) (x: loose, y: tight)", 10, -0.5, 10.5, 10, -0.5, 10.5);
-  hist_n_all_b_medium_tight_2d = book<TH2F>("n_all_b_medium_tight_2d", "N(b jets) (x: medium, y: tight)", 10, -0.5, 10.5, 10, -0.5, 10.5);
-  hist_n_all_b_all_3d = book<TH3F>("n_all_b_all_3d", "N(b jets) (x: loose, y: medium, z: tight)", 10, -0.5, 10.5, 10, -0.5, 10.5, 10, -0.5, 10.5);
+  hist_n_all = book<TH1F>("n_all", "N(jets)", nBins, -0.5, 10.5);
+  hist_n_all_bloose = book<TH1F>("n_all_bloose", "N(loose b jets)", nBins, -0.5, 10.5);
+  hist_n_all_bmedium = book<TH1F>("n_all_bmedium", "N(medium b jets)", nBins, -0.5, 10.5);
+  hist_n_all_btight = book<TH1F>("n_all_btight", "N(tight b jets)", nBins, -0.5, 10.5);
 
-  hist_n_ex = book<TH1F>("n_ex", "N(xjets)", 10, -0.5, 10.5);
-  hist_n_ex_bloose = book<TH1F>("n_ex_bloose", "N(loose b xjets)", 10, -0.5, 10.5);
-  hist_n_ex_bmedium = book<TH1F>("n_ex_bmedium", "N(medium b xjets)", 10, -0.5, 10.5);
-  hist_n_ex_btight = book<TH1F>("n_ex_btight", "N(tight b xjets)", 10, -0.5, 10.5);
+  hist_n_all_b_loose_medium_2d = book<TH2F>("n_all_b_loose_medium_2d", "N(b jets) (x: loose, y: medium)", nBins, -0.5, 10.5, nBins, -0.5, 10.5);
+  hist_n_all_b_loose_tight_2d = book<TH2F>("n_all_b_loose_tight_2d", "N(b jets) (x: loose, y: tight)", nBins, -0.5, 10.5, nBins, -0.5, 10.5);
+  hist_n_all_b_medium_tight_2d = book<TH2F>("n_all_b_medium_tight_2d", "N(b jets) (x: medium, y: tight)", nBins, -0.5, 10.5, nBins, -0.5, 10.5);
+  // hist_n_all_b_all_3d = book<TH3F>("n_all_b_all_3d", "N(b jets) (x: loose, y: medium, z: tight)", nBins, -0.5, 10.5, nBins, -0.5, 10.5, nBins, -0.5, 10.5);
 
-  hist_n_in = book<TH1F>("n_in", "N(ijets)", 10, -0.5, 10.5);
-  hist_n_in_bloose = book<TH1F>("n_in_bloose", "N(loose b ijets)", 10, -0.5, 10.5);
-  hist_n_in_bmedium = book<TH1F>("n_in_bmedium", "N(medium b ijets)", 10, -0.5, 10.5);
-  hist_n_in_btight = book<TH1F>("n_in_btight", "N(tight b ijets)", 10, -0.5, 10.5);
+  hist_n_ex = book<TH1F>("n_ex", "N(xjets)", nBins, -0.5, 10.5);
+  hist_n_ex_bloose = book<TH1F>("n_ex_bloose", "N(loose b xjets)", nBins, -0.5, 10.5);
+  hist_n_ex_bmedium = book<TH1F>("n_ex_bmedium", "N(medium b xjets)", nBins, -0.5, 10.5);
+  hist_n_ex_btight = book<TH1F>("n_ex_btight", "N(tight b xjets)", nBins, -0.5, 10.5);
 
-  hist_n_inex_b_loose_2d = book<TH2F>("n_inex_b_loose_2d", "N(loose b jets) (x: xjets, y: ijets)", 10, -0.5, 10.5, 10, -0.5, 10.5);
-  hist_n_inex_b_medium_2d = book<TH2F>("n_inex_b_medium_2d", "N(medium b jets) (x: xjets, y: ijets)", 10, -0.5, 10.5, 10, -0.5, 10.5);
-  hist_n_inex_b_tight_2d = book<TH2F>("n_inex_b_tight_2d", "N(tight b jets) (x: xjets, y: ijets)", 10, -0.5, 10.5, 10, -0.5, 10.5);
+  hist_n_in = book<TH1F>("n_in", "N(ijets)", nBins, -0.5, 10.5);
+  hist_n_in_bloose = book<TH1F>("n_in_bloose", "N(loose b ijets)", nBins, -0.5, 10.5);
+  hist_n_in_bmedium = book<TH1F>("n_in_bmedium", "N(medium b ijets)", nBins, -0.5, 10.5);
+  hist_n_in_btight = book<TH1F>("n_in_btight", "N(tight b ijets)", nBins, -0.5, 10.5);
+
+  hist_n_inex_b_loose_2d = book<TH2F>("n_inex_b_loose_2d", "N(loose b jets) (x: xjets, y: ijets)", nBins, -0.5, 10.5, nBins, -0.5, 10.5);
+  hist_n_inex_b_medium_2d = book<TH2F>("n_inex_b_medium_2d", "N(medium b jets) (x: xjets, y: ijets)", nBins, -0.5, 10.5, nBins, -0.5, 10.5);
+  hist_n_inex_b_tight_2d = book<TH2F>("n_inex_b_tight_2d", "N(tight b jets) (x: xjets, y: ijets)", nBins, -0.5, 10.5, nBins, -0.5, 10.5);
 }
 
 
@@ -90,7 +92,7 @@ void TaggedJetsHists::fill(const uhh2::Event & event) {
     hist_n_all_b_loose_medium_2d->Fill(all_bloose.size(), all_bmedium.size(), w);
     hist_n_all_b_loose_tight_2d->Fill(all_bloose.size(), all_btight.size(), w);
     hist_n_all_b_medium_tight_2d->Fill(all_bmedium.size(), all_btight.size(), w);
-    hist_n_all_b_all_3d->Fill(all_bloose.size(), all_bmedium.size(), all_btight.size(), w);
+    // hist_n_all_b_all_3d->Fill(all_bloose.size(), all_bmedium.size(), all_btight.size(), w);
 
     hist_n_ex->Fill(ex.size(), w);
     hist_n_ex_bloose->Fill(ex_bloose.size(), w);
