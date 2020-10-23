@@ -69,9 +69,6 @@ class DNNSetup: public uhh2::AnalysisModule {
   uhh2::Event::Handle<double> m_h_tjet_pt;
   uhh2::Event::Handle<double> m_h_wjet_pt;
 
-  // uhh2::Event::Handle<double> h_event_weight;
-  // uhh2::Event::Handle<double> h_tjet_pt;
-
   std::vector<DNNInput> m_inputs_template_ttag, m_inputs_template_wtag, m_inputs_info_ttag, m_inputs_info_wtag;
   std::vector<std::string> m_input_names_ttag, m_input_names_wtag;
 
