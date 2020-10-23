@@ -67,14 +67,14 @@ class configContainer:
 
       self.yearVars['NNFiles'] = {
          'tTag': {
-            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/2016/dnn_20-02-11-14-50-22/neural_net.json',
-            '2017': self.uhh2Dir+'',
-            '2018': self.uhh2Dir+'',
+            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-10-21-07-18-42/neural_net.json',
+            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-10-21-07-18-42/neural_net.json',
+            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-10-21-07-18-42/neural_net.json',
          },
          'WTag': {
-            '2016': self.uhh2Dir+'',
-            '2017': self.uhh2Dir+'',
-            '2018': self.uhh2Dir+'',
+            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-10-21-07-20-36/neural_net.json',
+            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-10-21-07-20-36/neural_net.json',
+            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-10-21-07-20-36/neural_net.json',
          },
       }
 
