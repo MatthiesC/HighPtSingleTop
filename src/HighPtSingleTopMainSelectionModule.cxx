@@ -1,5 +1,5 @@
 #include <iostream>
-#include <fstream>
+// #include <fstream>
 #include <memory>
 
 #include "UHH2/core/include/AnalysisModule.h"
@@ -25,6 +25,7 @@
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
 #include "UHH2/HighPtSingleTop/include/TaggedJets.h"
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
+#include "UHH2/HighPtSingleTop/include/DNNApplication.h"
 #include "UHH2/HighPtSingleTop/include/DNNHists.h"
 #include "UHH2/HighPtSingleTop/include/MatchHists.h"
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
@@ -60,6 +61,7 @@ namespace uhh2 {
     unique_ptr<Ak8Corrections> ak8corrections;
     unique_ptr<AnalysisModule> ak8cleaning, handle_ak8jets, handle_wtaggedjets;
     unique_ptr<DNNSetup> dnn_setup;
+    unique_ptr<DNNApplication> dnn_app_ttag, dnn_app_wtag;
 
     unique_ptr<Selection> slct_WJetsHeavy, slct_tW_TopToHad, slct_tW_TopToEle, slct_tW_TopToMuo, slct_tW_TopToTau, slct_tW_WToHad, slct_tW_WToEle, slct_tW_WToMuo, slct_tW_WToTau;
     unique_ptr<HEMIssueSelection> slct_hemissue;
@@ -183,6 +185,8 @@ namespace uhh2 {
     h_which_region = ctx.declare_event_output<int>("which_region"); // need to declare this event output before initializing DNNSetup class
 
     dnn_setup.reset(new DNNSetup(ctx));
+    dnn_app_ttag.reset(new DNNApplication(ctx, "Top"));
+    dnn_app_wtag.reset(new DNNApplication(ctx, "W"));
 
     // ifstream neural_net_file(neural_net_filepath);
     // auto dnn_config = lwt::parse_json(neural_net_file);
@@ -525,8 +529,10 @@ namespace uhh2 {
 
     // DNN-related code starts here...
 
+    if(debug) cout << "Setting up input handles for the DNNs" << endl;
     dnn_setup->process(event);
 
+    if(debug) cout << "Calculate DNN outputs and fill DNN histograms" << endl;
     if(is_TopTagRegion) {
       // if(debug) cout << "Set event handles used as input for DNN training" << endl;
       // dnn_setup->process(event);
@@ -539,17 +545,21 @@ namespace uhh2 {
       // event.set(h_dnn_output_val, (double)dnn_output_vals[dnn_config_outputName]);
       // if(debug) cout << "Histograms of DNN inputs and DNN output" << endl;
       // hist_dnn->fill(event);
+      dnn_app_ttag->process(event);
       hist_dnn_TopTag->fill(event);
+      dnn_app_wtag->process_dummy(event);
     }
 
     else if(is_WTagRegion) {
-      // do stuff
+      dnn_app_wtag->process(event);
       hist_dnn_WTag->fill(event);
+      dnn_app_ttag->process_dummy(event);
     }
 
     else if(is_ValidationRegion) {
-      // do stuff
+      dnn_app_ttag->process(event);
       hist_dnn_ValidationTopTag->fill(event);
+      dnn_app_wtag->process(event);
       hist_dnn_ValidationWTag->fill(event);
     }
 
