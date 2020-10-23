@@ -64,7 +64,7 @@ namespace uhh2 {
   class BinnedDNNHists: public Hists {
 
   public:
-    BinnedDNNHists(uhh2::Context & ctx, const std::string & dirname, const std::vector<std::string> inputs, const std::vector<DNNInput> inputs_info);
+    BinnedDNNHists(uhh2::Context & ctx, const std::string & dirname, const std::vector<std::string> inputs, const std::vector<DNNInput> inputs_info, const std::vector<std::string> outputs);
 
     virtual void fill(const uhh2::Event & event);
     virtual ~BinnedDNNHists();

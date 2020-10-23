@@ -45,13 +45,16 @@ DNNApplication::DNNApplication(Context & ctx, const string & object_name) {
 
   for(uint i = 0; i < m_dnn_config_inputNames.size(); i++) {
     m_h_inputs.push_back(ctx.get_handle<double>(m_dnn_config_inputNames.at(i)));
+    cout << m_dnn_config_inputNames.at(i) << endl;
   }
   for(uint i = 0; i < m_dnn_config_outputNames.size(); i++) {
     string handle_name = "DNNoutput_";
     if(object_name == "Top") { handle_name += "ttag__"; }
     else if(object_name == "W") { handle_name += "wtag__"; }
     handle_name += m_dnn_config_outputNames.at(i);
+    cout << handle_name << endl;
     m_h_outputs.push_back(ctx.declare_event_output<double>(handle_name));
+    m_output_names.push_back(handle_name);
   }
 }
 
