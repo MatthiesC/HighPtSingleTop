@@ -13,6 +13,8 @@ DNNInput::DNNInput(string arg_input_name, string arg_plot_label, double arg_xlow
 
 DNNSetup::DNNSetup(Context & ctx, const double & zero_padding_value) {
 
+  cout << "Hello World from DNNSetup!" << endl;
+
   m_zeropadding = zero_padding_value;
 
   m_year = extract_year(ctx);
