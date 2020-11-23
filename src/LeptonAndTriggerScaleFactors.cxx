@@ -328,9 +328,9 @@ bool ElectronTriggerWeights::process(Event & event) {
 
 MuonTriggerWeights::MuonTriggerWeights(Context & ctx) {
 
-  h_muo_weight      = ctx.declare_event_output<float>("weight_sfmuon_trigger");
-  h_muo_weight_up   = ctx.declare_event_output<float>("weight_sfmuon_trigger_up");
-  h_muo_weight_down = ctx.declare_event_output<float>("weight_sfmuon_trigger_down");
+  h_muo_weight      = ctx.declare_event_output<float>("weight_sfmu_trigger");
+  h_muo_weight_up   = ctx.declare_event_output<float>("weight_sfmu_trigger_up");
+  h_muo_weight_down = ctx.declare_event_output<float>("weight_sfmu_trigger_down");
 
   auto dataset_type = ctx.get("dataset_type");
   bool is_mc = dataset_type == "MC";
@@ -369,7 +369,7 @@ MuonTriggerWeights::MuonTriggerWeights(Context & ctx) {
   }
 }
 
-bool MuonTriggerWeights::process(Event & event){
+bool MuonTriggerWeights::process(Event & event) {
 
   if(event.isRealData) {
     event.set(h_muo_weight, 1.);
