@@ -32,7 +32,7 @@ class DNNSetup: public uhh2::AnalysisModule {
 
  public:
 
-  explicit DNNSetup(uhh2::Context & ctx, const double & zero_padding_value = 0.);
+  explicit DNNSetup(uhh2::Context & ctx, const double & zero_padding_value = -10.);
   virtual bool process(uhh2::Event & event) override;
 
   std::vector<std::string> get_input_names_ttag() { return m_input_names_ttag; };
