@@ -1,26 +1,26 @@
 SteerPlotter(){
 
   // steering for the plotter
-  fCycleName     = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v2/MainSelection/2016/Muon/hadded/uhh2.AnalysisModuleRunner";
-  fInputFiles    = " DATA.DATA.root, MC.QCD.root, MC.ST_tW_DR_Sig.root, MC.ST_tW_DR_Bkg.root, MC.ST_non-tW.root, MC.TTbar.root, MC.WJetsHeavy.root, MC.WJetsLight.root, MC.DYJets.root, MC.Diboson.root, ";
-  fSampleNames   = " 2016_data, Multijets, tW_signal_(DR), tW_background_(DR), Other_single_t, ttbar, W_+_heavy_flavor, W_+_light_jets, DY_+_jets, VV, ";
+  fCycleName     = "<<<fCycleName>>>";
+  fInputFiles    = " DATA.DATA.root, MC.QCD.root, MC.ST_tW_DR_NoFullyHadronic_Sig.root, MC.ST_tW_DR_NoFullyHadronic_Bkg.root, MC.TTbar.root, MC.ST_otherChannels.root, MC.WJetsHeavy.root, MC.WJetsLight.root, MC.DYJets.root, MC.Diboson.root, ";
+  fSampleNames   = " Data, Multijet, tW_signal_(DR), tW_bkg._(DR), ttbar, Other_single_t, W_+_b/c, W_+_light_jets, DY_+_jets, VV, ";
   fSamplesWeight = " 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., ";
   fSamplesUnc    = " 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., ";
-  fHistColors    = " 1, 920, 632, 609, 400, 800, 418, 811, 602, 856, "; // 617, 618, QCD beige: 390
+  fHistColors    = " 1, 920, 632, 609, 800, 400, 418, 811, 602, 856, "; // 617, 618, QCD beige: 390
   fHistMarkers   = " 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, "; // 24 for circle, 8 for black dot
 
-  fSamplesToStack = " QCD, ST_tW_DR_Sig, ST_tW_DR_Bkg, ST_non-tW, TTbar, WJetsHeavy, WJetsLight, DYJets, Diboson, "; // the names of chains which you would like to stack (same as in input filenames)
+  fSamplesToStack = " QCD, ST_tW_DR_NoFullyHadronic_Sig, ST_tW_DR_NoFullyHadronic_Bkg, TTbar, ST_otherChannels, WJetsHeavy, WJetsLight, DYJets, Diboson, "; // the names of chains which you would like to stack (same as in input filenames)
 
 
-  fOutputPsFile = "/nfs/dust/cms/user/matthies/HighPtSingleTop/102X_v2/MainSelection/2016/Muon/plots_DR/lin/MainSel2016Muo.ps";
+  fOutputPsFile = "<<<fOutputPsFile>>>";
 
   bRatioPlot = true;   // plot ratio histograms?
   bZScoreInRatio = false;   // plot z-score instead of usual ratio
-  bDrawLegend = true;   // draw a legend on each histogram? (otherwise only on the first one in each ps file)
+  bDrawLegend = false;   // draw a legend on each histogram? (otherwise only on the first one in each ps file)
   bShapeNorm = false;   // shape normalization?
   bPortrait = true;    // portrait or landscape?
   bDrawEntries = false; // draw the histogram entries?
-  fLumi = 35.9; // luminosity of sample
+  fLumi = <<<fLumi>>>; // luminosity of sample
   fSysError = 0.0; // luminosity uncertainty
   bDrawLumi = true;   // plot ratio histograms?
   bForPrelim = false; // draw text saying "CMS Preliminary" -> only works if bDrawLumi is on
@@ -28,7 +28,7 @@ SteerPlotter(){
   bLogy = false; // draw all histograms with log y-Axis
   bSingleEPS = false;
   bIgnoreEmptyBins = true;
-
+  bWorkInProgress = false;
 }
 
 
