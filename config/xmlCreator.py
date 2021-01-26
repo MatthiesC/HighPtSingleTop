@@ -67,14 +67,14 @@ class configContainer:
 
       self.yearVars['NNFiles'] = {
          'tTag': {
-            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-10-21-07-18-42/neural_net.json',
-            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-10-21-07-18-42/neural_net.json',
-            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-10-21-07-18-42/neural_net.json',
+            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-12-02-05-00-43/neural_net.json',
+            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-12-02-05-00-43/neural_net.json',
+            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-12-02-05-00-43/neural_net.json',
          },
          'WTag': {
-            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-10-21-07-20-36/neural_net.json',
-            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-10-21-07-20-36/neural_net.json',
-            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-10-21-07-20-36/neural_net.json',
+            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-12-02-05-01-44/neural_net.json',
+            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-12-02-05-01-44/neural_net.json',
+            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-12-02-05-01-44/neural_net.json',
          },
       }
 
@@ -105,6 +105,7 @@ class configContainer:
       if selection=='mainsel':
          self.systematics.append(systEntity('mur', 'ScaleVariationMuR'))
          self.systematics.append(systEntity('muf', 'ScaleVariationMuF'))
+         self.systematics.append(systEntity('murmuf', 'N/A')) # Need to access ScaleVariationMuR and ScaleVariationMuF in another way
          self.systematics.append(systEntity('pileup', 'SystDirection_Pileup'))
          if year in ['2016', '2017']:
             self.systematics.append(systEntity('prefiring', 'SystDirection_Prefiring'))
@@ -116,8 +117,8 @@ class configContainer:
             self.systematics.append(systEntity('electrontrigger', 'SystDirection_ElectronTrigger'))
             self.systematics.append(systEntity('electronid', 'SystDirection_ElectronId'))
             self.systematics.append(systEntity('electronreco', 'SystDirection_ElectronReco'))
-         self.systematics.append(systEntity('ttag', 'SystDirection_HOTVRTopTagSF'))
-         self.systematics.append(systEntity('wtag', 'SystDirection_DeepAK8WTagSF'))
+         self.systematics.append(systEntity('hotvr', 'SystDirection_HOTVRTopTagSF', directions=['up', 'down', 'merged_up', 'merged_down', 'semimerged_up', 'semimerged_down', 'notmerged_up', 'notmerged_down']))
+         self.systematics.append(systEntity('deepak8', 'SystDirection_DeepAK8WTagSF'))
          # self.systematics.append(systEntity('deepjet', 'SystDirection_DeepJetBTagSF')) # TODO: Check how to properly vary deepjet shapes
 
 
@@ -283,6 +284,7 @@ class xmlCreator:
          file.write('''\n''')
          file.write('''<!-- Keys for systematic uncertainties -->\n''')
          for syst in self.systematics:
+            if syst.shortName == 'murmuf': continue
             file.write('''<Item Name="'''+syst.ctxName+'''" Value="'''+syst.defaultValue+'''"/>\n''')
          file.write('''\n''')
          file.write('''<!-- Tell AnalysisModuleRunner NOT to use the MC event weight from SFrame; rather let MCLumiWeight (called via CommonModules) calculate the MC event weight. The MC event weight assigned by MCLumiWeight is InputData.Lumi / Cycle.TargetLumi. -->\n''')
@@ -318,14 +320,20 @@ class xmlCreator:
          with open(systXmlFilePath, 'w') as outfile:
             for line in infile:
                newline = line
-               if newline.startswith('<!ENTITY PRESELdir') or newline.startswith('<!ENTITY OUTPUTdir'):
+               # if newline.startswith('<!ENTITY PRESELdir') or newline.startswith('<!ENTITY OUTPUTdir'):
+                  # newline = newline.replace('/nominal/', '/'+'_'.join(['syst', syst.shortName, direction])+'/')
+               if newline.startswith('<!ENTITY PRESELdir') and (syst.shortName == 'jec' or syst.shortName == 'jer'):
+                  newline = newline.replace('/nominal/', '/'+'_'.join(['syst', syst.shortName, direction])+'/')
+               if newline.startswith('<!ENTITY OUTPUTdir'):
                   newline = newline.replace('/nominal/', '/'+'_'.join(['syst', syst.shortName, direction])+'/')
                if newline.startswith('<ConfigSGE'):
                   newline = newline.replace('"/>', '_'+'_'.join(['syst', syst.shortName, direction])+'"/>')
-               if newline.startswith('<Item Name="'+syst.ctxName):
+               if syst.shortName != 'murmuf' and newline.startswith('<Item Name="'+syst.ctxName):
+                  newline = newline.replace(syst.defaultValue, direction)
+               if syst.shortName == 'murmuf' and newline.startswith('<Item Name="ScaleVariationMu'):
                   newline = newline.replace(syst.defaultValue, direction)
                if self.is_mainsel and newline.startswith('<Item Name="EmptyOutputTree"'):
-                  newline = newline.replace('false', 'true')
+                  newline = newline.replace('false', 'true') # Don't save AnalysisTree for mainsel systematics
                outfile.write(newline)
          infile.close()
 
