@@ -126,9 +126,15 @@ MyHOTVRScaleFactor::MyHOTVRScaleFactor(uhh2::Context & ctx, const TopJetId & id_
   m_id_topjet(id_topjet),
   h_tophad(ctx.get_handle<vector<GenTop>>(gen_handle_name))
 {
-  h_toptag_weight      = ctx.declare_event_output<float>("weight_sfhotvr");
-  h_toptag_weight_up   = ctx.declare_event_output<float>("weight_sfhotvr_up");
-  h_toptag_weight_down = ctx.declare_event_output<float>("weight_sfhotvr_down");
+  h_weight_sfhotvr      = ctx.declare_event_output<float>("weight_sfhotvr");
+  h_weight_sfhotvr_up   = ctx.declare_event_output<float>("weight_sfhotvr_up");
+  h_weight_sfhotvr_down = ctx.declare_event_output<float>("weight_sfhotvr_down");
+  h_weight_sfhotvr_merged_up   = ctx.declare_event_output<float>("weight_sfhotvr_merged_up");
+  h_weight_sfhotvr_merged_down = ctx.declare_event_output<float>("weight_sfhotvr_merged_down");
+  h_weight_sfhotvr_semimerged_up   = ctx.declare_event_output<float>("weight_sfhotvr_semimerged_up");
+  h_weight_sfhotvr_semimerged_down = ctx.declare_event_output<float>("weight_sfhotvr_semimerged_down");
+  h_weight_sfhotvr_notmerged_up   = ctx.declare_event_output<float>("weight_sfhotvr_notmerged_up");
+  h_weight_sfhotvr_notmerged_down = ctx.declare_event_output<float>("weight_sfhotvr_notmerged_down");
 
   // open file and get scale factor histograms
   string path = ctx.get(xmlpathname);
@@ -156,15 +162,15 @@ MyHOTVRScaleFactor::MyHOTVRScaleFactor(uhh2::Context & ctx, const TopJetId & id_
   f->Close();
 
   string syst_direction_ = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
-  if(syst_direction_ == "up") {
-    syst_direction = 1;
-  }
-  else if(syst_direction_ == "down") {
-    syst_direction = -1;
-  }
-  else {
-    syst_direction = 0;
-  }
+  if(syst_direction_ == "up") syst_direction = 1;
+  else if(syst_direction_ == "down") syst_direction = -1;
+  else if(syst_direction_ == "merged_up") syst_direction = -2;
+  else if(syst_direction_ == "merged_down") syst_direction = -2;
+  else if(syst_direction_ == "semimerged_up") syst_direction = 3;
+  else if(syst_direction_ == "semimerged_down") syst_direction = -3;
+  else if(syst_direction_ == "notmerged_up") syst_direction = 4;
+  else if(syst_direction_ == "notmerged_down") syst_direction = -4;
+  else syst_direction = 0;
 }
 
 void MyHOTVRScaleFactor::get_sf(double pt, int category) {
@@ -177,6 +183,12 @@ void MyHOTVRScaleFactor::get_sf(double pt, int category) {
     m_weight *= sf_merged->GetBinContent(bin);
     m_weight_up *= sf_merged_up->GetBinContent(bin);
     m_weight_down *= sf_merged_down->GetBinContent(bin);
+    m_weight_merged_up *= sf_merged_up->GetBinContent(bin);
+    m_weight_merged_down *= sf_merged_down->GetBinContent(bin);
+    m_weight_semimerged_up *= sf_merged->GetBinContent(bin);
+    m_weight_semimerged_down *= sf_merged->GetBinContent(bin);
+    m_weight_notmerged_up *= sf_merged->GetBinContent(bin);
+    m_weight_notmerged_down *= sf_merged->GetBinContent(bin);
   }
   else if(category == 2) {
     int bin = sf_semi->FindFixBin(pt);
@@ -186,6 +198,12 @@ void MyHOTVRScaleFactor::get_sf(double pt, int category) {
     m_weight *= sf_semi->GetBinContent(bin);
     m_weight_up *= sf_semi_up->GetBinContent(bin);
     m_weight_down *= sf_semi_down->GetBinContent(bin);
+    m_weight_merged_up *= sf_semi->GetBinContent(bin);
+    m_weight_merged_down *= sf_semi->GetBinContent(bin);
+    m_weight_semimerged_up *= sf_semi_up->GetBinContent(bin);
+    m_weight_semimerged_down *= sf_semi_down->GetBinContent(bin);
+    m_weight_notmerged_up *= sf_semi->GetBinContent(bin);
+    m_weight_notmerged_down *= sf_semi->GetBinContent(bin);
   }
   else {
     int bin = sf_not->FindFixBin(pt);
@@ -195,6 +213,12 @@ void MyHOTVRScaleFactor::get_sf(double pt, int category) {
     m_weight *= sf_not->GetBinContent(bin);
     m_weight_up *= sf_not_up->GetBinContent(bin);
     m_weight_down *= sf_not_down->GetBinContent(bin);
+    m_weight_merged_up *= sf_not->GetBinContent(bin);
+    m_weight_merged_down *= sf_not->GetBinContent(bin);
+    m_weight_semimerged_up *= sf_not->GetBinContent(bin);
+    m_weight_semimerged_down *= sf_not->GetBinContent(bin);
+    m_weight_notmerged_up *= sf_not_up->GetBinContent(bin);
+    m_weight_notmerged_down *= sf_not_down->GetBinContent(bin);
   }
 }
 
@@ -203,22 +227,27 @@ bool MyHOTVRScaleFactor::process(Event & event) {
   m_weight = 1.;
   m_weight_up = 1.;
   m_weight_down = 1.;
+  m_weight_merged_up = 1.;
+  m_weight_merged_down = 1.;
+  m_weight_semimerged_up = 1.;
+  m_weight_semimerged_down = 1.;
+  m_weight_notmerged_up = 1.;
+  m_weight_notmerged_down = 1.;
 
-  if(event.isRealData) {
-    event.set(h_toptag_weight, m_weight);
-    event.set(h_toptag_weight_up, m_weight_up);
-    event.set(h_toptag_weight_down, m_weight_down);
+  if(event.isRealData || event.get(h_tophad).size() == 0) {
+    event.set(h_weight_sfhotvr, 1.);
+    event.set(h_weight_sfhotvr_up, 1.);
+    event.set(h_weight_sfhotvr_down, 1.);
+    event.set(h_weight_sfhotvr_merged_up, 1.);
+    event.set(h_weight_sfhotvr_merged_down, 1.);
+    event.set(h_weight_sfhotvr_semimerged_up, 1.);
+    event.set(h_weight_sfhotvr_semimerged_down, 1.);
+    event.set(h_weight_sfhotvr_notmerged_up, 1.);
+    event.set(h_weight_sfhotvr_notmerged_down, 1.);
     return false;
   }
 
   vector<GenTop> gentops = event.get(h_tophad);
-  if(gentops.size() == 0) {
-    event.set(h_toptag_weight, m_weight);
-    event.set(h_toptag_weight_up, m_weight_up);
-    event.set(h_toptag_weight_down, m_weight_down);
-    return false;
-  }
-
   for(const auto & topjet : *event.topjets) {
     int nMatched = 0;
     bool bMatched = false;
@@ -239,16 +268,26 @@ bool MyHOTVRScaleFactor::process(Event & event) {
     }
   }
 
-  event.set(h_toptag_weight, m_weight);
-  event.set(h_toptag_weight_up, m_weight_up);
-  event.set(h_toptag_weight_down, m_weight_down);
+  event.set(h_weight_sfhotvr, m_weight);
+  event.set(h_weight_sfhotvr_up, m_weight_up);
+  event.set(h_weight_sfhotvr_down, m_weight_down);
+  event.set(h_weight_sfhotvr_merged_up, m_weight_merged_up);
+  event.set(h_weight_sfhotvr_merged_down, m_weight_merged_down);
+  event.set(h_weight_sfhotvr_semimerged_up, m_weight_semimerged_up);
+  event.set(h_weight_sfhotvr_semimerged_down, m_weight_semimerged_down);
+  event.set(h_weight_sfhotvr_notmerged_up, m_weight_notmerged_up);
+  event.set(h_weight_sfhotvr_notmerged_down, m_weight_notmerged_down);
 
-  if (syst_direction == 1) {
-    event.weight *= m_weight_up;
-  } else if (syst_direction == -1) {
-    event.weight *= m_weight_down;
-  } else {
-    event.weight *= m_weight;
+  switch(syst_direction) {
+    case 1: event.weight *= m_weight_up; break;
+    case -1: event.weight *= m_weight_down; break;
+    case 2: event.weight *= m_weight_merged_up; break;
+    case -2: event.weight *= m_weight_merged_down; break;
+    case 3: event.weight *= m_weight_semimerged_up; break;
+    case -3: event.weight *= m_weight_semimerged_down; break;
+    case 4: event.weight *= m_weight_notmerged_up; break;
+    case -4: event.weight *= m_weight_notmerged_down; break;
+    case 0: event.weight *= m_weight; break;
   }
 
   return true;
@@ -256,9 +295,15 @@ bool MyHOTVRScaleFactor::process(Event & event) {
 
 bool MyHOTVRScaleFactor::process_dummy(Event & event) {
 
-  event.set(h_toptag_weight, -1.);
-  event.set(h_toptag_weight_up, -1.);
-  event.set(h_toptag_weight_down, -1.);
+  event.set(h_weight_sfhotvr, -1.);
+  event.set(h_weight_sfhotvr_up, -1.);
+  event.set(h_weight_sfhotvr_down, -1.);
+  event.set(h_weight_sfhotvr_merged_up, -1.);
+  event.set(h_weight_sfhotvr_merged_down, -1.);
+  event.set(h_weight_sfhotvr_semimerged_up, -1.);
+  event.set(h_weight_sfhotvr_semimerged_down, -1.);
+  event.set(h_weight_sfhotvr_notmerged_up, -1.);
+  event.set(h_weight_sfhotvr_notmerged_down, -1.);
 
   return true;
 }

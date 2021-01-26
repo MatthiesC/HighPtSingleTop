@@ -41,13 +41,27 @@ class MyHOTVRScaleFactor: public uhh2::AnalysisModule {
   // uhh2::Event::Handle<std::vector<TopJet>> h_topjets;
   uhh2::Event::Handle<std::vector<GenTop>> h_tophad;
 
-  double m_weight = 1.;
-  double m_weight_up = 1.;
-  double m_weight_down = 1.;
+  double m_weight;
+  double m_weight_up;
+  double m_weight_down;
+  double m_weight_merged_up;
+  double m_weight_merged_down;
+  double m_weight_semimerged_up;
+  double m_weight_semimerged_down;
+  double m_weight_notmerged_up;
+  double m_weight_notmerged_down;
 
   TH1F *sf_merged, *sf_merged_up, *sf_merged_down;
   TH1F *sf_semi, *sf_semi_up, *sf_semi_down;
   TH1F *sf_not, *sf_not_up, *sf_not_down;
 
-  uhh2::Event::Handle<float> h_toptag_weight, h_toptag_weight_up, h_toptag_weight_down;
+  uhh2::Event::Handle<float> h_weight_sfhotvr;
+  uhh2::Event::Handle<float> h_weight_sfhotvr_up;
+  uhh2::Event::Handle<float> h_weight_sfhotvr_down;
+  uhh2::Event::Handle<float> h_weight_sfhotvr_merged_up;
+  uhh2::Event::Handle<float> h_weight_sfhotvr_merged_down;
+  uhh2::Event::Handle<float> h_weight_sfhotvr_semimerged_up;
+  uhh2::Event::Handle<float> h_weight_sfhotvr_semimerged_down;
+  uhh2::Event::Handle<float> h_weight_sfhotvr_notmerged_up;
+  uhh2::Event::Handle<float> h_weight_sfhotvr_notmerged_down;
 };
