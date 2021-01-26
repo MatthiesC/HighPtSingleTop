@@ -41,27 +41,56 @@ bool PrefiringWeights::process(Event & event) {
 }
 
 
-HEMIssueSelection::HEMIssueSelection(Context & ctx, const string & h_name_ak8jets) {
+// HEMIssueSelection::HEMIssueSelection(Context & ctx, const string & h_name_ak8jets) {
+//
+//   year = extract_year(ctx);
+//   h_ak8jets = ctx.get_handle<vector<TopJet>>(h_name_ak8jets);
+// }
+//
+// // return true for events which are affected by the HEM issue
+// bool HEMIssueSelection::passes(const Event & event) {
+//
+//   if(year == Year::is2018 && ((event.isRealData && event.run >= m_runnumber) || !event.isRealData)) {
+//     for(const Electron & e : *event.electrons) {
+//       if(e.v4().Phi() > m_phi.first && e.v4().Phi() < m_phi.second && e.v4().Eta() > m_eta.first && e.v4().Eta() < m_eta.second) return true;
+//     }
+//     for(const Jet & j : *event.jets) {
+//       if(j.v4().Phi() > m_phi.first && j.v4().Phi() < m_phi.second && j.v4().Eta() > m_eta.first && j.v4().Eta() < m_eta.second) return true;
+//     }
+//     for(const TopJet & t : *event.topjets) {
+//       if(t.v4().Phi() > m_phi.first && t.v4().Phi() < m_phi.second && t.v4().Eta() > m_eta.first && t.v4().Eta() < m_eta.second) return true;
+//     }
+//     for(const TopJet & a : event.get(h_ak8jets)) {
+//       if(a.v4().Phi() > m_phi.first && a.v4().Phi() < m_phi.second && a.v4().Eta() > m_eta.first && a.v4().Eta() < m_eta.second) return true;
+//     }
+//   }
+//
+//   return false;
+// }
+
+
+HEMIssueSelection::HEMIssueSelection(Context & ctx, const string & h_name_wtaggedjets, const string & h_name_toptaggedjets) {
 
   year = extract_year(ctx);
-  h_ak8jets = ctx.get_handle<vector<TopJet>>(h_name_ak8jets);
+  h_wtaggedjets = ctx.get_handle<vector<TopJet>>(h_name_wtaggedjets);
+  h_toptaggedjets = ctx.get_handle<vector<TopJet>>(h_name_toptaggedjets);
 }
 
 // return true for events which are affected by the HEM issue
 bool HEMIssueSelection::passes(const Event & event) {
 
+  const vector<TopJet> wtaggedjets = event.get(h_wtaggedjets);
+  const vector<TopJet> toptaggedjets = event.get(h_toptaggedjets);
+
   if(year == Year::is2018 && ((event.isRealData && event.run >= m_runnumber) || !event.isRealData)) {
     for(const Electron & e : *event.electrons) {
       if(e.v4().Phi() > m_phi.first && e.v4().Phi() < m_phi.second && e.v4().Eta() > m_eta.first && e.v4().Eta() < m_eta.second) return true;
     }
-    for(const Jet & j : *event.jets) {
-      if(j.v4().Phi() > m_phi.first && j.v4().Phi() < m_phi.second && j.v4().Eta() > m_eta.first && j.v4().Eta() < m_eta.second) return true;
+    for(const TopJet & w : wtaggedjets) {
+      if(w.v4().Phi() > m_phi.first && w.v4().Phi() < m_phi.second && w.v4().Eta() > m_eta.first && w.v4().Eta() < m_eta.second) return true;
     }
-    for(const TopJet & t : *event.topjets) {
+    for(const TopJet & t : toptaggedjets) {
       if(t.v4().Phi() > m_phi.first && t.v4().Phi() < m_phi.second && t.v4().Eta() > m_eta.first && t.v4().Eta() < m_eta.second) return true;
-    }
-    for(const TopJet & a : event.get(h_ak8jets)) {
-      if(a.v4().Phi() > m_phi.first && a.v4().Phi() < m_phi.second && a.v4().Eta() > m_eta.first && a.v4().Eta() < m_eta.second) return true;
     }
   }
 
