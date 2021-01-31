@@ -19,14 +19,15 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, const vector<string> &
   m_MAX_VAL = arg_MAX_VAL;
 
   int nBins = 100;
-  m_output_binnings = {nBins, 50, 20, 10};
+  m_output_binnings = {nBins, 50, 40, 20, 10, 1000};
 
   hist_binning_var = book<TH1F>("binning_var", arg_binning_var_name.c_str(), 10, m_MIN_VAL, m_MAX_VAL);
 
   for(auto output_name : arg_output_names) {
     m_h_output_values.push_back(ctx.get_handle<double>(output_name));
     for(int n_bins : m_output_binnings) {
-      m_output_hists.push_back(book<TH1F>((output_name+"_"+to_string(n_bins)+"bins").c_str(), output_name.c_str(), n_bins, 0, 1)); // TODO: Make histogram name and label more beautiful
+      m_output_hists_all.push_back(book<TH1F>((output_name+"_all_"+to_string(n_bins)+"bins").c_str(), (output_name+"_all").c_str(), n_bins, 0, 1)); // TODO: Make histogram name and label more beautiful
+      m_output_hists_max.push_back(book<TH1F>((output_name+"_max_"+to_string(n_bins)+"bins").c_str(), (output_name+"_max").c_str(), n_bins, 0, 1)); // TODO: Make histogram name and label more beautiful
     }
   }
 
@@ -57,9 +58,18 @@ void DNNHists::fill(const Event & event) {
   for(auto h : m_h_output_values) {
     output_values.push_back(event.get(h));
   }
+  uint i_max(0);
+  double max_output_value(0);
+  for(uint i = 0; i < output_values.size(); i++) {
+    if(output_values.at(i) > max_output_value) {
+      max_output_value = output_values.at(i);
+      i_max = i;
+    }
+  }
   for(uint i = 0; i < m_h_output_values.size(); i++) {
     for(uint j = 0; j < m_output_binnings.size(); j++) {
-      m_output_hists.at(i+j)->Fill(output_values.at(i), w);
+      m_output_hists_all.at(i*m_h_output_values.size()+j)->Fill(output_values.at(i), w);
+      if(i == i_max) m_output_hists_max.at(i*m_h_output_values.size()+j)->Fill(max_output_value, w);
     }
   }
 

@@ -9,6 +9,7 @@ Once the training is finished, copy the following files to a sub-directory of `K
 - `parameters.json`
 - `model_arch.json`
 - `model_weights.h5`
+- For multi-class DNNs in addition: `encoder_classes.npy`
 
 ## Install lwtnn
 
