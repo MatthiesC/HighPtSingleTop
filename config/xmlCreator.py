@@ -67,14 +67,20 @@ class configContainer:
 
       self.yearVars['NNFiles'] = {
          'tTag': {
-            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-12-02-05-00-43/neural_net.json',
-            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-12-02-05-00-43/neural_net.json',
-            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-12-02-05-00-43/neural_net.json',
+            # '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-12-02-05-00-43/neural_net.json', #binary
+            # '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-12-02-05-00-43/neural_net.json',
+            # '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-12-02-05-00-43/neural_net.json',
+            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_21-01-20-12-59-32/neural_net.json', #multiclass
+            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_21-01-20-12-59-32/neural_net.json',
+            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_21-01-20-12-59-32/neural_net.json',
          },
          'WTag': {
-            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-12-02-05-01-44/neural_net.json',
-            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-12-02-05-01-44/neural_net.json',
-            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-12-02-05-01-44/neural_net.json',
+            # '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-12-02-05-01-44/neural_net.json', #binary
+            # '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-12-02-05-01-44/neural_net.json',
+            # '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-12-02-05-01-44/neural_net.json',
+            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_21-01-20-12-58-02/neural_net.json', #multiclass
+            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_21-01-20-12-58-02/neural_net.json',
+            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_21-01-20-12-58-02/neural_net.json',
          },
       }
 
