@@ -136,7 +136,7 @@ Ak8Corrections::Ak8Corrections(){
   tjec_ver_2017 = "32";
 
   tjec_tag_2018 = "Autumn18";
-  tjec_ver_2018 = "7";
+  tjec_ver_2018 = "19";
 
   tjec_tjet_coll = "dummy";
 }
@@ -182,22 +182,27 @@ void Ak8Corrections::init(Context & ctx){
     tjet_corrector_MC->setup2017(std::make_shared<Ak8Corrector>(ctx, JERFiles::JECFilesMC(tjec_tag_2017, tjec_ver_2017, tjec_tjet_coll)));
     tjet_corrector_MC->setup2018(std::make_shared<Ak8Corrector>(ctx, JERFiles::JECFilesMC(tjec_tag_2018, tjec_ver_2018, tjec_tjet_coll)));
 
-    JERSmearing::SFtype1 JER_sf;
-    std::string resFilename = "";
+    // JERSmearing::SFtype1 JER_sf;
+    // std::string resFilename = "";
+    std::string jer_tag = "";
     if (year == Year::is2016v2 || year == Year::is2016v3) {
-      JER_sf = JERSmearing::SF_13TeV_Summer16_25nsV1;
-      resFilename = "common/data/2016/Summer16_25nsV1_MC_PtResolution_"+algo+pus+".txt";
+      // JER_sf = JERSmearing::SF_13TeV_Summer16_25nsV1;
+      // resFilename = "common/data/2016/Summer16_25nsV1_MC_PtResolution_"+algo+pus+".txt";
+      jer_tag = "Summer16_25nsV1";
     } else if (year == Year::is2017v1 || year == Year::is2017v2) {
-      JER_sf = JERSmearing::SF_13TeV_Fall17_V3;
-      resFilename = "common/data/2017/Fall17_V3_MC_PtResolution_"+algo+pus+".txt";
+      // JER_sf = JERSmearing::SF_13TeV_Fall17_V3;
+      // resFilename = "common/data/2017/Fall17_V3_MC_PtResolution_"+algo+pus+".txt";
+      jer_tag = "Fall17_V3";
     } else if (year == Year::is2018) {
-      JER_sf = JERSmearing::SF_13TeV_Autumn18_RunABCD_V4;
-      resFilename = "common/data/2018/Autumn18_V4_MC_PtResolution_"+algo+pus+".txt";
+      // JER_sf = JERSmearing::SF_13TeV_Autumn18_RunABCD_V4;
+      // resFilename = "common/data/2018/Autumn18_V4_MC_PtResolution_"+algo+pus+".txt";
+      jer_tag = "Autumn18_V7";
     } else {
       throw runtime_error("Cannot find suitable jet resolution file & scale factors for this year for JetResolutionSmearer");
     }
 
-    tjet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, ctx.get("Ak8recCollection"), ctx.get("Ak8genCollection"), JER_sf, resFilename)); // TODO: Check event handle strings!!!!!
+    // tjet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, ctx.get("Ak8recCollection"), ctx.get("Ak8genCollection"), JER_sf, resFilename)); // TODO: Check event handle strings!!!!!
+    tjet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, ctx.get("Ak8recCollection"), ctx.get("Ak8genCollection"), JERFiles::JERPathStringMC(jer_tag, tjec_tjet_coll, "SF"), JERFiles::JERPathStringMC(jer_tag, tjec_tjet_coll, "PtResolution")));
   }
   else{
     tjec_switcher_16.reset(new RunSwitcher(ctx, "2016"));
