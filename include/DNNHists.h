@@ -20,6 +20,7 @@ class DNNHists: public uhh2::Hists {
 
   std::vector<int> m_output_binnings;
 
+  TH1F *hist_counting;
   TH1F *hist_binning_var;
 
   std::vector<uhh2::Event::Handle<double>> m_h_output_values;

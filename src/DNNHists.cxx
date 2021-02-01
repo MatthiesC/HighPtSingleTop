@@ -21,7 +21,8 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, const vector<string> &
   int nBins = 100;
   m_output_binnings = {nBins, 50, 40, 20, 10, 1000};
 
-  hist_binning_var = book<TH1F>("binning_var", arg_binning_var_name.c_str(), 10, m_MIN_VAL, m_MAX_VAL);
+  hist_counting = book<TH1F>("counting", "Counting", 1, 0, 1);
+  hist_binning_var = book<TH1F>("binning_var", arg_binning_var_name.c_str(), 20, m_MIN_VAL, m_MAX_VAL);
 
   for(auto output_name : arg_output_names) {
     m_h_output_values.push_back(ctx.get_handle<double>(output_name));
@@ -52,6 +53,7 @@ void DNNHists::fill(const Event & event) {
 
   const double w = event.get(m_h_event_weight);
 
+  hist_counting->Fill(0.5, w);
   hist_binning_var->Fill(binning_var, w);
 
   vector<double> output_values;
