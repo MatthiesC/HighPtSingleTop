@@ -210,6 +210,14 @@ class xmlCreator:
 
       self.write_xml_successful = False
       self.systXmlFilePaths = list()
+      self.qcdXmlFilePath = None
+
+      self.force_empty_output_tree = False
+
+
+   def force_eot(self, eot: bool):
+
+      self.force_empty_output_tree = eot
 
 
    def write_xml(self):
@@ -297,8 +305,9 @@ class xmlCreator:
          file.write('''<Item Name="use_sframe_weight" Value="false"/>\n''')
          file.write('''<Item Name="AnalysisModule" Value="'''+('HighPtSingleTopMainSelectionModule' if self.is_mainsel else 'HighPtSingleTopPreSelectionModule')+'''"/>\n''')
          file.write('''<Item Name="analysis_channel" Value="'''+self.channel+'''"/>\n''')
+         file.write('''<Item Name="QCD_sideband" Value="false"/>\n''')
          file.write('''<Item Name="uhh2Dir" Value="'''+self.uhh2Dir+'''"/>\n''')
-         file.write('''<Item Name="EmptyOutputTree" Value="false"/>\n''')
+         file.write('''<Item Name="EmptyOutputTree" Value="'''+('false' if not self.is_mainsel or self.force_empty_output_tree == False else 'true')+'''"/>\n''')
          file.write('''\n''')
          file.write('''<!-- Switch for debugging of the central AnalysisModule -->\n''')
          file.write('''<Item Name="Debug" Value="false"/>\n''')
@@ -357,6 +366,32 @@ class xmlCreator:
       return self.systXmlFilePaths
 
 
+   def write_qcd_sideband_xml(self):
+
+      if not self.write_xml_successful:
+         sys.exit('xmlCreator::write_xml() not called. Danger of parsing potentially outdated XML file. Exit.')
+
+      qcdXmlFilePath = self.xmlFilePath.replace('.xml', '_')+'QCDsideband.xml'
+      infile = open(self.xmlFilePath, 'r')
+      with open(qcdXmlFilePath, 'w') as outfile:
+         for line in infile:
+            newline = line
+            if newline.startswith('<!ENTITY PRESELdir') or newline.startswith('<!ENTITY OUTPUTdir'):
+               newline = newline.replace('/nominal/', '/QCDsideband/')
+            if newline.startswith('<ConfigSGE'):
+               newline = newline.replace('"/>', '_QCDsideband"/>')
+            if newline.startswith('<Item Name="QCD_sideband"'):
+               newline = newline.replace('false', 'true')
+            if self.is_mainsel and newline.startswith('<Item Name="EmptyOutputTree"'):
+               newline = newline.replace('false', 'true') # Don't save AnalysisTree for mainsel qcd sideband
+            outfile.write(newline)
+      infile.close()
+
+      print('Created '+qcdXmlFilePath)
+
+      self.qcdXmlFilePath = qcdXmlFilePath
+
+
 if __name__=='__main__':
 
    selections = ['presel', 'mainsel']
@@ -371,6 +406,7 @@ if __name__=='__main__':
    parser.add_argument('-y', '--years', choices=years, nargs='*', default=[])
    parser.add_argument('-c', '--channels', choices=channels, nargs='*', default=[])
    parser.add_argument('-a', '--auto-complete', action='store_true', help='Auto-complete arguments if not all arguments for selections, years, and channels are given. E.g. if only selections and channels are given, assume that you want to create XML files for all years.')
+   parser.add_argument('--eot', action='store_true', help='Force empty output trees (saves disk space and time during further processing of root files). Caveat: When preparing root files for DNN training, output trees need to be filled.')
    args = parser.parse_args(sys.argv[1:])
 
    if(args.all == True):
@@ -403,6 +439,8 @@ if __name__=='__main__':
       for year in args.years:
          for channel in args.channels:
             x = xmlCreator(selection, year, channel)
+            x.force_eot(args.eot)
             x.write_xml()
+            x.write_qcd_sideband_xml()
             if args.syst:
                x.write_all_systematics_xmls()
