@@ -1,6 +1,7 @@
 #include "UHH2/HighPtSingleTop/include/MyUtils.h"
 #include "UHH2/core/include/LorentzVector.h"
 #include "UHH2/core/include/Event.h"
+#include "UHH2/common/include/ElectronIds.h"
 
 #include <limits>
 
@@ -91,6 +92,34 @@ double calcHOTVRfpt(const TopJet & hotvrjet, const unsigned int & i_sub) {
 
   return subjets.at(i_sub).v4().pt() / hotvrjet.v4().pt();
 }
+
+
+// inverted MuonIso ID
+InvMuonIso::InvMuonIso(double iso_): iso(iso_) {}
+
+bool InvMuonIso::operator()(const Muon & muon, const uhh2::Event &) const {
+  if(muon.relIso()<iso) return false;
+  return true;
+}
+
+
+ElectronIso::ElectronIso(double iso_): iso(iso_) {}
+
+bool ElectronIso::operator()(const Electron & ele, const uhh2::Event &) const {
+  if(ele.relIso()>iso) return false;
+  return true;
+}
+
+
+InvElectronIso::InvElectronIso(double iso_): iso(iso_) {}
+
+bool InvElectronIso::operator()(const Electron & ele, const uhh2::Event &) const {
+  if(ele.relIso()<iso) return false;
+  return true;
+}
+
+
+bool inverted_ElectronID_Fall17_veto(const Electron& ele, const uhh2::Event& evt) { return !Electron_CutBasedID(ele, evt, "Fall17", "VETO", true); }
 
 
 // for fun

@@ -41,6 +41,33 @@ double calcHOTVRmpair(const TopJet & hotvrjet);
 
 double calcHOTVRfpt(const TopJet & hotvrjet, const unsigned int & i_sub=0);
 
+// inverted MuonIso ID
+class InvMuonIso {
+public:
+  InvMuonIso(double iso_);
+  bool operator()(const Muon & muon, const uhh2::Event & event) const;
+private:
+  double iso;
+};
+
+class ElectronIso {
+public:
+  ElectronIso(double iso_);
+  bool operator()(const Electron & ele, const uhh2::Event & event) const;
+private:
+  double iso;
+};
+
+class InvElectronIso {
+public:
+  InvElectronIso(double iso_);
+  bool operator()(const Electron & ele, const uhh2::Event & event) const;
+private:
+  double iso;
+};
+
+bool inverted_ElectronID_Fall17_veto(const Electron&, const uhh2::Event&);
+
 void it_works();
 
 

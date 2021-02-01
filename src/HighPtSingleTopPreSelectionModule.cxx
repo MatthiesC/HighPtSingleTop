@@ -27,6 +27,7 @@
 #include "UHH2/HighPtSingleTop/include/MyEventHists.h"
 #include "UHH2/HighPtSingleTop/include/LeptonAndTriggerScaleFactors.h"
 #include "UHH2/HighPtSingleTop/include/HcalAndEcalModules.h"
+#include "UHH2/HighPtSingleTop/include/MyUtils.h"
 
 
 using namespace std;
@@ -59,7 +60,7 @@ namespace uhh2 {
     unique_ptr<MttHist> hist_mtt_before, hist_mtt_after;
     unique_ptr<AndHists> hist_common, hist_cleaning, hist_prefiring, hist_1lepton, hist_leptonSF, hist_jetleptonoverlapremoval, hist_metXYcorrection, hist_met, hist_hotvrJEC, hist_hotvrCleaner, hist_1hotvr;
 
-    bool is_muo, is_ele;
+    bool is_muo, is_ele, is_QCDsideband;
     string dataset_version, met_name, jet_collection;
   };
 
@@ -76,6 +77,7 @@ namespace uhh2 {
 
     is_muo = ctx.get("analysis_channel") == "muo";
     is_ele = ctx.get("analysis_channel") == "ele";
+    is_QCDsideband = string2bool(ctx.get("QCD_sideband"));
 
     if(!(is_muo || is_ele)) throw runtime_error("HighPtSingleTopPreSelectionModule: Analysis channel ( ele / muo ) not correctly given. Please check the XML config file!");
 
@@ -93,6 +95,7 @@ namespace uhh2 {
 
     double elecPt_min_veto = 30.0;
     double elecEta_max_veto = 2.4;
+    double elecIso_max_veto_QCDsideband = 1.0;
 
     double jetPt_min = 30.0;
     double jetEta_max = 2.4;
@@ -118,11 +121,27 @@ namespace uhh2 {
     //-----------------//
 
     MuonId muonID_veto = AndId<Muon>(MuonID(Muon::Selector::CutBasedIdLoose), PtEtaCut(muonPt_min_veto, muonEta_max_veto));
-    MuonId muonID = AndId<Muon>(MuonID(Muon::Selector::CutBasedIdTight), PtEtaCut(muonPt_min, muonEta_max), MuonIso(muonIso_max));
+    MuonId muonID;
+    if(is_QCDsideband && is_muo) {
+      muonID = AndId<Muon>(MuonID(Muon::Selector::CutBasedIdTight), PtEtaCut(muonPt_min, muonEta_max), InvMuonIso(muonIso_max));
+    } else {
+      muonID = AndId<Muon>(MuonID(Muon::Selector::CutBasedIdTight), PtEtaCut(muonPt_min, muonEta_max), MuonIso(muonIso_max));
+    }
 
     // Recommendation for complete Run 2: https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2
-    ElectronId elecID_veto = AndId<Electron>(ElectronID_Fall17_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
-    ElectronId elecID = AndId<Electron>(ElectronID_Fall17_tight, PtEtaCut(elecPt_min, elecEta_max));
+    ElectronId elecID_veto;
+    if(is_QCDsideband && is_ele) {
+      // elecID_veto = AndId<Electron>(PtEtaCut(elecPt_min_veto, elecEta_max_veto), ElectronIso(elecIso_max_QCDsideband));
+      elecID_veto = PtEtaCut(elecPt_min_veto, elecEta_max_veto);
+    } else {
+      elecID_veto = AndId<Electron>(ElectronID_Fall17_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
+    }
+    ElectronId elecID;
+    if(is_QCDsideband && is_ele) {
+      elecID = AndId<Electron>(inverted_ElectronID_Fall17_veto, PtEtaCut(elecPt_min, elecEta_max)); // inverted ID defined in MyUtils.h
+    } else {
+      elecID = AndId<Electron>(ElectronID_Fall17_tight, PtEtaCut(elecPt_min, elecEta_max));
+    }
 
     JetPFID::wp jetPFID;
     if(jet_collection == "jetsAk4CHS") jetPFID = JetPFID::WP_TIGHT_CHS;
