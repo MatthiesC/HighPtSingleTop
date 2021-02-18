@@ -14,12 +14,17 @@ using namespace std;
 
 MyMuonHists::MyMuonHists(Context & ctx, const std::string & dname, bool gen_plots): Hists(ctx, dname){
     number = book<TH1F>("number","muon multiplicity",7,-0.5,6.5);
-    
+
     pt = book<TH1F>("pt","muon p_{T} [GeV]",100,0,1000);
     eta = book<TH1F>("eta","muon #eta",100,-3,3);
     phi = book<TH1F>("phi","muon #phi",100,-M_PI,M_PI);
     deltaPhiMET = book<TH1F>("deltaPhiMET","#Delta#phi(#mu, p_{T}^{miss})", 100, 0, M_PI);
     isolation = book<TH1F>("isolation","muon isolation",100,0,0.2);
+    isolation_wide = book<TH1F>("isolation_wide", "muon isolation", 100,0,5);
+    isolation_log = book<TH1F>("isolation_log", "log_{10}(muon isolation)", 100,-4,1);
+    eta_phi = book<TH2F>("eta_phi", "#eta vs. #phi", 100, -2.5, 2.5, 100, -M_PI, M_PI);
+    iso_phi = book<TH2F>("iso_phi", "iso vs. #phi", 100, 0, 1, 100, -M_PI, M_PI);
+    eta_iso = book<TH2F>("eta_iso", "#eta vs. iso", 100, -2.5, 2.5, 100, 0, 1);
     charge = book<TH1F>("charge", "muon charge [e]",3,-1.5,1.5);
     ptrel = book<TH1F>("ptrel", "p_{T}^{rel}(#mu, jet)", 100, 0, 500);
     deltaRmin = book<TH1F>("deltaRmin", "#DeltaR(#mu, jet)", 100, 0, 5);
@@ -68,8 +73,13 @@ void MyMuonHists::fill(const Event & event){
         phi->Fill(muon.phi(), w);
 	deltaPhiMET->Fill(uhh2::deltaPhi(muon.v4(), event.met->v4()), w);
         isolation->Fill(muon.relIso(), w);
+        isolation_wide->Fill(muon.relIso(), w);
+        if(muon.relIso() > 0) isolation_log->Fill(log10(muon.relIso()), w);
+        eta_phi->Fill(muon.eta(), muon.phi(), w);
+        iso_phi->Fill(muon.relIso(), muon.phi(), w);
+        eta_iso->Fill(muon.eta(), muon.relIso(), w);
         charge->Fill(muon.charge(), w);
-        
+
         if(event.jets){
             auto nj = nextJet(muon, *event.jets);
             auto drmin_val = nj ? deltaR(muon, *nj) : numeric_limits<float>::infinity();
@@ -83,6 +93,6 @@ void MyMuonHists::fill(const Event & event){
 	    deltaPhimin->Fill(deltaPhi_buf.back(), w);
         }
     }
-    
+
 
 }
