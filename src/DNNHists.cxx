@@ -12,14 +12,15 @@ using namespace uhh2;
 DNNHists::DNNHists(Context & ctx, const string & dirname, const vector<string> & arg_used_inputs, const vector<DNNInput> & arg_inputs_info, const vector<string> arg_output_names, const string & arg_binning_var_name, const double & arg_MIN_VAL, const double & arg_MAX_VAL):
   Hists(ctx, dirname) {
 
-  m_h_binning_var = ctx.get_handle<double>(arg_binning_var_name);
+  binning_var_given = !arg_binning_var_name.empty();
+  if(binning_var_given) m_h_binning_var = ctx.get_handle<double>(arg_binning_var_name);
   m_h_event_weight = ctx.get_handle<double>("DNNinfo_event_weight");
 
   m_MIN_VAL = arg_MIN_VAL;
   m_MAX_VAL = arg_MAX_VAL;
 
   int nBins = 100;
-  m_output_binnings = {nBins, 50, 40, 20, 10, 1000};
+  m_output_binnings = {nBins, 50, 25, 10, 5, 1000};
 
   hist_counting = book<TH1F>("counting", "Counting", 1, 0, 1);
   hist_binning_var = book<TH1F>("binning_var", arg_binning_var_name.c_str(), 20, m_MIN_VAL, m_MAX_VAL);
@@ -47,14 +48,15 @@ DNNHists::DNNHists(Context & ctx, const string & dirname, const vector<string> &
 
 void DNNHists::fill(const Event & event) {
 
-  const double binning_var = event.get(m_h_binning_var);
+  double binning_var(0); // needs to be initialized to avoid compilation errors
+  if(binning_var_given) binning_var = event.get(m_h_binning_var);
 
-  if(binning_var <= m_MIN_VAL || binning_var > m_MAX_VAL) return;
+  if(binning_var_given && (binning_var <= m_MIN_VAL || binning_var > m_MAX_VAL)) return;
 
   const double w = event.get(m_h_event_weight);
 
   hist_counting->Fill(0.5, w);
-  hist_binning_var->Fill(binning_var, w);
+  if(binning_var_given) hist_binning_var->Fill(binning_var, w);
 
   vector<double> output_values;
   for(auto h : m_h_output_values) {
@@ -70,8 +72,8 @@ void DNNHists::fill(const Event & event) {
   }
   for(uint i = 0; i < m_h_output_values.size(); i++) {
     for(uint j = 0; j < m_output_binnings.size(); j++) {
-      m_output_hists_all.at(i*m_h_output_values.size()+j)->Fill(output_values.at(i), w);
-      if(i == i_max) m_output_hists_max.at(i*m_h_output_values.size()+j)->Fill(max_output_value, w);
+      m_output_hists_all.at(i*m_output_binnings.size()+j)->Fill(output_values.at(i), w);
+      if(i == i_max) m_output_hists_max.at(i*m_output_binnings.size()+j)->Fill(max_output_value, w);
     }
   }
 
