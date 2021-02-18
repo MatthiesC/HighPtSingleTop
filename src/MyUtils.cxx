@@ -121,6 +121,8 @@ bool InvElectronIso::operator()(const Electron & ele, const uhh2::Event &) const
 
 bool inverted_ElectronID_Fall17_veto(const Electron& ele, const uhh2::Event& evt) { return !Electron_CutBasedID(ele, evt, "Fall17", "VETO", true); }
 
+bool inverted_ElectronID_Fall17_tight(const Electron& ele, const uhh2::Event& evt) { return !Electron_CutBasedID(ele, evt, "Fall17", "TIGHT", true); }
+
 
 // for fun
 void it_works() {

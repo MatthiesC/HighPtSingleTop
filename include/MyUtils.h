@@ -68,6 +68,8 @@ private:
 
 bool inverted_ElectronID_Fall17_veto(const Electron&, const uhh2::Event&);
 
+bool inverted_ElectronID_Fall17_tight(const Electron&, const uhh2::Event&);
+
 void it_works();
 
 
