@@ -67,7 +67,7 @@ bool DNNApplication::process(Event & event) {
 
   auto dnn_output_values = m_NeuralNetwork->compute(inputs_map);
   for(uint i = 0; i < m_dnn_config_outputNames.size(); i++) {
-    event.set(m_h_outputs.at(i), (double)dnn_output_values[m_dnn_config_outputNames.at(i)]);
+    event.set(m_h_outputs.at(i), min(0.9999, (double)dnn_output_values[m_dnn_config_outputNames.at(i)])); // avoid outputs of ==1 to not have events filled into overflow bins
   }
 
   return true;
