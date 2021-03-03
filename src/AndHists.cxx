@@ -37,6 +37,7 @@ MttHist::MttHist(Context & ctx, const string & dirname):
   Hists(ctx, dirname) {
 
   hist_mtt = book<TH1F>("mtt", "Generated m_{t#bar{t}}", 2000, 0, 2000);
+  hist_mtt_100 = book<TH1F>("mtt_100", "Generated m_{t#bar{t}}", 100, 0, 2000);
 }
 
 
@@ -55,6 +56,7 @@ void MttHist::fill(const Event & event) {
   mtt = (top+antitop).M();
 
   hist_mtt->Fill(mtt, event.weight);
+  hist_mtt_100->Fill(mtt, event.weight);
 }
 
 
@@ -142,24 +144,43 @@ AndHists::~AndHists() {
 BinnedDNNHists::BinnedDNNHists(Context & ctx, const string & dirname, const vector<string> inputs, const vector<DNNInput> inputs_info, const vector<string> outputs):
   Hists(ctx, dirname+"_Binning"), m_dirname(dirname) {
 
-  h_toptag_pt = ctx.get_handle<double>("DNN_TopTagPt");
+  h_tjet_pt = ctx.get_handle<double>("DNNinfo_tjet_pt");
+  h_wjet_pt = ctx.get_handle<double>("DNNinfo_wjet_pt");
+  h_lepton_pt = ctx.get_handle<double>("DNNinfo_lepton_pt");
+  // h_tquark_pt = ctx.get_handle<double>("VOI_tquark_pt");
 
-  hist_toptag_pt = book<TH1F>("toptag_pt", "t jet p_{T} [GeV]", MyConstants::pt_binning.size(), MyConstants::pt_binning_edges);
+  hist_tjet_pt = book<TH1F>("tjet_pt", "t jet p_{T} [GeV]", MyConstants::binning__tjet_pt.size(), MyConstants::binning_edges__tjet_pt);
+  hist_wjet_pt = book<TH1F>("wjet_pt", "W jet p_{T} [GeV]", MyConstants::binning__wjet_pt.size(), MyConstants::binning_edges__wjet_pt);
+  hist_lepton_pt = book<TH1F>("lepton_pt", "Lepton p_{T} [GeV]", MyConstants::binning__lepton_pt.size(), MyConstants::binning_edges__lepton_pt);
+  // hist_tquark_pt = book<TH1F>("tquark_pt", "t quark candidate p_{T} [GeV]", MyConstants::binning__tquark_pt.size(), MyConstants::binning_edges__tquark_pt);
 
-  hists_vector.push_back(new DNNHists(ctx, dirname+"_Full", inputs, inputs_info, outputs, "DNN_TopTagPt"));
+  hists_vector.push_back(new DNNHists(ctx, dirname+"_Full", inputs, inputs_info, outputs));
   // hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt200to350", inputs, inputs_info, "DNN_TopTagPt", 0, 350));
   // hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt350toInf", inputs, inputs_info, "DNN_TopTagPt", 350));
-  for(auto i : MyConstants::pt_binning) {
-    hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNN_TopTagPt", i.first, i.second));
+  for(auto i : MyConstants::binning__tjet_pt) {
+    hists_vector.push_back(new DNNHists(ctx, dirname+"_tjet_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_tjet_pt", i.first, i.second));
   }
+  for(auto i : MyConstants::binning__wjet_pt) {
+    hists_vector.push_back(new DNNHists(ctx, dirname+"_wjet_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_wjet_pt", i.first, i.second));
+  }
+  for(auto i : MyConstants::binning__lepton_pt) {
+    hists_vector.push_back(new DNNHists(ctx, dirname+"_lepton_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_lepton_pt", i.first, i.second));
+  }
+  // for(auto i : MyConstants::binning__tquark_pt) {
+  //   hists_vector.push_back(new DNNHists(ctx, dirname+"_tquark_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "VOI_tquark_pt", i.first, i.second));
+  // }
 }
 
 
 void BinnedDNNHists::fill(const Event & event) {
 
-  double toptag_pt = event.get(h_toptag_pt);
+  double tjet_pt = event.get(h_tjet_pt);
+  double wjet_pt = event.get(h_wjet_pt);
+  double lepton_pt = event.get(h_lepton_pt);
 
-  hist_toptag_pt->Fill(toptag_pt, event.weight);
+  hist_tjet_pt->Fill(tjet_pt, event.weight);
+  hist_wjet_pt->Fill(wjet_pt, event.weight);
+  hist_lepton_pt->Fill(lepton_pt, event.weight);
 
   for(Hists *hist: hists_vector) {
     hist->fill(event);

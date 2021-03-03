@@ -42,6 +42,7 @@ DNNSetup::DNNSetup(Context & ctx, const double & zero_padding_value) {
   m_h_event_weight = ctx.declare_event_output<double>("DNNinfo_event_weight");
   m_h_tjet_pt = ctx.declare_event_output<double>("DNNinfo_tjet_pt");
   m_h_wjet_pt = ctx.declare_event_output<double>("DNNinfo_wjet_pt");
+  m_h_lepton_pt = ctx.declare_event_output<double>("DNNinfo_lepton_pt");
 
   /*
   * Define DNN inputs for t-tag region:
@@ -316,6 +317,7 @@ void DNNSetup::calculate_inputs_for_ttag_dnn(Event & event) {
     event.set(m_h_dnn_inputs_ttag.at(j), values.at(j)); }
 
   event.set(m_h_tjet_pt, topjet.v4().Pt());
+  event.set(m_h_lepton_pt, lepton.v4().Pt());
 }
 
 void DNNSetup::set_dummy_inputs_for_ttag_dnn(Event & event) {
@@ -436,6 +438,7 @@ void DNNSetup::calculate_inputs_for_wtag_dnn(Event & event) {
     event.set(m_h_dnn_inputs_wtag.at(j), values.at(j)); }
 
   event.set(m_h_wjet_pt, wjet.v4().Pt());
+  event.set(m_h_lepton_pt, lepton.v4().Pt());
 }
 
 void DNNSetup::set_dummy_inputs_for_wtag_dnn(Event & event) {

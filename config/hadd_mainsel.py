@@ -25,6 +25,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--all', action='store_true')
 parser.add_argument('-c', '--channels', choices=channels, nargs='*', default=[])
 parser.add_argument('-y', '--years', choices=years, nargs='*', default=[])
+parser.add_argument('-s', '--systematic')
 parser.add_argument('--runii', action='store_true', help='Do not hadd individual mainsels but hadd full Run 2. Must be used jointly with "--all" option.')
 args = parser.parse_args(sys.argv[1:])
 
@@ -36,6 +37,8 @@ else:
     years = args.years
 if args.runii == True and args.all == False:
     sys.exit('"--runii" option only allowed if using "--all" option.')
+
+systematic = args.systematic
 
 
 list_of_all_hadd_commands = list()
@@ -52,7 +55,8 @@ for channel in channels:
 
         dict_of_target_files[channel][year] = dict()
 
-        syst_name = 'nominal'
+        # syst_name = 'nominal'
+        syst_name = systematic
 
         # configDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/config/config_mainsel_'+year+'_'+channel+'/'
         outputDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/output/mainsel/'+year+'/'+channel+'/'+syst_name+'/'
@@ -71,13 +75,15 @@ for channel in channels:
                 bothdecays.append(t+'_'+w)
         signaldecays = list()
         bkgdecays = list()
-        for b in bothdecays:
-            if channel == 'ele' and 'ToHad' in b and 'ToEle' in b:
-                signaldecays.append(b)
-            elif channel == 'muo' and 'ToHad' in b and 'ToMuo' in b:
-                signaldecays.append(b)
-            else:
-                bkgdecays.append(b)
+        # for b in bothdecays:
+        #     if channel == 'ele' and 'ToHad' in b and 'ToEle' in b:
+        #         signaldecays.append(b)
+        #     elif channel == 'muo' and 'ToHad' in b and 'ToMuo' in b:
+        #         signaldecays.append(b)
+        #     else:
+        #         bkgdecays.append(b)
+        signaldecays = ['Sig']
+        bkgdecays = ['Bkg']
 
 
         rootFiles = dict()
@@ -98,13 +104,13 @@ for channel in channels:
         rootFiles['DYJets']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.DYJets*.root')
         rootFiles['DYJets']['targetFile'] = 'MC.DYJets.root'
 
-        rootFiles['WJetsLight'] = dict()
-        rootFiles['WJetsLight']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.WJetsLight*.root')
-        rootFiles['WJetsLight']['targetFile'] = 'MC.WJetsLight.root'
-
-        rootFiles['WJetsHeavy'] = dict()
-        rootFiles['WJetsHeavy']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.WJetsHeavy*.root')
-        rootFiles['WJetsHeavy']['targetFile'] = 'MC.WJetsHeavy.root'
+        # rootFiles['WJetsLight'] = dict()
+        # rootFiles['WJetsLight']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.WJetsLight*.root')
+        # rootFiles['WJetsLight']['targetFile'] = 'MC.WJetsLight.root'
+        #
+        # rootFiles['WJetsHeavy'] = dict()
+        # rootFiles['WJetsHeavy']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.WJetsHeavy*.root')
+        # rootFiles['WJetsHeavy']['targetFile'] = 'MC.WJetsHeavy.root'
 
         rootFiles['WJets'] = dict()
         rootFiles['WJets']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.WJets*.root')

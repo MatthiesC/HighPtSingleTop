@@ -26,6 +26,7 @@
 #include "UHH2/HighPtSingleTop/include/LeptonAndTriggerScaleFactors.h"
 #include "UHH2/HighPtSingleTop/include/HcalAndEcalModules.h"
 #include "UHH2/HighPtSingleTop/include/TaggingScaleFactors.h"
+#include "UHH2/HighPtSingleTop/include/TheoryCorrections.h"
 
 
 using namespace std;
@@ -44,6 +45,7 @@ namespace uhh2 {
     bool debug, empty_output_tree;
 
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_prefiring, sf_deepjet, scale_variation;
+    unique_ptr<TopPtReweighting> sf_toppt;
     unique_ptr<MyHOTVRScaleFactor> sf_toptag;
     unique_ptr<DeepAK8ScaleFactor> sf_wtag;
     unique_ptr<AnalysisModule> handle_primarylep, handle_hadronictop, handle_toptaggedjet, handle_wtaggedjet, handle_btaggedjets, handle_toptaggedjets, handle_ak4InExJets_top, handle_ak4InExJets_W, handle_wboson, handle_pseudotop, SingleTopGen_tWchProd;
@@ -52,13 +54,16 @@ namespace uhh2 {
     unique_ptr<DNNSetup> dnn_setup;
     unique_ptr<DNNApplication> dnn_app_ttag, dnn_app_wtag;
 
-    unique_ptr<Selection> slct_WJetsHeavy, slct_tW_TopToHad, slct_tW_TopToEle, slct_tW_TopToMuo, slct_tW_TopToTau, slct_tW_WToHad, slct_tW_WToEle, slct_tW_WToMuo, slct_tW_WToTau;
+    unique_ptr<Selection> slct_WJetsHeavy;
+    unique_ptr<Selection> slct_tW_Sig;
+    // unique_ptr<Selection> slct_tW_TopToHad, slct_tW_TopToEle, slct_tW_TopToMuo, slct_tW_TopToTau, slct_tW_WToHad, slct_tW_WToEle, slct_tW_WToMuo, slct_tW_WToTau;
     unique_ptr<HEMIssueSelection> slct_hemissue;
     unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_oneAk8jet, slct_oneAk4jet, slct_bJetVeto;
     unique_ptr<Selection> slct_0wtag, slct_1wtag, slct_oneijet_top, slct_onexjet_W;
     // unique_ptr<Selection> slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_oneijet, slct_noxjet, slct_1bxjet;
 
-    unique_ptr<AndHists> hist_presel_noweights, hist_presel_lumiSF, hist_presel_pileupSF, hist_presel_leptonSF, hist_presel_prefiringSF, hist_hemissue, hist_trigger, hist_triggerSF;
+    unique_ptr<AndHists> hist_presel_noweights, hist_presel_lumiSF, hist_presel_pileupSF, hist_presel_leptonSF, hist_presel_prefiringSF, hist_hemissue, hist_trigger, hist_triggerSF, hist_deepjetSF;
+    unique_ptr<AndHists> hist_topptSF;
     unique_ptr<Hists> hist_ak8_preCorr, hist_ak8_postCorr, hist_ak8_postCleaning;
     unique_ptr<AndHists> hist_TopTag_Begin, hist_TopTag_HotvrSF, hist_TopTag_End;
     unique_ptr<AndHists> hist_WTag_Begin, hist_WTag_DeepAk8SF, hist_WTag_End;
@@ -68,11 +73,19 @@ namespace uhh2 {
     // unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
     // unique_ptr<BinnedDNNHists> hist_dnn_ttag;
     unique_ptr<MatchHists> hist_Matching_TopTag, hist_Matching_WTag, hist_Matching_ValidationTopTag, hist_Matching_ValidationWTag;
-    unique_ptr<DNNHists> hist_dnn_TopTag, hist_dnn_WTag, hist_dnn_ValidationTopTag, hist_dnn_ValidationWTag;
+    // unique_ptr<DNNHists> hist_dnn_TopTag, hist_dnn_WTag, hist_dnn_ValidationTopTag, hist_dnn_ValidationWTag;
+    unique_ptr<BinnedDNNHists> hist_dnn_binned_TopTag, hist_dnn_binned_WTag, hist_dnn_binned_ValidationTopTag, hist_dnn_binned_ValidationWTag;
 
     string dataset_version;
 
+    bool is_QCDsideband;
+
     Event::Handle<int> h_which_region;
+
+    bool is_muo, is_ele;
+    bool is_WJetsHeavy, is_WJetsLight;
+    bool is_tW, is_tW_Bkg, is_tW_Sig;
+    bool is_TTbar;
   };
 
 
@@ -84,9 +97,20 @@ namespace uhh2 {
 
     debug = string2bool(ctx.get("Debug"));
 
+    is_muo = ctx.get("analysis_channel") == "muo";
+    is_ele = ctx.get("analysis_channel") == "ele";
+
+    is_QCDsideband = string2bool(ctx.get("QCD_sideband"));
+
     empty_output_tree = string2bool(ctx.get("EmptyOutputTree"));
 
     dataset_version = ctx.get("dataset_version");
+    is_WJetsHeavy = dataset_version.find("WJetsHeavy") == 0;
+    is_WJetsLight = dataset_version.find("WJetsLight") == 0;
+    is_tW = dataset_version.find("ST_tW") == 0;
+    is_tW_Sig = is_tW && dataset_version.find("_Sig") != string::npos;
+    is_tW_Bkg = is_tW && dataset_version.find("_Bkg") != string::npos;
+    is_TTbar = dataset_version.find("TTbar") == 0;
 
     string syst_pileup = ctx.get("SystDirection_Pileup", "nominal");
     string syst_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
@@ -116,7 +140,7 @@ namespace uhh2 {
 
     TopJetId StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
     BTag::algo btag_algo = BTag::DEEPJET;
-    BTag::wp btag_workingpoint = BTag::WP_MEDIUM; // working point needed by some histogram classes ("analysis b-tag workingpoint"); should be removed at some point
+    BTag::wp btag_workingpoint = BTag::WP_LOOSE; // working point needed by some histogram classes ("analysis b-tag workingpoint"); should be removed at some point
     JetId BJetID = BTag(btag_algo, btag_workingpoint);
     WTaggedJets::wp wtag_workingpoint = WTaggedJets::WP_LOOSE;
 
@@ -131,6 +155,7 @@ namespace uhh2 {
     sf_trigger.reset(new TriggerScaleFactors(ctx));
     sf_prefiring.reset(new PrefiringWeights(ctx));
     scale_variation.reset(new MCScaleVariation(ctx));
+    sf_toppt.reset(new TopPtReweighting(ctx, 0.0615, -0.0005));
     sf_toptag.reset(new MyHOTVRScaleFactor(ctx, StandardHOTVRTopTagID));
     sf_wtag.reset(new DeepAK8ScaleFactor(ctx, "W", false, wtag_workingpoint)); // false = don't use mass-decorrelated (MD) but nominal DeepAK8
     sf_deepjet.reset(new MCBTagDiscriminantReweighting(ctx, btag_algo, "jets", syst_btag));
@@ -153,7 +178,7 @@ namespace uhh2 {
     handle_btaggedjets.reset(new BTaggedJets(ctx, btag_algo, btag_workingpoint));
     handle_toptaggedjets.reset(new TopTaggedJets(ctx, StandardHOTVRTopTagID));
     handle_wboson.reset(new WBosonLeptonic(ctx));
-    handle_pseudotop.reset(new PseudoTopLeptonic(ctx, true)); // true = don't use b jets but all jets
+    handle_pseudotop.reset(new PseudoTopLeptonic(ctx, true, "WBosonLeptonic", "BJetsLoose")); // true = use b jets (if there are no b jets, all ak4 jets will be used instead to avoid crashes; important for validation region)
 
     handle_toptaggedjet.reset(new TopTaggedJet(ctx));
     handle_ak4InExJets_top.reset(new InExAK4Jets(ctx, btag_algo, btag_workingpoint, "_Top", "TopTaggedJet", true));
@@ -175,14 +200,15 @@ namespace uhh2 {
 
     slct_WJetsHeavy.reset(new WJetsGenSelection(ctx, "HF"));
 
-    slct_tW_TopToHad.reset(new tWgenSelection(ctx, "TopToHad"));
-    slct_tW_TopToEle.reset(new tWgenSelection(ctx, "TopToEle"));
-    slct_tW_TopToMuo.reset(new tWgenSelection(ctx, "TopToMuo"));
-    slct_tW_TopToTau.reset(new tWgenSelection(ctx, "TopToTau"));
-    slct_tW_WToHad.reset(new tWgenSelection(ctx, "WToHad"));
-    slct_tW_WToEle.reset(new tWgenSelection(ctx, "WToEle"));
-    slct_tW_WToMuo.reset(new tWgenSelection(ctx, "WToMuo"));
-    slct_tW_WToTau.reset(new tWgenSelection(ctx, "WToTau"));
+    slct_tW_Sig.reset(new tWgenSignalSelection(ctx, is_muo));
+    // slct_tW_TopToHad.reset(new tWgenSelection(ctx, "TopToHad"));
+    // slct_tW_TopToEle.reset(new tWgenSelection(ctx, "TopToEle"));
+    // slct_tW_TopToMuo.reset(new tWgenSelection(ctx, "TopToMuo"));
+    // slct_tW_TopToTau.reset(new tWgenSelection(ctx, "TopToTau"));
+    // slct_tW_WToHad.reset(new tWgenSelection(ctx, "WToHad"));
+    // slct_tW_WToEle.reset(new tWgenSelection(ctx, "WToEle"));
+    // slct_tW_WToMuo.reset(new tWgenSelection(ctx, "WToMuo"));
+    // slct_tW_WToTau.reset(new tWgenSelection(ctx, "WToTau"));
 
     slct_trigger.reset(new HighPtSingleTopTriggerSelection(ctx));
     slct_hemissue.reset(new HEMIssueSelection(ctx));
@@ -192,8 +218,8 @@ namespace uhh2 {
     slct_0wtag.reset(new MyNTopJetSelection(ctx, 0, 0, "WJets"));
     slct_1wtag.reset(new MyNTopJetSelection(ctx, 1, 1, "WJets"));
 
-    slct_oneijet_top.reset(new MyNJetSelection(ctx, 1, -1, "InJets_Top"));
-    slct_onexjet_W.reset(new MyNJetSelection(ctx, 1, -1, "ExJets_W"));
+    slct_oneijet_top.reset(new MyNJetSelection(ctx, 1, -1, "InBJetsLoose_Top")); // InJets_Top
+    slct_onexjet_W.reset(new MyNJetSelection(ctx, 1, -1, "ExBJetsLoose_W")); // "ExJets_W"
     slct_oneAk8jet.reset(new MyNTopJetSelection(ctx, 1, -1, "Ak8Jets"));
     slct_oneAk4jet.reset(new NJetSelection(1, -1));
     slct_bJetVeto.reset(new MyNJetSelection(ctx, 0, 0, "BJetsLoose"));
@@ -224,6 +250,8 @@ namespace uhh2 {
     hist_trigger.reset(new AndHists(ctx, "2_Trigger"));
     hist_triggerSF.reset(new AndHists(ctx, "2_TriggerSF"));
 
+    hist_deepjetSF.reset(new AndHists(ctx, "2_DeepJetSF"));
+
     // Control distributions or AK8 jets: JEC+JER and cleaning
     hist_ak8_preCorr.reset(new MyAk8Hists(ctx, "2_Ak8Setup_PreCorr", ctx.get("Ak8recCollection"))); // AK8 handles not yet set, use additional branch directly
     hist_ak8_postCorr.reset(new MyAk8Hists(ctx, "2_Ak8Setup_PostCorr", ctx.get("Ak8recCollection"))); // AK8 handles not yet set, use additional branch directly
@@ -231,6 +259,9 @@ namespace uhh2 {
 
     hist_hemissue.reset(new AndHists(ctx, "2_HEM"));
     hist_hemissue->add_Ak8Hists(ctx);
+
+    hist_topptSF.reset(new AndHists(ctx, "2_TopPtSF"));
+    hist_topptSF->add_Ak8Hists(ctx);
 
     hist_TopTag_Begin.reset(new AndHists(ctx, "3_TopTag_Begin"));
     hist_TopTag_Begin->add_TopTagHists(ctx);
@@ -284,10 +315,15 @@ namespace uhh2 {
 
     // hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists_TopTag", dnn_config_inputNames, dnn_setup->inputs_info()));
 
-    hist_dnn_TopTag.reset(new DNNHists(ctx, "DNNHists_TopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names(), "DNNinfo_tjet_pt"));
-    hist_dnn_WTag.reset(new DNNHists(ctx, "DNNHists_WTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names(), "DNNinfo_wjet_pt"));
-    hist_dnn_ValidationTopTag.reset(new DNNHists(ctx, "DNNHists_ValidationTopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names(), "DNNinfo_tjet_pt"));
-    hist_dnn_ValidationWTag.reset(new DNNHists(ctx, "DNNHists_ValidationWTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names(), "DNNinfo_wjet_pt"));
+    hist_dnn_binned_TopTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_TopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+    hist_dnn_binned_WTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_WTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+    hist_dnn_binned_ValidationTopTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_ValidationTopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names())); // For the validation region, it makes no sense to look at the pT of the t jet/pseudtop or W jet/leptonic W boson
+    hist_dnn_binned_ValidationWTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_ValidationWTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+
+    // hist_dnn_TopTag.reset(new DNNHists(ctx, "DNNHists_TopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+    // hist_dnn_WTag.reset(new DNNHists(ctx, "DNNHists_WTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+    // hist_dnn_ValidationTopTag.reset(new DNNHists(ctx, "DNNHists_ValidationTopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+    // hist_dnn_ValidationWTag.reset(new DNNHists(ctx, "DNNHists_ValidationWTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
   }
 
 
@@ -307,44 +343,46 @@ namespace uhh2 {
     // Split up W+jets and tW samples
 
     if(debug) cout << "Split up WJets into heavy flavor and light jets" << endl;
-    if((dataset_version.find("WJetsHeavy") == 0) && !slct_WJetsHeavy->passes(event)) return false;
-    if((dataset_version.find("WJetsLight") == 0) && slct_WJetsHeavy->passes(event)) return false;
+    if(is_WJetsHeavy && !slct_WJetsHeavy->passes(event)) return false;
+    if(is_WJetsLight && slct_WJetsHeavy->passes(event)) return false;
 
     if(debug) cout << "Split up tW samples into decay channels" << endl;
-    bool is_tW = (dataset_version.find("ST_tW") == 0);
     if(is_tW) {
 
       SingleTopGen_tWchProd->process(event);
 
-      bool is_TopToHad = slct_tW_TopToHad->passes(event);
-      bool is_TopToEle = slct_tW_TopToEle->passes(event);
-      bool is_TopToMuo = slct_tW_TopToMuo->passes(event);
-      bool is_TopToTau = slct_tW_TopToTau->passes(event);
+      if(is_tW_Sig && !slct_tW_Sig->passes(event)) return false;
+      if(is_tW_Bkg && slct_tW_Sig->passes(event)) return false;
 
-      bool is_WToHad = slct_tW_WToHad->passes(event);
-      bool is_WToEle = slct_tW_WToEle->passes(event);
-      bool is_WToMuo = slct_tW_WToMuo->passes(event);
-      bool is_WToTau = slct_tW_WToTau->passes(event);
-
-      if(dataset_version.find("TopToHad_WToHad") != string::npos && !(is_TopToHad && is_WToHad)) return false; // not included in NoFullyHadronic tW samples
-      if(dataset_version.find("TopToHad_WToEle") != string::npos && !(is_TopToHad && is_WToEle)) return false;
-      if(dataset_version.find("TopToHad_WToMuo") != string::npos && !(is_TopToHad && is_WToMuo)) return false;
-      if(dataset_version.find("TopToHad_WToTau") != string::npos && !(is_TopToHad && is_WToTau)) return false;
-
-      if(dataset_version.find("TopToEle_WToHad") != string::npos && !(is_TopToEle && is_WToHad)) return false;
-      if(dataset_version.find("TopToEle_WToEle") != string::npos && !(is_TopToEle && is_WToEle)) return false;
-      if(dataset_version.find("TopToEle_WToMuo") != string::npos && !(is_TopToEle && is_WToMuo)) return false;
-      if(dataset_version.find("TopToEle_WToTau") != string::npos && !(is_TopToEle && is_WToTau)) return false;
-
-      if(dataset_version.find("TopToMuo_WToHad") != string::npos && !(is_TopToMuo && is_WToHad)) return false;
-      if(dataset_version.find("TopToMuo_WToEle") != string::npos && !(is_TopToMuo && is_WToEle)) return false;
-      if(dataset_version.find("TopToMuo_WToMuo") != string::npos && !(is_TopToMuo && is_WToMuo)) return false;
-      if(dataset_version.find("TopToMuo_WToTau") != string::npos && !(is_TopToMuo && is_WToTau)) return false;
-
-      if(dataset_version.find("TopToTau_WToHad") != string::npos && !(is_TopToTau && is_WToHad)) return false;
-      if(dataset_version.find("TopToTau_WToEle") != string::npos && !(is_TopToTau && is_WToEle)) return false;
-      if(dataset_version.find("TopToTau_WToMuo") != string::npos && !(is_TopToTau && is_WToMuo)) return false;
-      if(dataset_version.find("TopToTau_WToTau") != string::npos && !(is_TopToTau && is_WToTau)) return false;
+      // bool is_TopToHad = slct_tW_TopToHad->passes(event);
+      // bool is_TopToEle = slct_tW_TopToEle->passes(event);
+      // bool is_TopToMuo = slct_tW_TopToMuo->passes(event);
+      // bool is_TopToTau = slct_tW_TopToTau->passes(event);
+      //
+      // bool is_WToHad = slct_tW_WToHad->passes(event);
+      // bool is_WToEle = slct_tW_WToEle->passes(event);
+      // bool is_WToMuo = slct_tW_WToMuo->passes(event);
+      // bool is_WToTau = slct_tW_WToTau->passes(event);
+      //
+      // if(dataset_version.find("TopToHad_WToHad") != string::npos && !(is_TopToHad && is_WToHad)) return false; // not included in NoFullyHadronic tW samples
+      // if(dataset_version.find("TopToHad_WToEle") != string::npos && !(is_TopToHad && is_WToEle)) return false;
+      // if(dataset_version.find("TopToHad_WToMuo") != string::npos && !(is_TopToHad && is_WToMuo)) return false;
+      // if(dataset_version.find("TopToHad_WToTau") != string::npos && !(is_TopToHad && is_WToTau)) return false;
+      //
+      // if(dataset_version.find("TopToEle_WToHad") != string::npos && !(is_TopToEle && is_WToHad)) return false;
+      // if(dataset_version.find("TopToEle_WToEle") != string::npos && !(is_TopToEle && is_WToEle)) return false;
+      // if(dataset_version.find("TopToEle_WToMuo") != string::npos && !(is_TopToEle && is_WToMuo)) return false;
+      // if(dataset_version.find("TopToEle_WToTau") != string::npos && !(is_TopToEle && is_WToTau)) return false;
+      //
+      // if(dataset_version.find("TopToMuo_WToHad") != string::npos && !(is_TopToMuo && is_WToHad)) return false;
+      // if(dataset_version.find("TopToMuo_WToEle") != string::npos && !(is_TopToMuo && is_WToEle)) return false;
+      // if(dataset_version.find("TopToMuo_WToMuo") != string::npos && !(is_TopToMuo && is_WToMuo)) return false;
+      // if(dataset_version.find("TopToMuo_WToTau") != string::npos && !(is_TopToMuo && is_WToTau)) return false;
+      //
+      // if(dataset_version.find("TopToTau_WToHad") != string::npos && !(is_TopToTau && is_WToHad)) return false;
+      // if(dataset_version.find("TopToTau_WToEle") != string::npos && !(is_TopToTau && is_WToEle)) return false;
+      // if(dataset_version.find("TopToTau_WToMuo") != string::npos && !(is_TopToTau && is_WToMuo)) return false;
+      // if(dataset_version.find("TopToTau_WToTau") != string::npos && !(is_TopToTau && is_WToTau)) return false;
     }
 
     // This is where the fun begins...
@@ -368,7 +406,7 @@ namespace uhh2 {
     hist_presel_lumiSF->fill(event);
     sf_pileup->process(event);
     hist_presel_pileupSF->fill(event);
-    sf_lepton->process(event);
+    if(!is_QCDsideband) sf_lepton->process(event);
     hist_presel_leptonSF->fill(event);
     sf_prefiring->process(event);
     hist_presel_prefiringSF->fill(event);
@@ -381,6 +419,7 @@ namespace uhh2 {
 
     if(debug) cout << "Reweight DeepJet distributions for AK4 jets" << endl;
     sf_deepjet->process(event);
+    hist_deepjetSF->fill(event);
 
     if(debug) cout << "Apply corrections to AK8 jets and clean them" << endl;
     hist_ak8_preCorr->fill(event);
@@ -402,6 +441,11 @@ namespace uhh2 {
       else event.weight *= slct_hemissue->MCWeight();
     }
     hist_hemissue->fill(event);
+
+    if(debug) cout << "Apply top-pt reweighting for ttbar events" << endl;
+    if(is_TTbar) sf_toppt->process(event);
+    else sf_toppt->process_dummy(event);
+    hist_topptSF->fill(event);
 
     if(debug) cout << "Set some booleans for analysis regions" << endl;
     bool b_1toptag = slct_1toptag->passes(event);
@@ -508,21 +552,21 @@ namespace uhh2 {
     if(debug) cout << "Calculate DNN outputs and fill DNN histograms" << endl;
     if(is_TopTagRegion) {
       dnn_app_ttag->process(event);
-      hist_dnn_TopTag->fill(event);
+      hist_dnn_binned_TopTag->fill(event);
       dnn_app_wtag->process_dummy(event);
     }
 
     else if(is_WTagRegion) {
       dnn_app_wtag->process(event);
-      hist_dnn_WTag->fill(event);
+      hist_dnn_binned_WTag->fill(event);
       dnn_app_ttag->process_dummy(event);
     }
 
     else if(is_ValidationRegion) {
       dnn_app_ttag->process(event);
-      hist_dnn_ValidationTopTag->fill(event);
+      hist_dnn_binned_ValidationTopTag->fill(event);
       dnn_app_wtag->process(event);
-      hist_dnn_ValidationWTag->fill(event);
+      hist_dnn_binned_ValidationWTag->fill(event);
     }
 
 

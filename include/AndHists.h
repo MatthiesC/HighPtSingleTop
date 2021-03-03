@@ -34,6 +34,7 @@ namespace uhh2 {
 
   private:
     TH1F *hist_mtt;
+    TH1F *hist_mtt_100;
   };
 
 
@@ -73,10 +74,10 @@ namespace uhh2 {
     std::string m_dirname;
 
   protected:
-    uhh2::Event::Handle<double> h_toptag_pt;
+    uhh2::Event::Handle<double> h_tjet_pt, h_wjet_pt, h_lepton_pt;
     std::vector<uhh2::Hists*> hists_vector;
 
-    TH1F *hist_toptag_pt;
+    TH1F *hist_tjet_pt, *hist_wjet_pt, *hist_lepton_pt;
   };
 
 }

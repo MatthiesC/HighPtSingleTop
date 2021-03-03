@@ -16,7 +16,7 @@ WBosonLeptonic::WBosonLeptonic(Context & ctx,
 
 bool WBosonLeptonic::process(Event & event) {
   assert(event.met);
-  
+
   const FlavorParticle & primlep = event.get(h_primlep);
   vector<LorentzVector> neutrinos = NeutrinoReconstruction(primlep.v4(), event.met->v4());
 
@@ -25,9 +25,9 @@ bool WBosonLeptonic::process(Event & event) {
     solutions.push_back(neutrinos.at(i) + primlep.v4());
   }
 
-  // take the neutrino solution that has smaller absolute value of pZ
+  // take the neutrino solution that has *higher* absolute value of pZ, following https://twiki.cern.ch/twiki/bin/view/LHCPhysics/ParticleLevelTopDefinitions
   LorentzVector wboson = solutions.at(0);
-  if(neutrinos.size() > 1 && abs(solutions.at(1).Pz()) < abs(solutions.at(0).Pz())) {
+  if(neutrinos.size() > 1 && abs(solutions.at(1).Pz()) > abs(solutions.at(0).Pz())) {
     wboson = solutions.at(1);
   }
   event.set(h_wboson, wboson);
@@ -37,14 +37,16 @@ bool WBosonLeptonic::process(Event & event) {
 
 
 PseudoTopLeptonic::PseudoTopLeptonic(Context & ctx,
-				     const bool dont_use_btagging_info,
+				     const bool use_btagging_info,
 				     const string & h_name_wboson,
 				     const string & h_name_bjets,
+             const string & h_name_primlep,
 				     const string & h_name_pseudotop,
 				     const double topmassMC):
-  m_dont_use_btagging_info(dont_use_btagging_info),
+  m_use_btagging_info(use_btagging_info),
   h_wboson(ctx.get_handle<LorentzVector>(h_name_wboson)),
   h_bjets(ctx.get_handle<vector<Jet>>(h_name_bjets)),
+  h_primlep(ctx.get_handle<FlavorParticle>(h_name_primlep)),
   h_pseudotop(ctx.get_handle<LorentzVector>(h_name_pseudotop)),
   m_topmassMC(topmassMC)
 {}
@@ -55,14 +57,22 @@ bool PseudoTopLeptonic::process(Event & event) {
 
   const LorentzVector wboson = event.get(h_wboson);
   const vector<Jet> bjets = event.get(h_bjets);
+  const FlavorParticle & primlep = event.get(h_primlep);
   const vector<Jet> jets = *event.jets;
 
   vector<LorentzVector> solutions;
 
-  if(!m_dont_use_btagging_info && bjets.size() > 0) {
-    for(unsigned int i = 0; i < bjets.size(); ++i) {
-      solutions.push_back(wboson + bjets.at(i).v4());
+  if(m_use_btagging_info && bjets.size() > 0) {
+    // for(unsigned int i = 0; i < bjets.size(); ++i) {
+    //   solutions.push_back(wboson + bjets.at(i).v4());
+    // }
+    Jet chosen_bjet = bjets.at(0);
+    for(uint i = 1; i < bjets.size(); i++) {
+      if(deltaR(bjets.at(i).v4(), primlep.v4()) < deltaR(chosen_bjet.v4(), primlep.v4())) {
+        chosen_bjet = bjets.at(i);
+      }
     }
+    solutions.push_back(wboson + chosen_bjet.v4());
   }
   else { // in case that there are no b quark candidates, loop over all AK4 jets
     for(unsigned int i = 0; i < jets.size(); ++i) {

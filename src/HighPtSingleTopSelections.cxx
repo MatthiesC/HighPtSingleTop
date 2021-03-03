@@ -97,16 +97,22 @@ bool tWgenSignalSelection::passes(const Event & event) {
 
   const auto & GENtW = event.get(h_GENtW);
 
-  if(!GENtW.IsTopHadronicDecay()) return false;
-
-  if(is_muon) { // Muon+jets channel
-    if(!GENtW.IsAssToMuonDecay()) return false;
+  if(is_muon) {
+    if(
+      (GENtW.IsTopHadronicDecay() && GENtW.IsAssToMuonDecay()) ||
+      (GENtW.IsAssHadronicDecay() && GENtW.IsTopToMuonDecay())
+    ) return true;
+    else return false;
   }
-  else { // Electron+jets channel
-    if(!GENtW.IsAssToElectronDecay()) return false;
+  else{
+    if(
+      (GENtW.IsTopHadronicDecay() && GENtW.IsAssToElectronDecay()) ||
+      (GENtW.IsAssHadronicDecay() && GENtW.IsTopToElectronDecay())
+    ) return true;
+    else return false;
   }
 
-  return true;
+  return false;
 }
 
 

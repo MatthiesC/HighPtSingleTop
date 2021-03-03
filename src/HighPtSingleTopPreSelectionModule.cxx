@@ -9,6 +9,7 @@
 #include "UHH2/common/include/AdditionalSelections.h"
 #include "UHH2/common/include/ObjectIdUtils.h"
 #include "UHH2/common/include/ElectronIds.h"
+#include "UHH2/common/include/MCWeight.h"
 #include "UHH2/common/include/MuonIds.h"
 #include "UHH2/common/include/JetIds.h"
 #include "UHH2/common/include/NSelections.h"
@@ -47,6 +48,7 @@ namespace uhh2 {
 
     Year year;
 
+    unique_ptr<AnalysisModule> sf_lumi;
     unique_ptr<CommonModules> common_modules;
 
     unique_ptr<AnalysisModule> clnr_muon, clnr_elec, clnr_hotvr, hotvr_jec_module, clnr_jetLeptonOverlap;
@@ -62,6 +64,8 @@ namespace uhh2 {
 
     bool is_muo, is_ele, is_QCDsideband;
     string dataset_version, met_name, jet_collection;
+    bool is_TTbar, is_TTbar_Mtt0to700, is_TTbar_Mtt700toInf;
+    bool is_pfMET;
   };
 
 
@@ -82,7 +86,13 @@ namespace uhh2 {
     if(!(is_muo || is_ele)) throw runtime_error("HighPtSingleTopPreSelectionModule: Analysis channel ( ele / muo ) not correctly given. Please check the XML config file!");
 
     dataset_version = ctx.get("dataset_version");
+    is_TTbar = dataset_version.find("TTbar") == 0;
+    is_TTbar_Mtt0to700 = is_TTbar && dataset_version.find("Mtt0to700") != string::npos;
+    is_TTbar_Mtt700toInf = is_TTbar && dataset_version.find("Mtt700toInf") != string::npos;
+
     met_name = ctx.get("METName");
+    is_pfMET = met_name == "slimmedMETs";
+
     jet_collection = ctx.get("JetCollection");
 
 
@@ -132,13 +142,15 @@ namespace uhh2 {
     ElectronId elecID_veto;
     if(is_QCDsideband && is_ele) {
       // elecID_veto = AndId<Electron>(PtEtaCut(elecPt_min_veto, elecEta_max_veto), ElectronIso(elecIso_max_QCDsideband));
-      elecID_veto = PtEtaCut(elecPt_min_veto, elecEta_max_veto);
+      // elecID_veto = PtEtaCut(elecPt_min_veto, elecEta_max_veto);
+      elecID_veto = AndId<Electron>(ElectronID_Fall17_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
     } else {
       elecID_veto = AndId<Electron>(ElectronID_Fall17_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
     }
     ElectronId elecID;
     if(is_QCDsideband && is_ele) {
-      elecID = AndId<Electron>(inverted_ElectronID_Fall17_veto, PtEtaCut(elecPt_min, elecEta_max)); // inverted ID defined in MyUtils.h
+      // elecID = AndId<Electron>(inverted_ElectronID_Fall17_veto, PtEtaCut(elecPt_min, elecEta_max)); // inverted ID defined in MyUtils.h
+      elecID = AndId<Electron>(inverted_ElectronID_Fall17_tight, PtEtaCut(elecPt_min, elecEta_max)); // inverted ID defined in MyUtils.h
     } else {
       elecID = AndId<Electron>(ElectronID_Fall17_tight, PtEtaCut(elecPt_min, elecEta_max));
     }
@@ -166,6 +178,7 @@ namespace uhh2 {
     common_modules->switch_jetlepcleaner(false); // switch off jet lepton cleaning <-- Roman's recommendation from October 16, 2019
     common_modules->switch_jetPtSorter(true);
     common_modules->disable_lumisel(); // done manually
+    common_modules->disable_mclumiweight(); // done manually
     common_modules->init(ctx);
 
     met_xy_correction.reset(new METXYCorrections(ctx));
@@ -216,6 +229,7 @@ namespace uhh2 {
     primarylep.reset(new PrimaryLepton(ctx));
     sf_lepton.reset(new LeptonScaleFactors(ctx));
     sf_prefiring.reset(new PrefiringWeights(ctx));
+    sf_lumi.reset(new MCLumiWeight(ctx));
   }
 
 
@@ -241,12 +255,13 @@ namespace uhh2 {
 
     if(debug) cout << "Lumi selection (need to do this manually before CommonModules)" << endl; // else getting error for some data samples, e.g. "RunSwitcher cannot handle run number 275656 for year 2016"
     if(event.isRealData && !slct_lumi->passes(event)) return false;
+    sf_lumi->process(event);
 
     if(debug) cout << "Mttbar gencut for the inclusive TTbar sample" << endl;
-    if(dataset_version.find("TTbar") == 0) {
+    if(is_TTbar) {
       hist_mtt_before->fill(event);
-      if(dataset_version.find("Mtt0to700") != string::npos && !slct_mttbarGenCut->passes(event)) return false;
-      if(dataset_version.find("Mtt700toInf") != string::npos && slct_mttbarGenCut->passes(event)) return false;
+      if(is_TTbar_Mtt0to700 && !slct_mttbarGenCut->passes(event)) return false;
+      if(is_TTbar_Mtt700toInf && slct_mttbarGenCut->passes(event)) return false;
       hist_mtt_after->fill(event);
     }
 
@@ -283,7 +298,7 @@ namespace uhh2 {
     hist_jetleptonoverlapremoval->fill(event);
 
     if(debug) cout << "Correct MET XY" << endl;
-    if(met_name == "slimmedMETs") { // only apply XY corrections if using PF MET; Puppi MET does not need XY corrections
+    if(is_pfMET) { // only apply XY corrections if using PF MET; Puppi MET does not need XY corrections
       met_xy_correction->process(event);
       hist_metXYcorrection->fill(event);
     }
@@ -300,7 +315,7 @@ namespace uhh2 {
     clnr_hotvr->process(event);
     hist_hotvrCleaner->fill(event);
 
-    if(debug) cout << "At least one HOTVR jet" << endl;
+    if(debug) cout << "At least one HOTVR jet" << endl; // TODO: Or one AK8 jet
     if(!slct_1hotvr->passes(event)) return false;
     hist_1hotvr->fill(event);
 
