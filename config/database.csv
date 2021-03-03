@@ -33,7 +33,7 @@ True,2016,both,False,ST_sChannel_leptonDecays,RunII_102X_v1/2016v3/MC_ST_s-chann
 True,2016,both,False,TTbar_Mtt0to700,RunII_102X_v1/2016v3/MC_TT_TuneCUETP8M2T4.xml,831.76,76738314.0,yes
 True,2016,both,False,TTbar_Mtt700to1000,RunII_102X_v1/2016v3/MC_TT_Mtt-700to1000.xml,76.605,38436000.0,yes
 True,2016,both,False,TTbar_Mtt1000toInf,RunII_102X_v1/2016v3/MC_TT_Mtt-1000toInf.xml,20.578,24569457.0,yes
-True,2016,both,False,WJetsToLNu_HT70to100,RunII_102X_v1/2016v3/MC_WJetsToLNu_HT-70To100.xml,1353.,10020533.0,yes
+False,2016,both,False,WJetsToLNu_HT70to100,RunII_102X_v1/2016v3/MC_WJetsToLNu_HT-70To100.xml,1353.,10020533.0,yes
 True,2016,both,False,WJetsToLNu_HT100to200,RunII_102X_v1/2016v3/MC_WJetsToLNu_HT-100To200.xml,1346.,39449178.0,yes
 True,2016,both,False,WJetsToLNu_HT200to400,RunII_102X_v1/2016v3/MC_WJetsToLNu_HT-200To400.xml,360.1,19069732.0,yes
 True,2016,both,False,WJetsToLNu_HT400to600,RunII_102X_v1/2016v3/MC_WJetsToLNu_HT-400To600.xml,48.8,7759701.0,yes
@@ -41,7 +41,7 @@ True,2016,both,False,WJetsToLNu_HT600to800,RunII_102X_v1/2016v3/MC_WJetsToLNu_HT
 True,2016,both,False,WJetsToLNu_HT800to1200,RunII_102X_v1/2016v3/MC_WJetsToLNu_HT-800To1200.xml,5.5,7830536.0,yes
 True,2016,both,False,WJetsToLNu_HT1200to2500,RunII_102X_v1/2016v3/MC_WJetsToLNu_HT-1200To2500.xml,1.329,6872441.0,yes
 True,2016,both,False,WJetsToLNu_HT2500toInf,RunII_102X_v1/2016v3/MC_WJetsToLNu_HT-2500ToInf.xml,0.03209,2637821.0,yes
-True,2016,both,False,DYJetsToLL_HT70to100,RunII_102X_v1/2016v3/MC_DYJetsToLL_M-50_HT-70to100.xml,208.977,9691660.0,yes
+False,2016,both,False,DYJetsToLL_HT70to100,RunII_102X_v1/2016v3/MC_DYJetsToLL_M-50_HT-70to100.xml,208.977,9691660.0,yes
 True,2016,both,False,DYJetsToLL_HT100to200,RunII_102X_v1/2016v3/MC_DYJetsToLL_M-50_HT-100to200.xml,181.302,10977326.0,yes
 True,2016,both,False,DYJetsToLL_HT200to400,RunII_102X_v1/2016v3/MC_DYJetsToLL_M-50_HT-200to400.xml,50.4177,9589193.0,yes
 True,2016,both,False,DYJetsToLL_HT400to600,RunII_102X_v1/2016v3/MC_DYJetsToLL_M-50_HT-400to600.xml,6.98394,9725661.0,yes
@@ -49,9 +49,9 @@ True,2016,both,False,DYJetsToLL_HT600to800,RunII_102X_v1/2016v3/MC_DYJetsToLL_M-
 True,2016,both,False,DYJetsToLL_HT800to1200,RunII_102X_v1/2016v3/MC_DYJetsToLL_M-50_HT-800to1200.xml,0.775392,2673066.0,yes
 True,2016,both,False,DYJetsToLL_HT1200to2500,RunII_102X_v1/2016v3/MC_DYJetsToLL_M-50_HT-1200to2500.xml,0.186222,596079.0,yes
 True,2016,both,False,DYJetsToLL_HT2500toInf,RunII_102X_v1/2016v3/MC_DYJetsToLL_M-50_HT-2500toInf.xml,0.004385,399492.0,yes
-True,2016,both,False,Diboson_WW,RunII_102X_v1/2016v3/MC_WW.xml,115.097,7982310.3,yes
-True,2016,both,False,Diboson_WZ,RunII_102X_v1/2016v3/MC_WZ.xml,47.13,3997571,yes
-True,2016,both,False,Diboson_ZZ,RunII_102X_v1/2016v3/MC_ZZ.xml,16.523,1988098,yes
+True,2016,both,False,Diboson_WW,RunII_102X_v1/2016v3/MC_WW.xml,118.7,7982310.3,yes
+True,2016,both,False,Diboson_WZ,RunII_102X_v1/2016v3/MC_WZ.xml,51.11,3997571,yes
+True,2016,both,False,Diboson_ZZ,RunII_102X_v1/2016v3/MC_ZZ.xml,16.91,1988098,yes
 True,2016,muo,False,QCD_Mu_Pt15to20,RunII_102X_v1/2016v3/MC_QCD_Pt-15to20_MuEnrichedPt5.xml,3819570.,4141251.0,yes
 True,2016,muo,False,QCD_Mu_Pt20to30,RunII_102X_v1/2016v3/MC_QCD_Pt-20to30_MuEnrichedPt5.xml,2960198.4,31878740.0,yes
 True,2016,muo,False,QCD_Mu_Pt30to50,RunII_102X_v1/2016v3/MC_QCD_Pt-30to50_MuEnrichedPt5.xml,1652471.46,29809492.0,yes
@@ -102,7 +102,7 @@ True,2017,both,False,ST_sChannel_leptonDecays,RunII_102X_v1/2017/MC_ST_s-channel
 True,2017,both,False,TTbarTo2L2Nu,RunII_102X_v1/2017/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8.xml,87.339,648729903.83,yes
 True,2017,both,False,TTbarToSemiLeptonic,RunII_102X_v1/2017/MC_TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8.xml,364.31,12852869549.5,yes
 True,2017,both,False,TTbarToHadronic,RunII_102X_v1/2017/MC_TTToHadronic_TuneCP5_13TeV-powheg-pythia8.xml,380.11,41618896,yes
-True,2017,both,False,WJetsToLNu_HT70to100,RunII_102X_v1/2017/WJetsToLNu_HT-70To100_TuneCP5_13TeV-madgraphMLM-pythia8.xml,1319,9677900,yes
+False,2017,both,False,WJetsToLNu_HT70to100,RunII_102X_v1/2017/WJetsToLNu_HT-70To100_TuneCP5_13TeV-madgraphMLM-pythia8.xml,1319,9677900,yes
 True,2017,both,False,WJetsToLNu_HT100to200,RunII_102X_v1/2017/WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8.xml,1395,32948958,yes
 True,2017,both,False,WJetsToLNu_HT200to400,RunII_102X_v1/2017/WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8.xml,409.3,18463505,yes
 True,2017,both,False,WJetsToLNu_HT400to600,RunII_102X_v1/2017/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8.xml,57.91,14250114,yes
@@ -117,9 +117,9 @@ True,2017,both,False,DYJetsToLL_HT600to800,RunII_102X_v2/2017/MC_DYJetsToLL_M-50
 True,2017,both,False,DYJetsToLL_HT800to1200,RunII_102X_v2/2017/MC_DYJetsToLL_M-50_HT-800to1200.xml,0.77539,3089712,yes
 True,2017,both,False,DYJetsToLL_HT1200to2500,RunII_102X_v2/2017/MC_DYJetsToLL_M-50_HT-1200to2500.xml,0.18622,616923,yes
 True,2017,both,False,DYJetsToLL_HT2500toInf,RunII_102X_v2/2017/MC_DYJetsToLL_M-50_HT-2500toInf.xml,0.00438,401334,yes
-True,2017,both,False,Diboson_WW,RunII_102X_v1/2017/WW_TuneCP5_13TeV-pythia8.xml,75.85,7765891.02,yes
-True,2017,both,False,Diboson_WZ,RunII_102X_v1/2017/MC_WZ_TuneCP5_13TeV-pythia8.xml,27.60,3901180,yes
-True,2017,both,False,Diboson_ZZ,RunII_102X_v1/2017/MC_ZZ_TuneCP5_13TeV-pythia8.xml,12.15,1928489,yes
+True,2017,both,False,Diboson_WW,RunII_102X_v1/2017/WW_TuneCP5_13TeV-pythia8.xml,118.7,7765891.02,yes
+True,2017,both,False,Diboson_WZ,RunII_102X_v1/2017/MC_WZ_TuneCP5_13TeV-pythia8.xml,51.11,3901180,yes
+True,2017,both,False,Diboson_ZZ,RunII_102X_v1/2017/MC_ZZ_TuneCP5_13TeV-pythia8.xml,16.91,1928489,yes
 True,2017,muo,False,QCD_Mu_Pt15to20,RunII_102X_v1/2017/QCD_Pt-15to20_MuEnrichedPt5_TuneCP5_13TeV_pythia8.xml,2849000,5851147.524,yes
 True,2017,muo,False,QCD_Mu_Pt20to30,RunII_102X_v1/2017/QCD_Pt-20to30_MuEnrichedPt5_TuneCP5_13TeV_pythia8.xml,2545000,27881388.99,yes
 True,2017,muo,False,QCD_Mu_Pt30to50,RunII_102X_v1/2017/QCD_Pt-30to50_MuEnrichedPt5_TuneCP5_13TeV_pythia8.xml,1352000,28957873,yes
@@ -164,7 +164,7 @@ True,2018,both,False,ST_sChannel_hadronicDecays,RunII_102X_v1/2018/MC_ST_s-chann
 True,2018,both,False,TTbarTo2L2Nu,RunII_102X_v1/2018/MC_TTTo2L2Nu.xml,87.339,4635769526.2,yes
 True,2018,both,False,TTbarToSemiLeptonic,RunII_102X_v1/2018/MC_TTToSemiLeptonic.xml,364.31,41949456767.6,yes
 True,2018,both,False,TTbarToHadronic,RunII_102X_v1/2018/MC_TTToHadronic.xml,380.11,30495602645.8,yes
-True,2018,both,False,WJetsToLNu_HT70to100,RunII_102X_v1/2018/MC_WJetsToLNu_HT-70To100.xml,1282.,28084244,yes
+False,2018,both,False,WJetsToLNu_HT70to100,RunII_102X_v1/2018/MC_WJetsToLNu_HT-70To100.xml,1282.,28084244,yes
 True,2018,both,False,WJetsToLNu_HT100to200,RunII_102X_v1/2018/MC_WJetsToLNu_HT-100To200.xml,1392.,29497106,yes
 True,2018,both,False,WJetsToLNu_HT200to400,RunII_102X_v1/2018/MC_WJetsToLNu_HT-200To400.xml,410.3,25445174,yes
 True,2018,both,False,WJetsToLNu_HT400to600,RunII_102X_v1/2018/MC_WJetsToLNu_HT-400To600.xml,57.85,5932701,yes
@@ -179,9 +179,9 @@ True,2018,both,False,DYJetsToLL_HT600to800,RunII_102X_v1/2018/MC_DYJetsToLL_M-50
 True,2018,both,False,DYJetsToLL_HT800to1200,RunII_102X_v1/2018/MC_DYJetsToLL_M-50_HT-800to1200.xml,0.77539,3114084,yes
 True,2018,both,False,DYJetsToLL_HT1200to2500,RunII_102X_v1/2018/MC_DYJetsToLL_M-50_HT-1200to2500.xml,0.18622,536416,yes
 True,2018,both,False,DYJetsToLL_HT2500toInf,RunII_102X_v1/2018/MC_DYJetsToLL_M-50_HT-2500toInf.xml,0.00438,427051,yes
-True,2018,both,False,Diboson_WW,RunII_102X_v1/2018/MC_WW_TuneCP5_13TeV-pythia8.xml,75.85,7846135.95651,yes
-True,2018,both,False,Diboson_WZ,RunII_102X_v1/2018/MC_WZ_TuneCP5_13TeV-pythia8.xml,27.60,3884167.00546,yes
-True,2018,both,False,Diboson_ZZ,RunII_102X_v1/2018/MC_ZZ_TuneCP5_13TeV-pythia8.xml,12.15,1978776.75193,yes
+True,2018,both,False,Diboson_WW,RunII_102X_v1/2018/MC_WW_TuneCP5_13TeV-pythia8.xml,118.7,7846135.95651,yes
+True,2018,both,False,Diboson_WZ,RunII_102X_v1/2018/MC_WZ_TuneCP5_13TeV-pythia8.xml,51.11,3884167.00546,yes
+True,2018,both,False,Diboson_ZZ,RunII_102X_v1/2018/MC_ZZ_TuneCP5_13TeV-pythia8.xml,16.91,1978776.75193,yes
 True,2018,muo,False,QCD_Mu_Pt15to20,RunII_102X_v1/2018/MC_QCD_Pt-15to20_MuEnrichedPt5.xml,2849000,4576052,yes
 True,2018,muo,False,QCD_Mu_Pt20to30,RunII_102X_v1/2018/MC_QCD_Pt-20to30_MuEnrichedPt5.xml,2545000,30612338,yes
 True,2018,muo,False,QCD_Mu_Pt30to50,RunII_102X_v1/2018/MC_QCD_Pt-30to50_MuEnrichedPt5.xml,1352000,29884616,yes
