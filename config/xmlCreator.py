@@ -70,17 +70,23 @@ class configContainer:
             # '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-12-02-05-00-43/neural_net.json', #binary
             # '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-12-02-05-00-43/neural_net.json',
             # '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_20-12-02-05-00-43/neural_net.json',
-            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_21-01-20-12-59-32/neural_net.json', #multiclass
-            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_21-01-20-12-59-32/neural_net.json',
-            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_21-01-20-12-59-32/neural_net.json',
+            # '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_21-01-20-12-59-32/neural_net.json', #multiclass 6 nodes
+            # '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_21-01-20-12-59-32/neural_net.json',
+            # '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_21-01-20-12-59-32/neural_net.json',
+            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_21-02-01-19-51-16/neural_net.json', #multiclass 3 nodes
+            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_21-02-01-19-51-16/neural_net.json',
+            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/ttag_dnn_21-02-01-19-51-16/neural_net.json',
          },
          'WTag': {
             # '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-12-02-05-01-44/neural_net.json', #binary
             # '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-12-02-05-01-44/neural_net.json',
             # '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_20-12-02-05-01-44/neural_net.json',
-            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_21-01-20-12-58-02/neural_net.json', #multiclass
-            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_21-01-20-12-58-02/neural_net.json',
-            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_21-01-20-12-58-02/neural_net.json',
+            # '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_21-01-20-12-58-02/neural_net.json', #multiclass 6 nodes
+            # '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_21-01-20-12-58-02/neural_net.json',
+            # '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_21-01-20-12-58-02/neural_net.json',
+            '2016': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_21-02-01-19-52-16/neural_net.json', #multiclass 3 nodes
+            '2017': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_21-02-01-19-52-16/neural_net.json',
+            '2018': self.uhh2Dir+'HighPtSingleTop/data/KerasDNNModels/wtag_dnn_21-02-01-19-52-16/neural_net.json',
          },
       }
 
@@ -123,7 +129,7 @@ class configContainer:
             self.systematics.append(systEntity('electrontrigger', 'SystDirection_ElectronTrigger'))
             self.systematics.append(systEntity('electronid', 'SystDirection_ElectronId'))
             self.systematics.append(systEntity('electronreco', 'SystDirection_ElectronReco'))
-         self.systematics.append(systEntity('hotvr', 'SystDirection_HOTVRTopTagSF', directions=['up', 'down', 'merged_up', 'merged_down', 'semimerged_up', 'semimerged_down', 'notmerged_up', 'notmerged_down']))
+         self.systematics.append(systEntity('hotvr', 'SystDirection_HOTVRTopTagSF', directions=['merged_up', 'merged_down', 'semimerged_up', 'semimerged_down', 'notmerged_up', 'notmerged_down']))
          self.systematics.append(systEntity('deepak8', 'SystDirection_DeepAK8WTagSF'))
          # self.systematics.append(systEntity('deepjet', 'SystDirection_DeepJetBTagSF')) # TODO: Check how to properly vary deepjet shapes
 
@@ -145,16 +151,19 @@ class sampleEntity:
       self.mainsel_versions = list()
 
       # init mainsel_versions
-      if self.nickName.startswith('WJets'):
-         self.mainsel_versions.append(self.nickName.replace('WJets', 'WJetsHeavy'))
-         self.mainsel_versions.append(self.nickName.replace('WJets', 'WJetsLight'))
-      elif self.nickName.startswith('ST_tW'):
-         decays = ['Had', 'Ele', 'Muo', 'Tau']
-         for tDecay in decays:
-            for wDecay in decays:
-               self.mainsel_versions.append(self.nickName.replace('_T', '_TopTo'+tDecay+'_WTo'+wDecay+'_T'))
+      if self.nickName.startswith('ST_tW'):
+          self.mainsel_versions.append(self.nickName.replace('_T', '_Sig_T'))
+          self.mainsel_versions.append(self.nickName.replace('_T', '_Bkg_T'))
+      # if self.nickName.startswith('WJets'):
+      #    self.mainsel_versions.append(self.nickName.replace('WJets', 'WJetsHeavy'))
+      #    self.mainsel_versions.append(self.nickName.replace('WJets', 'WJetsLight'))
+      # elif self.nickName.startswith('ST_tW'):
+      #    decays = ['Had', 'Ele', 'Muo', 'Tau']
+      #    for tDecay in decays:
+      #       for wDecay in decays:
+      #          self.mainsel_versions.append(self.nickName.replace('_T', '_TopTo'+tDecay+'_WTo'+wDecay+'_T'))
       else:
-         self.mainsel_versions.append(self.nickName)
+          self.mainsel_versions.append(self.nickName)
 
 
 class systEntity:
@@ -275,7 +284,7 @@ class xmlCreator:
          file.write('''<Item Name="GenTopJetCollection" Value="hotvrGen"/>\n''')
          file.write('''<Item Name="GenParticleCollection" Value="GenParticles"/>\n''')
          file.write('''<Item Name="GenInfoName" Value="genInfo"/>\n''')
-         file.write('''<Item Name="additionalBranches" Value="jetsAk8Puppi jetsAk8CHS jetsAk8PuppiSubstructure_SoftDropPuppi jetsAk8CHSSubstructure_SoftDropCHS genjetsAk8SubstructureSoftDrop genjetsAk8Substructure"/>\n''')
+         file.write('''<Item Name="additionalBranches" Value="jetsAk8PuppiSubstructure_SoftDropPuppi genjetsAk8SubstructureSoftDrop"/>\n''')
          if self.is_mainsel:
             file.write('''<Item Name="Ak8recCollection" Value="jetsAk8PuppiSubstructure_SoftDropPuppi"/>\n''')
             file.write('''<Item Name="Ak8genCollection" Value="genjetsAk8SubstructureSoftDrop"/>\n''')
@@ -441,6 +450,6 @@ if __name__=='__main__':
             x = xmlCreator(selection, year, channel)
             x.force_eot(args.eot)
             x.write_xml()
-            x.write_qcd_sideband_xml()
+            # x.write_qcd_sideband_xml()
             if args.syst:
                x.write_all_systematics_xmls()
