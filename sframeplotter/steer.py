@@ -33,7 +33,7 @@ parser.add_argument('-c', '--channels', choices=channels, nargs='*', default=[])
 parser.add_argument('-y', '--years', choices=years, nargs='*', default=[])
 parser.add_argument('-s', '--singleeps', action='store_true')
 parser.add_argument('-l', '--legend', action='store_true')
-parser.add_argument('-n', '--nodata', action='store_true')
+parser.add_argument('-n', '--no', choices=['data', 'qcd'], nargs='*', default=[])
 args = parser.parse_args(sys.argv[1:])
 
 if args.all == True:
@@ -62,13 +62,20 @@ print combos
 
 uhh2Dir = os.environ.get('CMSSW_BASE')+'/src/UHH2/'
 mainselDir = uhh2Dir+'HighPtSingleTop/output/mainsel/'
-workDir = uhh2Dir+'HighPtSingleTop/sframeplotter/'
+templateDir = uhh2Dir+'HighPtSingleTop/sframeplotter/'
+workDir = templateDir+'workdir/'
+if not os.path.exists(workDir): os.mkdir(workDir)
 sframeplotterBase = os.environ.get('CMSSW_BASE')+'/../SFramePlotter/'
 
 FNULL = open(os.devnull, 'w')
 
 for year, channel in combos:
-    template_file = open(workDir+('template_woData.steer' if args.nodata else 'template.steer'), 'r')
+    template_name = 'template.steer'
+    if len(args.no):
+        if 'data' in args.no: template_name.replace('.', '_woData.')
+        if 'qcd' in args.no: template_name.replace('.', '_woQCD.')
+    print 'Using template:', template_name
+    template_file = open(templateDir+template_name, 'r')
     steerFilePath = workDir+'_'.join(['mainsel', year, channel])+'.steer'
     fCycleName = mainselDir+year+'/'+channel+'/nominal/hadded/uhh2.AnalysisModuleRunner'
     outputDir = mainselDir+year+'/'+channel+('/plots_single/' if args.singleeps else '/plots/')
