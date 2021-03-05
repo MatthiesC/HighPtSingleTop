@@ -2,19 +2,19 @@ SteerPlotter(){
 
   // steering for the plotter
   fCycleName     = "<<<fCycleName>>>";
-  fInputFiles    = " DATA.DATA.root, MC.QCD.root, MC.ST_tW_DR_NoFullyHadronic_Sig.root, MC.ST_tW_DR_NoFullyHadronic_Bkg.root, MC.TTbar.root, MC.ST_otherChannels.root, MC.WJets.root, MC.DYJets.root, MC.Diboson.root, ";
-  fSampleNames   = " Data, QCD_multijet, tW_(DR)_sig., tW_(DR)_bkg., ttbar, Other_single_t, W_+_jets, DrelltexminusYan_+_jets, WW~_WZ~_ZZ, ";
-  fSamplesWeight = " 1., 1., 1., 1., 1., 1., 1., 1., 1., ";
-  fSamplesUnc    = " 0., 0., 0., 0., 0., 0., 0., 0., 0., ";
-  fHistColors    = " 1, 920, 632, 634, 800, 400, 418, 602, 856, "; // 617, 618, QCD beige: 390
-  fHistMarkers   = " 8, 0, 0, 0, 0, 0, 0, 0, 0, "; // 24 for circle, 8 for black dot
+  fInputFiles    = " MC.QCD.root, MC.ST_tW_DR_NoFullyHadronic_Sig.root, MC.ST_tW_DR_NoFullyHadronic_Bkg.root, MC.TTbar.root, MC.ST_otherChannels.root, MC.WJets.root, MC.DYJets.root, MC.Diboson.root, ";
+  fSampleNames   = " QCD_multijet, tW_(DR)_sig., tW_(DR)_bkg., ttbar, Other_single_t, W_+_jets, DrelltexminusYan_+_jets, WW~_WZ~_ZZ, ";
+  fSamplesWeight = " 1., 1., 1., 1., 1., 1., 1., 1., ";
+  fSamplesUnc    = " 0., 0., 0., 0., 0., 0., 0., 0., ";
+  fHistColors    = " 920, 632, 634, 800, 400, 418, 602, 856, "; // 617, 618, QCD beige: 390
+  fHistMarkers   = " 0, 0, 0, 0, 0, 0, 0, 0, "; // 24 for circle, 8 for black dot
 
   fSamplesToStack = " QCD, ST_tW_DR_NoFullyHadronic_Sig, ST_tW_DR_NoFullyHadronic_Bkg, TTbar, ST_otherChannels, WJets, DYJets, Diboson, "; // the names of chains which you would like to stack (same as in input filenames)
 
 
   fOutputPsFile = "<<<fOutputPsFile>>>";
 
-  bRatioPlot = true;   // plot ratio histograms?
+  bRatioPlot = false;   // plot ratio histograms?
   bZScoreInRatio = false;   // plot z-score instead of usual ratio
   bDrawLegend = <<<bDrawLegend>>>;   // draw a legend on each histogram? (otherwise only on the first one in each ps file)
   bShapeNorm = false;   // shape normalization?

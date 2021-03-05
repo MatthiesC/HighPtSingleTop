@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 
+import sys
+import argparse
 import os
 import subprocess
+
+
+#------------------#
+# GLOBAL VARIABLES #
+#------------------#
 
 lumis = {
     '2016': '35.92',
@@ -10,34 +17,77 @@ lumis = {
     'run2': '137.19',
 }
 
-
-combos = list()
 years = ['2016', '2017', '2018']
 channels = ['ele', 'muo']
-for year in years:
-    for channel in channels:
-        combos.append((year, channel))
-combos.append(('run2', 'both'))
+combos = list()
 
-mainselDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/output/mainsel/'
+#--------#
+# PARSER #
+#--------#
 
+if not sys.argv[1:]: sys.exit('No arguments provided. Exit.')
+parser = argparse.ArgumentParser()
+parser.add_argument('--all', action='store_true')
+parser.add_argument('--runii', action='store_true')
+parser.add_argument('-c', '--channels', choices=channels, nargs='*', default=[])
+parser.add_argument('-y', '--years', choices=years, nargs='*', default=[])
+parser.add_argument('-s', '--singleeps', action='store_true')
+parser.add_argument('-l', '--legend', action='store_true')
+parser.add_argument('-n', '--nodata', action='store_true')
+args = parser.parse_args(sys.argv[1:])
+
+if args.all == True:
+    if len(args.channels) or len(args.years):
+        sys.exit('Do not use "--all" option jointly with --channels and/or --years options.')
+    for year in years:
+        for channel in channels:
+            combos.append((year, channel))
+elif len(args.channels)+len(args.years) == 0:
+    print 'No years or channels given.'
+else:
+    for year in (args.years if len(args.years) else years):
+        for channel in (args.channels if len(args.channels) else channels):
+            combos.append((year, channel))
+if args.runii == True:
+    combos.append(('run2', 'both'))
+
+if not len(combos):
+    sys.exit('Nothing to plot. Exit.')
+print 'Working on:'
+print combos
+
+#---------#
+# PROGRAM #
+#---------#
+
+uhh2Dir = os.environ.get('CMSSW_BASE')+'/src/UHH2/'
+mainselDir = uhh2Dir+'HighPtSingleTop/output/mainsel/'
+workDir = uhh2Dir+'HighPtSingleTop/sframeplotter/'
+sframeplotterBase = os.environ.get('CMSSW_BASE')+'/../SFramePlotter/'
 
 FNULL = open(os.devnull, 'w')
 
 for year, channel in combos:
-    template_file = open('template.steer', 'r')
-    outFileName = '_'.join(['mainsel', year, channel])+'.steer'
+    template_file = open(workDir+('template_woData.steer' if args.nodata else 'template.steer'), 'r')
+    steerFilePath = workDir+'_'.join(['mainsel', year, channel])+'.steer'
     fCycleName = mainselDir+year+'/'+channel+'/nominal/hadded/uhh2.AnalysisModuleRunner'
-    outputDir = mainselDir+year+'/'+channel+'/nominal/plots/'
+    outputDir = mainselDir+year+'/'+channel+('/plots_single/' if args.singleeps else '/plots/')
     fOutputPsFile = outputDir+'_'.join(['mainsel', year, channel])+'.ps'
     if not os.path.exists(outputDir):
+        print 'Create new directory:', outputDir
         os.mkdir(outputDir)
-    with open(outFileName, 'w') as outFile:
+    with open(steerFilePath, 'w') as steerFile:
+        print 'Create new steer file:', steerFilePath
         for line in template_file:
             newline = line
             newline = newline.replace('<<<fCycleName>>>', fCycleName)
             newline = newline.replace('<<<fOutputPsFile>>>', fOutputPsFile)
             newline = newline.replace('<<<fLumi>>>', lumis[year])
-            outFile.write(newline)
+            newline = newline.replace('<<<bSingleEPS>>>', 'true' if args.singleeps else 'false')
+            newline = newline.replace('<<<bDrawLegend>>>', 'true' if args.legend else 'false')
+            steerFile.write(newline)
     template_file.close()
-    subprocess.Popen(['Plots -f '+outFileName], shell=True, stdout=FNULL, stderr=FNULL)
+    # Plots does not except absolute file paths to steer file, thus get relative path of steer file with working directory = sframeplotterBase
+    steerFilePathRelative = steerFilePath.replace(uhh2Dir, '../'+os.environ.get('CMSSW_BASE').split('/')[-1]+'/src/UHH2/')
+    subprocess.Popen(('Plots -f '+steerFilePathRelative), shell=True, cwd=sframeplotterBase, stdout=FNULL, stderr=FNULL)
+    # subprocess.Popen(('echo '+steerFilePathRelative), shell=True, cwd=sframeplotterBase)#, stdout=FNULL, stderr=FNULL)
