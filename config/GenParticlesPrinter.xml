@@ -8,6 +8,7 @@
 	  <!ENTITY PROOFdir        "/nfs/dust/cms/user/matthies/.proof2">
 
 	  <!ENTITY dyjets_sample "/nfs/dust/cms/user/matthies/uhh2-102X-v2-el7/CMSSW_10_2_17/src/UHH2/HighPtSingleTop/output/presel/2016/muo/nominal/uhh2.AnalysisModuleRunner.MC.DYJetsToLL_HT600to800_2016v3.root">
+		<!ENTITY wjets_sample "/nfs/dust/cms/user/matthies/uhh2-102X-v2-el7/CMSSW_10_2_17/src/UHH2/HighPtSingleTop/output/presel/2016/muo/nominal/uhh2.AnalysisModuleRunner.MC.WJetsToLNu_HT600to800_2016v3.root">
 
 	  ]>
 
@@ -25,8 +26,8 @@
 
 	    <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTdir;/" PostFix="" TargetLumi="&TargetLumi;" >
 
-	      <InputData Lumi="1.0" NEventsMax="&NEVT;" Type="MC" Version="dyjets_sample" Cacheable="&b_Cacheable;">
-		<In FileName="&sdyjets_ample;" Lumi="0.0"/>
+	      <InputData Lumi="1.0" NEventsMax="&NEVT;" Type="MC" Version="wjets_sample" Cacheable="&b_Cacheable;">
+		<In FileName="&wjets_sample;" Lumi="0.0"/>
 		<InputTree Name="AnalysisTree" />
 		<!--<OutputTree Name="AnalysisTree" /> -->
 	      </InputData>
