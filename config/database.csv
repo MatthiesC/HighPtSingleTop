@@ -30,9 +30,11 @@ True,2016,both,False,ST_tW_DS_NoFullyHadronic_Tbar,RunII_102X_v1/2016v3/MC_ST_tW
 True,2016,both,False,ST_tChannel_T,RunII_102X_v1/2016v3/MC_ST_t-channel_top_inclusiveDecays.xml,136.02,64996300.0,yes
 True,2016,both,False,ST_tChannel_Tbar,RunII_102X_v1/2016v3/MC_ST_t-channel_antitop_inclusiveDecays.xml,80.95,38619669.0,yes
 True,2016,both,False,ST_sChannel_leptonDecays,RunII_102X_v1/2016v3/MC_ST_s-channel_leptonDecays.xml,3.36432,33033621.7,yes
+False,2016,both,False,ST_sChannel_hadronicDecays,NotGiven,6.97632,0,no
+False,2016,both,False,TTbar_Inclusive,RunII_102X_v1/2016v3/MC_TT_TuneCUETP8M2T4.xml,831.76,76738314.0,yes
 True,2016,both,False,TTbar_Mtt0to700,RunII_102X_v1/2016v3/MC_TT_TuneCUETP8M2T4.xml,831.76,76738314.0,yes
-True,2016,both,False,TTbar_Mtt700to1000,RunII_102X_v1/2016v3/MC_TT_Mtt-700to1000.xml,76.605,38436000.0,yes
-True,2016,both,False,TTbar_Mtt1000toInf,RunII_102X_v1/2016v3/MC_TT_Mtt-1000toInf.xml,20.578,24569457.0,yes
+True,2016,both,False,TTbar_Mtt700to1000,RunII_102X_v1/2016v3/MC_TT_Mtt-700to1000.xml,80.464,38436000.0,yes
+True,2016,both,False,TTbar_Mtt1000toInf,RunII_102X_v1/2016v3/MC_TT_Mtt-1000toInf.xml,21.337,24569457.0,yes
 False,2016,both,False,WJetsToLNu_HT70to100,RunII_102X_v1/2016v3/MC_WJetsToLNu_HT-70To100.xml,1353.,10020533.0,yes
 True,2016,both,False,WJetsToLNu_HT100to200,RunII_102X_v1/2016v3/MC_WJetsToLNu_HT-100To200.xml,1346.,39449178.0,yes
 True,2016,both,False,WJetsToLNu_HT200to400,RunII_102X_v1/2016v3/MC_WJetsToLNu_HT-200To400.xml,360.1,19069732.0,yes
@@ -99,6 +101,7 @@ True,2017,both,False,ST_tW_DR_inclusiveDecays_Tbar,RunII_102X_v1/2017/ST_tW_anti
 True,2017,both,False,ST_tChannel_T,RunII_102X_v1/2017/MC_ST_t-channel_top_5f.xml,136.02,706283792.622,yes
 True,2017,both,False,ST_tChannel_Tbar,RunII_102X_v1/2017/MC_ST_t-channel_antitop_5f.xml,80.95,274098646.803,yes
 True,2017,both,False,ST_sChannel_leptonDecays,RunII_102X_v1/2017/MC_ST_s-channel_4f_leptonDecays_v2.xml,3.36432,36965036.5321,yes
+False,2017,both,False,ST_sChannel_hadronicDecays,NotGiven,6.97632,0,no
 True,2017,both,False,TTbarTo2L2Nu,RunII_102X_v1/2017/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8.xml,87.339,648729903.83,yes
 True,2017,both,False,TTbarToSemiLeptonic,RunII_102X_v1/2017/MC_TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8.xml,364.31,12852869549.5,yes
 True,2017,both,False,TTbarToHadronic,RunII_102X_v1/2017/MC_TTToHadronic_TuneCP5_13TeV-powheg-pythia8.xml,380.11,41618896,yes
