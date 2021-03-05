@@ -45,9 +45,9 @@ namespace uhh2 {
     bool debug, empty_output_tree;
 
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_prefiring, sf_deepjet, scale_variation;
-    unique_ptr<TopPtReweighting> sf_toppt;
+    unique_ptr<AnalysisModule> sf_toppt, sf_vjets;
     unique_ptr<MyHOTVRScaleFactor> sf_toptag;
-    unique_ptr<DeepAK8ScaleFactor> sf_wtag;
+    // unique_ptr<DeepAK8ScaleFactor> sf_wtag;
     unique_ptr<AnalysisModule> handle_primarylep, handle_hadronictop, handle_toptaggedjet, handle_wtaggedjet, handle_btaggedjets, handle_toptaggedjets, handle_ak4InExJets_top, handle_ak4InExJets_W, handle_wboson, handle_pseudotop, SingleTopGen_tWchProd;
     unique_ptr<Ak8Corrections> ak8corrections;
     unique_ptr<AnalysisModule> ak8cleaning, handle_ak8jets, handle_wtaggedjets;
@@ -63,7 +63,7 @@ namespace uhh2 {
     // unique_ptr<Selection> slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_oneijet, slct_noxjet, slct_1bxjet;
 
     unique_ptr<AndHists> hist_presel_noweights, hist_presel_lumiSF, hist_presel_pileupSF, hist_presel_leptonSF, hist_presel_prefiringSF, hist_hemissue, hist_trigger, hist_triggerSF, hist_deepjetSF;
-    unique_ptr<AndHists> hist_topptSF;
+    unique_ptr<AndHists> hist_topptSF, hist_vjetsSF;
     unique_ptr<Hists> hist_ak8_preCorr, hist_ak8_postCorr, hist_ak8_postCleaning;
     unique_ptr<AndHists> hist_TopTag_Begin, hist_TopTag_HotvrSF, hist_TopTag_End;
     unique_ptr<AndHists> hist_WTag_Begin, hist_WTag_DeepAk8SF, hist_WTag_End;
@@ -85,7 +85,6 @@ namespace uhh2 {
     bool is_muo, is_ele;
     bool is_WJetsHeavy, is_WJetsLight;
     bool is_tW, is_tW_Bkg, is_tW_Sig;
-    bool is_TTbar;
   };
 
 
@@ -110,7 +109,6 @@ namespace uhh2 {
     is_tW = dataset_version.find("ST_tW") == 0;
     is_tW_Sig = is_tW && dataset_version.find("_Sig") != string::npos;
     is_tW_Bkg = is_tW && dataset_version.find("_Bkg") != string::npos;
-    is_TTbar = dataset_version.find("TTbar") == 0;
 
     string syst_pileup = ctx.get("SystDirection_Pileup", "nominal");
     string syst_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
@@ -156,8 +154,9 @@ namespace uhh2 {
     sf_prefiring.reset(new PrefiringWeights(ctx));
     scale_variation.reset(new MCScaleVariation(ctx));
     sf_toppt.reset(new TopPtReweighting(ctx, 0.0615, -0.0005));
+    sf_vjets.reset(new VJetsReweighting(ctx));
     sf_toptag.reset(new MyHOTVRScaleFactor(ctx, StandardHOTVRTopTagID));
-    sf_wtag.reset(new DeepAK8ScaleFactor(ctx, "W", false, wtag_workingpoint)); // false = don't use mass-decorrelated (MD) but nominal DeepAK8
+    // sf_wtag.reset(new DeepAK8ScaleFactor(ctx, "W", false, wtag_workingpoint)); // false = don't use mass-decorrelated (MD) but nominal DeepAK8
     sf_deepjet.reset(new MCBTagDiscriminantReweighting(ctx, btag_algo, "jets", syst_btag));
 
 
@@ -262,6 +261,9 @@ namespace uhh2 {
 
     hist_topptSF.reset(new AndHists(ctx, "2_TopPtSF"));
     hist_topptSF->add_Ak8Hists(ctx);
+
+    hist_vjetsSF.reset(new AndHists(ctx, "2_VJetsSF"));
+    hist_vjetsSF->add_Ak8Hists(ctx);
 
     hist_TopTag_Begin.reset(new AndHists(ctx, "3_TopTag_Begin"));
     hist_TopTag_Begin->add_TopTagHists(ctx);
@@ -423,7 +425,7 @@ namespace uhh2 {
 
     if(debug) cout << "Apply corrections to AK8 jets and clean them" << endl;
     hist_ak8_preCorr->fill(event);
-    ak8corrections->process(event); // don't sort AK8 jets after correcting them
+    ak8corrections->process(event); // don't sort AK8 jets after correcting them to have consistent preCorr and postCorr histograms
     hist_ak8_postCorr->fill(event);
     ak8cleaning->process(event); // clean AK8 jets and sort them by pt
     handle_ak8jets->process(event);
@@ -443,9 +445,12 @@ namespace uhh2 {
     hist_hemissue->fill(event);
 
     if(debug) cout << "Apply top-pt reweighting for ttbar events" << endl;
-    if(is_TTbar) sf_toppt->process(event);
-    else sf_toppt->process_dummy(event);
+    sf_toppt->process(event);
     hist_topptSF->fill(event);
+
+    if(debug) cout << "Apply (N)NLO QCD/EWK corrections to V+jets samples" << endl;
+    sf_vjets->process(event);
+    hist_vjetsSF->fill(event);
 
     if(debug) cout << "Set some booleans for analysis regions" << endl;
     bool b_1toptag = slct_1toptag->passes(event);
@@ -459,7 +464,7 @@ namespace uhh2 {
     // Caveat: The order of analysis modules in the following if-statements is crucial and should be changed with care only!
 
     if(b_1toptag) { // don't veto w-tags since this might hurt the signal efficiency
-      sf_wtag->process_dummy(event); // Need to call event.set() since all scale factor weights are stored into output tree. Else, an error occurs
+      // sf_wtag->process_dummy(event); // Need to call event.set() since all scale factor weights are stored into output tree. Else, an error occurs
 
       if(debug) cout << "SR t(had)W(lep): Set handles for top tag and AK4 jets inside/outside top jet" << endl;
       handle_toptaggedjet->process(event);
@@ -491,7 +496,7 @@ namespace uhh2 {
       if(debug) cout << "SR t(lep)W(had): Fill initial control histograms" << endl;
       hist_WTag_Begin->fill(event);
       if(debug) cout << "SR t(lep)W(had): Apply DeepAK8 W-tagging scale factors" << endl;
-      sf_wtag->process(event);
+      // sf_wtag->process(event); // TODO: need to check those weird scale factors ...
       if(debug) cout << "SR t(had)W(lep): Fill control histograms after DeepAK8 scale factors" << endl;
       hist_WTag_DeepAk8SF->fill(event);
       if(debug) cout << "SR t(lep)W(had): Require at least one AK4 jet outside W jet as potential candidate for the b jet from leptonic top quark" << endl;
@@ -507,7 +512,7 @@ namespace uhh2 {
 
     else if(b_0toptag && b_0wtag) {
       sf_toptag->process_dummy(event);
-      sf_wtag->process_dummy(event);
+      // sf_wtag->process_dummy(event);
 
       if(debug) cout << "VR: Fill initial control histograms" << endl;
       hist_Validation_Begin->fill(event);
