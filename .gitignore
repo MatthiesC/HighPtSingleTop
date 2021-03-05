@@ -17,3 +17,5 @@ include/misc/*
 output
 *.pyc
 **/__pycache__/*
+sframeplotter/*.steer
+!sframeplotter/template*.steer
