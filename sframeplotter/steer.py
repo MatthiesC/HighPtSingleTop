@@ -72,8 +72,8 @@ FNULL = open(os.devnull, 'w')
 for year, channel in combos:
     template_name = 'template.steer'
     if len(args.no):
-        if 'data' in args.no: template_name.replace('.', '_woData.')
-        if 'qcd' in args.no: template_name.replace('.', '_woQCD.')
+        if 'data' in args.no: template_name = template_name.replace('.', '_woData.')
+        if 'qcd' in args.no: template_name = template_name.replace('.', '_woQCD.')
     print 'Using template:', template_name
     template_file = open(templateDir+template_name, 'r')
     steerFilePath = workDir+'_'.join(['mainsel', year, channel])+'.steer'
