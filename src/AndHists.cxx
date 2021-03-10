@@ -160,12 +160,13 @@ BinnedDNNHists::BinnedDNNHists(Context & ctx, const string & dirname, const vect
   for(auto i : MyConstants::binning__tjet_pt) {
     hists_vector.push_back(new DNNHists(ctx, dirname+"_tjet_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_tjet_pt", i.first, i.second));
   }
-  for(auto i : MyConstants::binning__wjet_pt) {
-    hists_vector.push_back(new DNNHists(ctx, dirname+"_wjet_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_wjet_pt", i.first, i.second));
-  }
-  for(auto i : MyConstants::binning__lepton_pt) {
-    hists_vector.push_back(new DNNHists(ctx, dirname+"_lepton_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_lepton_pt", i.first, i.second));
-  }
+  // for(auto i : MyConstants::binning__wjet_pt) {
+  //   hists_vector.push_back(new DNNHists(ctx, dirname+"_wjet_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_wjet_pt", i.first, i.second));
+  // }
+  // for(auto i : MyConstants::binning__lepton_pt) {
+  //   hists_vector.push_back(new DNNHists(ctx, dirname+"_lepton_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_lepton_pt", i.first, i.second));
+  // }
+
   // for(auto i : MyConstants::binning__tquark_pt) {
   //   hists_vector.push_back(new DNNHists(ctx, dirname+"_tquark_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "VOI_tquark_pt", i.first, i.second));
   // }
