@@ -45,7 +45,8 @@ namespace uhh2 {
     bool debug, empty_output_tree;
 
     unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_prefiring, sf_deepjet, scale_variation;
-    unique_ptr<AnalysisModule> sf_toppt, sf_vjets;
+    // unique_ptr<AnalysisModule> sf_toppt;
+    unique_ptr<AnalysisModule> sf_vjets;
     unique_ptr<MyHOTVRScaleFactor> sf_toptag;
     // unique_ptr<DeepAK8ScaleFactor> sf_wtag;
     unique_ptr<AnalysisModule> handle_primarylep, handle_hadronictop, handle_toptaggedjet, handle_wtaggedjet, handle_btaggedjets, handle_toptaggedjets, handle_ak4InExJets_top, handle_ak4InExJets_W, handle_wboson, handle_pseudotop, SingleTopGen_tWchProd;
@@ -63,7 +64,8 @@ namespace uhh2 {
     // unique_ptr<Selection> slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_oneijet, slct_noxjet, slct_1bxjet;
 
     unique_ptr<AndHists> hist_presel_noweights, hist_presel_lumiSF, hist_presel_pileupSF, hist_presel_leptonSF, hist_presel_prefiringSF, hist_hemissue, hist_trigger, hist_triggerSF, hist_deepjetSF;
-    unique_ptr<AndHists> hist_topptSF, hist_vjetsSF;
+    // unique_ptr<AndHists> hist_topptSF;
+    unique_ptr<AndHists> hist_vjetsSF;
     unique_ptr<Hists> hist_ak8_preCorr, hist_ak8_postCorr, hist_ak8_postCleaning;
     unique_ptr<AndHists> hist_TopTag_Begin, hist_TopTag_HotvrSF, hist_TopTag_End;
     unique_ptr<AndHists> hist_WTag_Begin, hist_WTag_DeepAk8SF, hist_WTag_End;
@@ -153,7 +155,7 @@ namespace uhh2 {
     sf_trigger.reset(new TriggerScaleFactors(ctx));
     sf_prefiring.reset(new PrefiringWeights(ctx));
     scale_variation.reset(new MCScaleVariation(ctx));
-    sf_toppt.reset(new TopPtReweighting(ctx, 0.0615, -0.0005));
+    // sf_toppt.reset(new TopPtReweighting(ctx, 0.0615, -0.0005));
     sf_vjets.reset(new VJetsReweighting(ctx));
     sf_toptag.reset(new MyHOTVRScaleFactor(ctx, StandardHOTVRTopTagID));
     // sf_wtag.reset(new DeepAK8ScaleFactor(ctx, "W", false, wtag_workingpoint)); // false = don't use mass-decorrelated (MD) but nominal DeepAK8
@@ -259,8 +261,8 @@ namespace uhh2 {
     hist_hemissue.reset(new AndHists(ctx, "2_HEM"));
     hist_hemissue->add_Ak8Hists(ctx);
 
-    hist_topptSF.reset(new AndHists(ctx, "2_TopPtSF"));
-    hist_topptSF->add_Ak8Hists(ctx);
+    // hist_topptSF.reset(new AndHists(ctx, "2_TopPtSF"));
+    // hist_topptSF->add_Ak8Hists(ctx);
 
     hist_vjetsSF.reset(new AndHists(ctx, "2_VJetsSF"));
     hist_vjetsSF->add_Ak8Hists(ctx);
@@ -444,9 +446,9 @@ namespace uhh2 {
     }
     hist_hemissue->fill(event);
 
-    if(debug) cout << "Apply top-pt reweighting for ttbar events" << endl;
-    sf_toppt->process(event);
-    hist_topptSF->fill(event);
+    // if(debug) cout << "Apply top-pt reweighting for ttbar events" << endl;
+    // sf_toppt->process(event);
+    // hist_topptSF->fill(event);
 
     if(debug) cout << "Apply (N)NLO QCD/EWK corrections to V+jets samples" << endl;
     sf_vjets->process(event);

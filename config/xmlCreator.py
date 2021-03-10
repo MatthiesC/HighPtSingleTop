@@ -302,7 +302,7 @@ class xmlCreator:
             file.write('''<Item Name="DeepAK8WTagSFs" Value="'''+self.uhh2Dir+'''HighPtSingleTop/data/ScaleFactors/201X/DeepAK8V2_Top_W_SFs.csv.root"/>\n''')
             file.write('''<Item Name="BTagCalibration" Value="'''+self.yearVars['deepjetSFFiles'][self.year]+'''"/>\n''')
             file.write('''\n''')
-            file.write('''<Item Name="TopPtReweighting" Value="true"/>\n''')
+            file.write('''<Item Name="TopPtReweighting" Value="false"/>\n''')
             file.write('''<Item Name="VJetsReweighting_do_EWK" Value="true"/>\n''')
             file.write('''<Item Name="VJetsReweighting_do_QCD_EWK" Value="false"/>\n''')
             file.write('''<Item Name="VJetsReweighting_do_QCD_NLO" Value="true"/>\n''')
