@@ -24,8 +24,8 @@ DNNSetup::DNNSetup(Context & ctx, const double & zero_padding_value) {
   else if(m_year == Year::is2018) m_year_int = 1;
 
   m_channel_int = -2;
-  if(ctx.get("analysis_channel") == "ele") m_channel_int = -1;
-  else if(ctx.get("analysis_channel") == "muo") m_channel_int = 1;
+  if(extract_channel(ctx) == Channel::isEle) m_channel_int = -1;
+  else if(extract_channel(ctx) == Channel::isMuo) m_channel_int = 1;
 
   m_h_which_region = ctx.get_handle<int>("which_region");
 

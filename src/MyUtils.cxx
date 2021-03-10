@@ -6,6 +6,23 @@
 #include <limits>
 
 
+Channel extract_channel(const uhh2::Context & ctx) {
+
+  Channel channel = Channel::notValid;
+
+  std::string config = uhh2::string2lowercase(ctx.get("analysis_channel"));
+
+  if(config.find("ele") != std::string::npos) channel = Channel::isEle;
+  if(config.find("muo") != std::string::npos) channel = Channel::isMuo;
+
+  if(channel == Channel::notValid) {
+    std::runtime_error("extract_channel(): Invalid channel string in xml file. Please check.");
+  }
+
+  return channel;
+}
+
+
 // returns the transverse W boson mass, using a given lepton and the MET in the event
 double calcMTW(const FlavorParticle & l, const uhh2::Event & event) {
 

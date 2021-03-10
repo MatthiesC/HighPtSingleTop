@@ -347,8 +347,8 @@ HighPtSingleTopTriggerSelection::HighPtSingleTopTriggerSelection(Context & ctx) 
   TString dataset_version = ctx.get("dataset_version");
   b_electron_stream = dataset_version.Contains("SingleElectron");
 
-  is_ele = ctx.get("analysis_channel") == "ele";
-  is_muo = ctx.get("analysis_channel") == "muo";
+  is_ele = extract_channel(ctx) == Channel::isEle;
+  is_muo = extract_channel(ctx) == Channel::isMuo;
 
   trig_isomu24.reset(new TriggerSelection("HLT_IsoMu24_v*"));
   trig_isotkmu24.reset(new TriggerSelection("HLT_IsoTkMu24_v*"));

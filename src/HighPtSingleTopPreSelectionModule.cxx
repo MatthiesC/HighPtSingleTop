@@ -79,11 +79,9 @@ namespace uhh2 {
 
     year = extract_year(ctx);
 
-    is_muo = ctx.get("analysis_channel") == "muo";
-    is_ele = ctx.get("analysis_channel") == "ele";
+    is_muo = extract_channel(ctx) == Channel::isMuo;
+    is_ele = extract_channel(ctx) == Channel::isEle;
     is_QCDsideband = string2bool(ctx.get("QCD_sideband"));
-
-    if(!(is_muo || is_ele)) throw runtime_error("HighPtSingleTopPreSelectionModule: Analysis channel ( ele / muo ) not correctly given. Please check the XML config file!");
 
     dataset_version = ctx.get("dataset_version");
     is_TTbar = dataset_version.find("TTbar") == 0;

@@ -5,6 +5,7 @@
 #include "UHH2/common/include/Utils.h"
 
 #include "UHH2/HighPtSingleTop/include/LeptonAndTriggerScaleFactors.h"
+#include "UHH2/HighPtSingleTop/include/MyUtils.h"
 
 #include <TFile.h>
 
@@ -133,7 +134,7 @@ bool ElectronIdRecoScaleFactors2018::process(Event & event) {
 */
 LeptonDummyScaleFactors::LeptonDummyScaleFactors(Context & ctx) {
 
-  if(ctx.get("analysis_channel") == "ele") {
+  if(extract_channel(ctx) == Channel::isEle) {
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_tight_id"));
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_tight_id_up"));
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_tight_id_down"));
@@ -141,7 +142,7 @@ LeptonDummyScaleFactors::LeptonDummyScaleFactors(Context & ctx) {
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_isolation_up"));
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_isolation_down"));
   }
-  else if(ctx.get("analysis_channel") == "muo") {
+  else if(extract_channel(ctx) == Channel::isMuo) {
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_tight_id"));
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_tight_id_up"));
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_tight_id_down"));
@@ -169,12 +170,12 @@ LeptonScaleFactors::LeptonScaleFactors(Context & ctx) {
   m_sf_lepton.reset(new YearSwitcher(ctx));
   m_sf_dummy.reset(new LeptonDummyScaleFactors(ctx));
 
-  if(ctx.get("analysis_channel") == "ele") {
+  if(extract_channel(ctx) == Channel::isEle) {
     m_sf_lepton->setup2016(std::make_shared<ElectronIdRecoScaleFactors2016>(ctx));
     m_sf_lepton->setup2017(std::make_shared<ElectronIdRecoScaleFactors2017>(ctx));
     m_sf_lepton->setup2018(std::make_shared<ElectronIdRecoScaleFactors2018>(ctx));
   }
-  else if(ctx.get("analysis_channel") == "muo") {
+  else if(extract_channel(ctx) == Channel::isMuo) {
     m_sf_lepton->setup2016(std::make_shared<MuonIdIsoScaleFactors2016>(ctx));
     m_sf_lepton->setup2017(std::make_shared<MuonIdIsoScaleFactors2017>(ctx));
     m_sf_lepton->setup2018(std::make_shared<MuonIdIsoScaleFactors2018>(ctx));
@@ -494,12 +495,12 @@ bool MuonTriggerWeights::process(Event & event) {
 */
 TriggerDummyScaleFactors::TriggerDummyScaleFactors(Context & ctx) {
 
-  if(ctx.get("analysis_channel") == "ele") {
+  if(extract_channel(ctx) == Channel::isEle) {
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_trigger"));
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_trigger_up"));
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfmu_trigger_down"));
   }
-  else if(ctx.get("analysis_channel") == "muo") {
+  else if(extract_channel(ctx) == Channel::isMuo) {
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_trigger"));
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_trigger_up"));
     m_handles.push_back(ctx.declare_event_output<float>("weight_sfelec_trigger_down"));
@@ -523,10 +524,10 @@ TriggerScaleFactors::TriggerScaleFactors(Context & ctx) {
 
   m_sf_dummy.reset(new TriggerDummyScaleFactors(ctx));
 
-  if(ctx.get("analysis_channel") == "ele") {
+  if(extract_channel(ctx) == Channel::isEle) {
     m_sf_trigger.reset(new ElectronTriggerWeights(ctx));
   }
-  else if(ctx.get("analysis_channel") == "muo") {
+  else if(extract_channel(ctx) == Channel::isMuo) {
     m_sf_trigger.reset(new MuonTriggerWeights(ctx));
   }
   else {

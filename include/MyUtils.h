@@ -4,6 +4,7 @@
 #include "UHH2/core/include/AnalysisModule.h"
 #include "UHH2/core/include/FlavorParticle.h"
 #include "UHH2/core/include/Jet.h"
+#include "UHH2/core/include/Utils.h"
 #include "UHH2/common/include/JetCorrections.h"
 #include "UHH2/common/include/Utils.h"
 
@@ -29,6 +30,14 @@ const T* match(const Particle &p, const std::vector<T> &genparts, double dR_min)
   return matched;
 }
 
+
+enum class Channel {
+  isEle,
+  isMuo,
+  notValid,
+};
+
+Channel extract_channel(const uhh2::Context&);
 
 // returns the transverse W boson mass, using a given lepton and the MET in the event
 double calcMTW(const FlavorParticle&, const uhh2::Event&);

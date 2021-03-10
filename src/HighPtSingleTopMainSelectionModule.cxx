@@ -27,6 +27,7 @@
 #include "UHH2/HighPtSingleTop/include/HcalAndEcalModules.h"
 #include "UHH2/HighPtSingleTop/include/TaggingScaleFactors.h"
 #include "UHH2/HighPtSingleTop/include/TheoryCorrections.h"
+#include "UHH2/HighPtSingleTop/include/MyUtils.h"
 
 
 using namespace std;
@@ -60,7 +61,7 @@ namespace uhh2 {
     // unique_ptr<Selection> slct_tW_TopToHad, slct_tW_TopToEle, slct_tW_TopToMuo, slct_tW_TopToTau, slct_tW_WToHad, slct_tW_WToEle, slct_tW_WToMuo, slct_tW_WToTau;
     unique_ptr<HEMIssueSelection> slct_hemissue;
     unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_oneAk8jet, slct_oneAk4jet, slct_bJetVeto;
-    unique_ptr<Selection> slct_0wtag, slct_1wtag, slct_oneijet_top, slct_onexjet_W;
+    unique_ptr<Selection> slct_0btag, slct_1btag, slct_0wtag, slct_1wtag, slct_oneijet_top, slct_onexjet_W;
     // unique_ptr<Selection> slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_oneijet, slct_noxjet, slct_1bxjet;
 
     unique_ptr<AndHists> hist_presel_noweights, hist_presel_lumiSF, hist_presel_pileupSF, hist_presel_leptonSF, hist_presel_prefiringSF, hist_hemissue, hist_trigger, hist_triggerSF, hist_deepjetSF;
@@ -98,8 +99,8 @@ namespace uhh2 {
 
     debug = string2bool(ctx.get("Debug"));
 
-    is_muo = ctx.get("analysis_channel") == "muo";
-    is_ele = ctx.get("analysis_channel") == "ele";
+    is_muo = extract_channel(ctx) == Channel::isMuo;
+    is_ele = extract_channel(ctx) == Channel::isEle;
 
     is_QCDsideband = string2bool(ctx.get("QCD_sideband"));
 
@@ -214,6 +215,8 @@ namespace uhh2 {
     slct_trigger.reset(new HighPtSingleTopTriggerSelection(ctx));
     slct_hemissue.reset(new HEMIssueSelection(ctx));
 
+    slct_0btag.reset(new NJetSelection(0, 0, BJetID));
+    slct_1btag.reset(new NJetSelection(1, 1, BJetID));
     slct_0toptag.reset(new NTopJetSelection(0, 0, StandardHOTVRTopTagID));
     slct_1toptag.reset(new NTopJetSelection(1, 1, StandardHOTVRTopTagID));
     slct_0wtag.reset(new MyNTopJetSelection(ctx, 0, 0, "WJets"));
@@ -455,6 +458,8 @@ namespace uhh2 {
     hist_vjetsSF->fill(event);
 
     if(debug) cout << "Set some booleans for analysis regions" << endl;
+    bool b_0btag = slct_0btag->passes(event);
+    bool b_1btag = slct_1btag->passes(event);
     bool b_1toptag = slct_1toptag->passes(event);
     bool b_0toptag = slct_0toptag->passes(event);
     bool b_1wtag = slct_1wtag->passes(event);
