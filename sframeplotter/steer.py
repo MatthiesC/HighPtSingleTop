@@ -34,6 +34,8 @@ parser.add_argument('-y', '--years', choices=years, nargs='*', default=[])
 parser.add_argument('-s', '--singleeps', action='store_true')
 parser.add_argument('-l', '--legend', action='store_true')
 parser.add_argument('-n', '--no', choices=['data', 'qcd'], nargs='*', default=[])
+parser.add_argument('-t', '--tar', action='store_true')
+parser.add_argument('-p', '--plot', action='store_true')
 args = parser.parse_args(sys.argv[1:])
 
 if args.all == True:
@@ -53,12 +55,18 @@ if args.runii == True:
 
 if not len(combos):
     sys.exit('Nothing to plot. Exit.')
+
+if args.tar and args.plot:
+    sys.exit('Cannot plot and tar at once.')
+
 print 'Working on:'
 print combos
 
 #---------#
 # PROGRAM #
 #---------#
+
+print 'Using SFramePlotter at:', subprocess.check_output('which Plots', shell=True).strip('\n')
 
 uhh2Dir = os.environ.get('CMSSW_BASE')+'/src/UHH2/'
 mainselDir = uhh2Dir+'HighPtSingleTop/output/mainsel/'
@@ -78,8 +86,10 @@ for year, channel in combos:
     template_file = open(templateDir+template_name, 'r')
     steerFilePath = workDir+'_'.join(['mainsel', year, channel])+'.steer'
     fCycleName = mainselDir+year+'/'+channel+'/nominal/hadded/uhh2.AnalysisModuleRunner'
-    outputDir = mainselDir+year+'/'+channel+('/plots_single/' if args.singleeps else '/plots/')
-    fOutputPsFile = outputDir+'_'.join(['mainsel', year, channel])+'.ps'
+    outputDirName = ('plots_single' if args.singleeps else 'plots')+'_'+'_'.join([year, channel])
+    thisMainselDir = mainselDir+year+'/'+channel+'/'
+    outputDir = thisMainselDir+outputDirName
+    fOutputPsFile = outputDir+'/'+'_'.join(['mainsel', year, channel])+'.ps'
     if not os.path.exists(outputDir):
         print 'Create new directory:', outputDir
         os.mkdir(outputDir)
@@ -96,5 +106,13 @@ for year, channel in combos:
     template_file.close()
     # Plots does not except absolute file paths to steer file, thus get relative path of steer file with working directory = sframeplotterBase
     steerFilePathRelative = steerFilePath.replace(uhh2Dir, '../'+os.environ.get('CMSSW_BASE').split('/')[-1]+'/src/UHH2/')
-    subprocess.Popen(('Plots -f '+steerFilePathRelative), shell=True, cwd=sframeplotterBase, stdout=FNULL, stderr=FNULL)
-    # subprocess.Popen(('echo '+steerFilePathRelative), shell=True, cwd=sframeplotterBase)#, stdout=FNULL, stderr=FNULL)
+    command_Plots = 'Plots -f '+steerFilePathRelative
+    command_targz = 'tar czf '+outputDirName+'.tar.gz '+outputDirName
+    if not (args.plot or args.tar):
+        print 'Command for SFramePlotter:', command_Plots
+        print 'Command for tar/gzip:', command_targz
+        print 'If you wish to run the plotter (compression), use option "-p" ("-t").'
+    if args.plot:
+        subprocess.Popen((command_Plots), shell=True, cwd=sframeplotterBase, stdout=FNULL, stderr=FNULL)
+    if args.tar:
+        subprocess.Popen((command_targz), shell=True, cwd=thisMainselDir, stdout=FNULL, stderr=FNULL)
