@@ -5,6 +5,21 @@
 
 namespace uhh2 {
 
+
+  class RegionHist: public uhh2::Hists {
+  public:
+    RegionHist(uhh2::Context & ctx, const std::string & dirname);
+
+    virtual void fill(const uhh2::Event & ev) override;
+
+  private:
+    uhh2::Event::Handle<int> h_which_region;
+
+  protected:
+    TH1F *hist_regions;
+  };
+
+
   class HighPtSingleTopHists: public uhh2::Hists {
   public:
     HighPtSingleTopHists(uhh2::Context & ctx, const std::string & dirname);

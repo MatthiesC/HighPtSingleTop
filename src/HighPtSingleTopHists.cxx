@@ -14,6 +14,25 @@ using namespace std;
 using namespace uhh2;
 
 
+RegionHist::RegionHist(Context & ctx, const string & dirname): Hists(ctx, dirname) {
+
+  h_which_region = ctx.get_handle<int>("which_region");
+
+  const int nx = 10;
+  const char *regions[nx] = {"0b1t", "0b0t1W", "0b0t0W", "1b1t", "1b0t1W", "1b0t0W", "#geq2b1t", "#geq2b0t1W", "#geq2b0t0W", "else"};
+  hist_regions = book<TH1F>("regions", "Analysis regions", nx, 0.5, 10.5);
+  for(int i = 1; i <= nx; ++i) hist_regions->GetXaxis()->SetBinLabel(i,regions[i-1]);
+}
+
+void RegionHist::fill(const Event & event) {
+
+  double w = event.weight;
+  const int region = event.get(h_which_region);
+
+  hist_regions->Fill(region, w);
+}
+
+
 HighPtSingleTopHists::HighPtSingleTopHists(Context & ctx, const string & dirname): Hists(ctx, dirname) {
 
   deltaR_lepton_nextjet = book<TH1F>("deltaR_lepton_nextjet", "#DeltaR(lepton, next AK4 jet)", 100, 0, 5);
