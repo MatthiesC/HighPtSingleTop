@@ -14,6 +14,7 @@
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
 #include "UHH2/HighPtSingleTop/include/MyAk8Hists.h"
 #include "UHH2/HighPtSingleTop/include/TaggedJetsHists.h"
+#include "UHH2/HighPtSingleTop/include/DeepJetHists.h"
 
 
 using namespace std;
@@ -74,7 +75,8 @@ AndHists::AndHists(Context & ctx, const string & dirname):
   hists_vector.push_back(new MyElectronHists(ctx, dirname + "_Electron"));
   hists_vector.push_back(new MyMuonHists(ctx, dirname + "_Muon"));
   hists_vector.push_back(new JetHists(ctx, dirname + "_Jets"));
-  hists_vector.push_back(new HOTVRHists(ctx, dirname +"_Hotvr"));
+  // hists_vector.push_back(new DeepJetHists(ctx, dirname + "_DeepJet"));
+  hists_vector.push_back(new HOTVRHists(ctx, dirname +"_HOTVR"));
 }
 
 
@@ -96,26 +98,32 @@ void AndHists::add_hist(Hists *hist) {
 
 void AndHists::add_Ak8Hists(Context & ctx, const string & ak8_handle_name) {
 
-  hists_vector.push_back(new MyAk8Hists(ctx, m_dirname + "_Ak8Hists", ak8_handle_name));
+  hists_vector.push_back(new MyAk8Hists(ctx, m_dirname + "_AK8", ak8_handle_name));
+}
+
+
+void AndHists::add_DeepJetHists(Context & ctx) {
+
+  hists_vector.push_back(new DeepJetHists(ctx, m_dirname + "_DeepJet"));
 }
 
 
 void AndHists::add_WTagHists(Context & ctx, const bool & var_binned) {
 
-  hists_vector.push_back(new WTagHists(ctx, m_dirname + "_WTagHists_Full"));
+  hists_vector.push_back(new WTagHists(ctx, m_dirname + "_WTagHists"));
   if(var_binned) {
-    hists_vector.push_back(new WTagHists(ctx, m_dirname + "_WTagHists_Pt0to300", 0, 300));
-    hists_vector.push_back(new WTagHists(ctx, m_dirname + "_WTagHists_Pt300toInf", 300));
+    // hists_vector.push_back(new WTagHists(ctx, m_dirname + "_WTagHists_Pt0to300", 0, 300));
+    // hists_vector.push_back(new WTagHists(ctx, m_dirname + "_WTagHists_Pt300toInf", 300));
   }
 }
 
 
 void AndHists::add_TopTagHists(Context & ctx, const bool & var_binned) {
 
-  hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists_Full"));
+  hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists"));
   if (var_binned) {
-    hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists_Pt0to300", 0, 300));
-    hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists_Pt300toInf", 300));
+    // hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists_Pt0to300", 0, 300));
+    // hists_vector.push_back(new TopTagHists(ctx, m_dirname + "_TopTagHists_Pt300toInf", 300));
   }
 }
 
