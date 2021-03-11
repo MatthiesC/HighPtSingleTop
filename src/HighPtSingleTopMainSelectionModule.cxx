@@ -16,9 +16,11 @@
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
 #include "UHH2/HighPtSingleTop/include/TaggedJets.h"
+#include "UHH2/HighPtSingleTop/include/DeepJetHists.h"
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
 #include "UHH2/HighPtSingleTop/include/DNNApplication.h"
 #include "UHH2/HighPtSingleTop/include/DNNHists.h"
+#include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
 #include "UHH2/HighPtSingleTop/include/MatchHists.h"
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
 #include "UHH2/HighPtSingleTop/include/WTagHists.h"
@@ -58,26 +60,38 @@ namespace uhh2 {
 
     unique_ptr<Selection> slct_WJetsHeavy;
     unique_ptr<Selection> slct_tW_Sig;
+    unique_ptr<Selection> slct_1jet;
     // unique_ptr<Selection> slct_tW_TopToHad, slct_tW_TopToEle, slct_tW_TopToMuo, slct_tW_TopToTau, slct_tW_WToHad, slct_tW_WToEle, slct_tW_WToMuo, slct_tW_WToTau;
     unique_ptr<HEMIssueSelection> slct_hemissue;
     unique_ptr<Selection> slct_trigger, slct_0toptag, slct_1toptag, slct_oneAk8jet, slct_oneAk4jet, slct_bJetVeto;
     unique_ptr<Selection> slct_0btag, slct_1btag, slct_0wtag, slct_1wtag, slct_oneijet_top, slct_onexjet_W;
     // unique_ptr<Selection> slct_tW_merged3, slct_tW_merged2, slct_tW_merged1, slct_tW_merged0, slct_oneijet, slct_noxjet, slct_1bxjet;
 
-    unique_ptr<AndHists> hist_presel_noweights, hist_presel_lumiSF, hist_presel_pileupSF, hist_presel_leptonSF, hist_presel_prefiringSF, hist_hemissue, hist_trigger, hist_triggerSF, hist_deepjetSF;
+    unique_ptr<AndHists> hist_presel_noweights, hist_presel_lumiSF, hist_presel_pileupSF, hist_presel_leptonSF, hist_presel_prefiringSF, hist_hemissue, hist_trigger, hist_triggerSF;
     // unique_ptr<AndHists> hist_topptSF;
+    unique_ptr<DeepJetHists> hist_deepjet_preSF;
+    unique_ptr<AndHists> hist_deepjetSF;
     unique_ptr<AndHists> hist_vjetsSF;
     unique_ptr<Hists> hist_ak8_preCorr, hist_ak8_postCorr, hist_ak8_postCleaning;
     unique_ptr<AndHists> hist_TopTag_Begin, hist_TopTag_HotvrSF, hist_TopTag_End;
     unique_ptr<AndHists> hist_WTag_Begin, hist_WTag_DeepAk8SF, hist_WTag_End;
-    unique_ptr<AndHists> hist_Validation_Begin, hist_Validation_Ak8Cut, hist_Validation_Ak4Cut, hist_Validation_End;
+    unique_ptr<AndHists> hist_Veto_Begin, hist_Veto_Ak8Cut, hist_Veto_Ak4Cut, hist_Veto_End;
 
-    //unique_ptr<Hists> hist_count_TopHadWLep_before, hist_count_TopHadWLep_after, hist_count_TopLepWHad_before, hist_count_TopLepWHad_after, hist_count_Validation_before, hist_count_Validation_after;
+    unique_ptr<AndHists> hist_TopTag0b, hist_TopTag1b, hist_TopTag2b;
+    unique_ptr<AndHists> hist_WTag0b, hist_WTag1b, hist_WTag2b;
+    unique_ptr<AndHists> hist_Veto0b, hist_Veto1b, hist_Veto2b;
+    unique_ptr<AndHists> hist_0b, hist_1b, hist_2b;
+    unique_ptr<RegionHist> hist_regions;
+
+    //unique_ptr<Hists> hist_count_TopHadWLep_before, hist_count_TopHadWLep_after, hist_count_TopLepWHad_before, hist_count_TopLepWHad_after, hist_count_Veto_before, hist_count_Veto_after;
     // unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
     // unique_ptr<BinnedDNNHists> hist_dnn_ttag;
-    unique_ptr<MatchHists> hist_Matching_TopTag, hist_Matching_WTag, hist_Matching_ValidationTopTag, hist_Matching_ValidationWTag;
-    // unique_ptr<DNNHists> hist_dnn_TopTag, hist_dnn_WTag, hist_dnn_ValidationTopTag, hist_dnn_ValidationWTag;
-    unique_ptr<BinnedDNNHists> hist_dnn_binned_TopTag, hist_dnn_binned_WTag, hist_dnn_binned_ValidationTopTag, hist_dnn_binned_ValidationWTag;
+    unique_ptr<MatchHists> hist_Matching_TopTag, hist_Matching_WTag;
+    unique_ptr<DNNHists> hist_dnn_TopTag, hist_dnn_WTag, hist_dnn_VetoTopTag, hist_dnn_VetoWTag;
+    unique_ptr<DNNHists> hist_dnn_TopTag0b, hist_dnn_WTag0b, hist_dnn_VetoTopTag0b, hist_dnn_VetoWTag0b;
+    unique_ptr<DNNHists> hist_dnn_TopTag1b, hist_dnn_WTag1b, hist_dnn_VetoTopTag1b, hist_dnn_VetoWTag1b;
+    unique_ptr<DNNHists> hist_dnn_TopTag2b, hist_dnn_WTag2b, hist_dnn_VetoTopTag2b, hist_dnn_VetoWTag2b;
+    // unique_ptr<BinnedDNNHists> hist_dnn_binned_TopTag, hist_dnn_binned_WTag, hist_dnn_binned_VetoTopTag, hist_dnn_binned_VetoWTag;
 
     string dataset_version;
 
@@ -180,7 +194,7 @@ namespace uhh2 {
     handle_btaggedjets.reset(new BTaggedJets(ctx, btag_algo, btag_workingpoint));
     handle_toptaggedjets.reset(new TopTaggedJets(ctx, StandardHOTVRTopTagID));
     handle_wboson.reset(new WBosonLeptonic(ctx));
-    handle_pseudotop.reset(new PseudoTopLeptonic(ctx, true, "WBosonLeptonic", "BJetsLoose")); // true = use b jets (if there are no b jets, all ak4 jets will be used instead to avoid crashes; important for validation region)
+    handle_pseudotop.reset(new PseudoTopLeptonic(ctx, true, "WBosonLeptonic", "BJetsLoose")); // true = use b jets (if there are no b jets, all ak4 jets will be used instead to avoid crashes; important for Veto region)
 
     handle_toptaggedjet.reset(new TopTaggedJet(ctx));
     handle_ak4InExJets_top.reset(new InExAK4Jets(ctx, btag_algo, btag_workingpoint, "_Top", "TopTaggedJet", true));
@@ -211,6 +225,8 @@ namespace uhh2 {
     // slct_tW_WToEle.reset(new tWgenSelection(ctx, "WToEle"));
     // slct_tW_WToMuo.reset(new tWgenSelection(ctx, "WToMuo"));
     // slct_tW_WToTau.reset(new tWgenSelection(ctx, "WToTau"));
+
+    slct_1jet.reset(new NJetSelection(1, -1));
 
     slct_trigger.reset(new HighPtSingleTopTriggerSelection(ctx));
     slct_hemissue.reset(new HEMIssueSelection(ctx));
@@ -254,67 +270,159 @@ namespace uhh2 {
     hist_trigger.reset(new AndHists(ctx, "2_Trigger"));
     hist_triggerSF.reset(new AndHists(ctx, "2_TriggerSF"));
 
-    hist_deepjetSF.reset(new AndHists(ctx, "2_DeepJetSF"));
-
     // Control distributions or AK8 jets: JEC+JER and cleaning
     hist_ak8_preCorr.reset(new MyAk8Hists(ctx, "2_Ak8Setup_PreCorr", ctx.get("Ak8recCollection"))); // AK8 handles not yet set, use additional branch directly
     hist_ak8_postCorr.reset(new MyAk8Hists(ctx, "2_Ak8Setup_PostCorr", ctx.get("Ak8recCollection"))); // AK8 handles not yet set, use additional branch directly
     hist_ak8_postCleaning.reset(new MyAk8Hists(ctx, "2_Ak8Setup_PostCleaning"));
 
+    hist_deepjet_preSF.reset(new DeepJetHists(ctx, "2_DeepJetPreSF"));
+    hist_deepjetSF.reset(new AndHists(ctx, "2_DeepJetPostSF"));
+    hist_deepjetSF->add_DeepJetHists(ctx);
+
     hist_hemissue.reset(new AndHists(ctx, "2_HEM"));
     hist_hemissue->add_Ak8Hists(ctx);
+    hist_hemissue->add_DeepJetHists(ctx);
 
     // hist_topptSF.reset(new AndHists(ctx, "2_TopPtSF"));
     // hist_topptSF->add_Ak8Hists(ctx);
+    // hist_topptSF->add_DeepJetHists(ctx);
 
     hist_vjetsSF.reset(new AndHists(ctx, "2_VJetsSF"));
     hist_vjetsSF->add_Ak8Hists(ctx);
+    hist_vjetsSF->add_DeepJetHists(ctx);
 
     hist_TopTag_Begin.reset(new AndHists(ctx, "3_TopTag_Begin"));
     hist_TopTag_Begin->add_TopTagHists(ctx);
     hist_TopTag_Begin->add_Ak8Hists(ctx);
-    hist_TopTag_HotvrSF.reset(new AndHists(ctx, "3_TopTag_HotvrSF"));
-    hist_TopTag_HotvrSF->add_TopTagHists(ctx);
-    hist_TopTag_HotvrSF->add_Ak8Hists(ctx);
+    hist_TopTag_Begin->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
+    hist_TopTag_Begin->add_DeepJetHists(ctx);
+    // hist_TopTag_HotvrSF.reset(new AndHists(ctx, "3_TopTag_HotvrSF"));
+    // hist_TopTag_HotvrSF->add_TopTagHists(ctx);
+    // hist_TopTag_HotvrSF->add_Ak8Hists(ctx);
+    // hist_TopTag_HotvrSF->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
     hist_TopTag_End.reset(new AndHists(ctx, "3_TopTag_End"));
     hist_TopTag_End->add_TopTagHists(ctx);
     hist_TopTag_End->add_Ak8Hists(ctx);
     hist_TopTag_End->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
+    hist_TopTag_End->add_DeepJetHists(ctx);
 
     hist_WTag_Begin.reset(new AndHists(ctx, "3_WTag_Begin"));
     hist_WTag_Begin->add_WTagHists(ctx);
     hist_WTag_Begin->add_Ak8Hists(ctx);
-    hist_WTag_DeepAk8SF.reset(new AndHists(ctx, "3_WTag_DeepAk8SF"));
-    hist_WTag_DeepAk8SF->add_WTagHists(ctx);
-    hist_WTag_DeepAk8SF->add_Ak8Hists(ctx);
+    hist_WTag_Begin->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
+    hist_WTag_Begin->add_DeepJetHists(ctx);
+    // hist_WTag_DeepAk8SF.reset(new AndHists(ctx, "3_WTag_DeepAk8SF"));
+    // hist_WTag_DeepAk8SF->add_WTagHists(ctx);
+    // hist_WTag_DeepAk8SF->add_Ak8Hists(ctx);
+    // hist_WTag_DeepAk8SF->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
     hist_WTag_End.reset(new AndHists(ctx, "3_WTag_End"));
     hist_WTag_End->add_WTagHists(ctx);
     hist_WTag_End->add_Ak8Hists(ctx);
     hist_WTag_End->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
+    hist_WTag_End->add_DeepJetHists(ctx);
 
-    hist_Validation_Begin.reset(new AndHists(ctx, "3_Validation_Begin"));
-    hist_Validation_Begin->add_Ak8Hists(ctx);
-    hist_Validation_Ak8Cut.reset(new AndHists(ctx, "3_Validation_Ak8Cut"));
-    hist_Validation_Ak8Cut->add_TopTagHists(ctx);
-    hist_Validation_Ak8Cut->add_WTagHists(ctx);
-    hist_Validation_Ak8Cut->add_Ak8Hists(ctx);
-    hist_Validation_Ak4Cut.reset(new AndHists(ctx, "3_Validation_Ak4Cut"));
-    hist_Validation_Ak4Cut->add_TopTagHists(ctx);
-    hist_Validation_Ak4Cut->add_WTagHists(ctx);
-    hist_Validation_Ak4Cut->add_Ak8Hists(ctx);
-    hist_Validation_Ak4Cut->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
-    hist_Validation_Ak4Cut->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
-    hist_Validation_End.reset(new AndHists(ctx, "3_Validation_End"));
-    hist_Validation_End->add_TopTagHists(ctx);
-    hist_Validation_End->add_WTagHists(ctx);
-    hist_Validation_End->add_Ak8Hists(ctx);
-    hist_Validation_End->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
-    hist_Validation_End->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
+    hist_Veto_Begin.reset(new AndHists(ctx, "3_Veto_Begin"));
+    hist_Veto_Begin->add_Ak8Hists(ctx);
+    hist_Veto_Begin->add_DeepJetHists(ctx);
+    // hist_Veto_Ak8Cut.reset(new AndHists(ctx, "3_Veto_Ak8Cut"));
+    // hist_Veto_Ak8Cut->add_TopTagHists(ctx);
+    // hist_Veto_Ak8Cut->add_WTagHists(ctx);
+    // hist_Veto_Ak8Cut->add_Ak8Hists(ctx);
+    // hist_Veto_Ak4Cut.reset(new AndHists(ctx, "3_Veto_Ak4Cut"));
+    // hist_Veto_Ak4Cut->add_TopTagHists(ctx);
+    // hist_Veto_Ak4Cut->add_WTagHists(ctx);
+    // hist_Veto_Ak4Cut->add_Ak8Hists(ctx);
+    // hist_Veto_Ak4Cut->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
+    // hist_Veto_Ak4Cut->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
+    hist_Veto_End.reset(new AndHists(ctx, "3_Veto_End"));
+    hist_Veto_End->add_TopTagHists(ctx);
+    hist_Veto_End->add_WTagHists(ctx);
+    hist_Veto_End->add_Ak8Hists(ctx);
+    hist_Veto_End->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
+    hist_Veto_End->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
+    hist_Veto_End->add_DeepJetHists(ctx);
+
+
+    hist_TopTag0b.reset(new AndHists(ctx, "3_TopTag0b"));
+    hist_TopTag0b->add_TopTagHists(ctx);
+    hist_TopTag0b->add_Ak8Hists(ctx);
+    hist_TopTag0b->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
+    hist_TopTag0b->add_DeepJetHists(ctx);
+
+    hist_TopTag1b.reset(new AndHists(ctx, "3_TopTag1b"));
+    hist_TopTag1b->add_TopTagHists(ctx);
+    hist_TopTag1b->add_Ak8Hists(ctx);
+    hist_TopTag1b->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
+    hist_TopTag1b->add_DeepJetHists(ctx);
+
+    hist_TopTag2b.reset(new AndHists(ctx, "3_TopTag2b"));
+    hist_TopTag2b->add_TopTagHists(ctx);
+    hist_TopTag2b->add_Ak8Hists(ctx);
+    hist_TopTag2b->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
+    hist_TopTag2b->add_DeepJetHists(ctx);
+
+
+    hist_WTag0b.reset(new AndHists(ctx, "3_WTag0b"));
+    hist_WTag0b->add_WTagHists(ctx);
+    hist_WTag0b->add_Ak8Hists(ctx);
+    hist_WTag0b->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
+    hist_WTag0b->add_DeepJetHists(ctx);
+
+    hist_WTag1b.reset(new AndHists(ctx, "3_WTag1b"));
+    hist_WTag1b->add_WTagHists(ctx);
+    hist_WTag1b->add_Ak8Hists(ctx);
+    hist_WTag1b->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
+    hist_WTag1b->add_DeepJetHists(ctx);
+
+    hist_WTag2b.reset(new AndHists(ctx, "3_WTag2b"));
+    hist_WTag2b->add_WTagHists(ctx);
+    hist_WTag2b->add_Ak8Hists(ctx);
+    hist_WTag2b->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
+    hist_WTag2b->add_DeepJetHists(ctx);
+
+
+    hist_Veto0b.reset(new AndHists(ctx, "3_Veto0b"));
+    hist_Veto0b->add_TopTagHists(ctx);
+    hist_Veto0b->add_WTagHists(ctx);
+    hist_Veto0b->add_Ak8Hists(ctx);
+    hist_Veto0b->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
+    hist_Veto0b->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
+    hist_Veto0b->add_DeepJetHists(ctx);
+
+    hist_Veto1b.reset(new AndHists(ctx, "3_Veto1b"));
+    hist_Veto1b->add_TopTagHists(ctx);
+    hist_Veto1b->add_WTagHists(ctx);
+    hist_Veto1b->add_Ak8Hists(ctx);
+    hist_Veto1b->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
+    hist_Veto1b->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
+    hist_Veto1b->add_DeepJetHists(ctx);
+
+    hist_Veto2b.reset(new AndHists(ctx, "3_Veto2b"));
+    hist_Veto2b->add_TopTagHists(ctx);
+    hist_Veto2b->add_WTagHists(ctx);
+    hist_Veto2b->add_Ak8Hists(ctx);
+    hist_Veto2b->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
+    hist_Veto2b->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
+    hist_Veto2b->add_DeepJetHists(ctx);
+
+
+    hist_0b.reset(new AndHists(ctx, "3_0b"));
+    hist_0b->add_Ak8Hists(ctx);
+    hist_0b->add_DeepJetHists(ctx);
+
+    hist_1b.reset(new AndHists(ctx, "3_1b"));
+    hist_1b->add_Ak8Hists(ctx);
+    hist_1b->add_DeepJetHists(ctx);
+
+    hist_2b.reset(new AndHists(ctx, "3_2b"));
+    hist_2b->add_DeepJetHists(ctx);
+    hist_2b->add_Ak8Hists(ctx);
+
+    hist_regions.reset(new RegionHist(ctx, "AnalysisRegions"));
+
 
     hist_Matching_TopTag.reset(new MatchHists(ctx, "Matching_TopTag", "Top"));
     hist_Matching_WTag.reset(new MatchHists(ctx, "Matching_WTag", "W"));
-    hist_Matching_ValidationTopTag.reset(new MatchHists(ctx, "Matching_ValidationTopTag", "Top"));
-    hist_Matching_ValidationWTag.reset(new MatchHists(ctx, "Matching_ValidationWTag", "W"));
 
     // hist_decaymatch.reset(new MatchHists(ctx, "MatchHists_Full"));
     // hist_decaymatch_Pt0to400.reset(new MatchHists(ctx, "MatchHists_Pt0to400", 0, 400));
@@ -322,15 +430,30 @@ namespace uhh2 {
 
     // hist_dnn.reset(new BinnedDNNHists(ctx, "DNNHists_TopTag", dnn_config_inputNames, dnn_setup->inputs_info()));
 
-    hist_dnn_binned_TopTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_TopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
-    hist_dnn_binned_WTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_WTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
-    hist_dnn_binned_ValidationTopTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_ValidationTopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names())); // For the validation region, it makes no sense to look at the pT of the t jet/pseudtop or W jet/leptonic W boson
-    hist_dnn_binned_ValidationWTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_ValidationWTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+    // hist_dnn_binned_TopTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_TopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+    // hist_dnn_binned_WTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_WTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+    // hist_dnn_binned_VetoTopTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_VetoTopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names())); // For the Veto region, it makes no sense to look at the pT of the t jet/pseudtop or W jet/leptonic W boson
+    // hist_dnn_binned_VetoWTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_VetoWTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
 
-    // hist_dnn_TopTag.reset(new DNNHists(ctx, "DNNHists_TopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
-    // hist_dnn_WTag.reset(new DNNHists(ctx, "DNNHists_WTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
-    // hist_dnn_ValidationTopTag.reset(new DNNHists(ctx, "DNNHists_ValidationTopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
-    // hist_dnn_ValidationWTag.reset(new DNNHists(ctx, "DNNHists_ValidationWTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+    hist_dnn_TopTag.reset(new DNNHists(ctx, "DNNHists_TopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+    hist_dnn_TopTag0b.reset(new DNNHists(ctx, "DNNHists_TopTag0b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+    hist_dnn_TopTag1b.reset(new DNNHists(ctx, "DNNHists_TopTag1b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+    hist_dnn_TopTag2b.reset(new DNNHists(ctx, "DNNHists_TopTag2b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+
+    hist_dnn_WTag.reset(new DNNHists(ctx, "DNNHists_WTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+    hist_dnn_WTag0b.reset(new DNNHists(ctx, "DNNHists_WTag0b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+    hist_dnn_WTag1b.reset(new DNNHists(ctx, "DNNHists_WTag1b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+    hist_dnn_WTag2b.reset(new DNNHists(ctx, "DNNHists_WTag2b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+
+    hist_dnn_VetoTopTag.reset(new DNNHists(ctx, "DNNHists_VetoTopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+    hist_dnn_VetoTopTag0b.reset(new DNNHists(ctx, "DNNHists_VetoTopTag0b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+    hist_dnn_VetoTopTag1b.reset(new DNNHists(ctx, "DNNHists_VetoTopTag1b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+    hist_dnn_VetoTopTag2b.reset(new DNNHists(ctx, "DNNHists_VetoTopTag2b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+
+    hist_dnn_VetoWTag.reset(new DNNHists(ctx, "DNNHists_VetoWTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+    hist_dnn_VetoWTag0b.reset(new DNNHists(ctx, "DNNHists_VetoWTag0b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+    hist_dnn_VetoWTag1b.reset(new DNNHists(ctx, "DNNHists_VetoWTag1b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+    hist_dnn_VetoWTag2b.reset(new DNNHists(ctx, "DNNHists_VetoWTag2b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
   }
 
 
@@ -394,6 +517,8 @@ namespace uhh2 {
 
     // This is where the fun begins...
 
+    if(!slct_1jet->passes(event)) return false; // require at least one AK4 jet for computational reasons (dR(lepton, jet) etc.), reject ca. 0.05 % of events in real data (tested in 2017 muo, RunB)
+
     if(debug) cout << "Sort jets, topjets, and subjets by pt" << endl;
     sort_by_pt<Jet>(*event.jets);
     sort_by_pt<TopJet>(*event.topjets);
@@ -424,10 +549,6 @@ namespace uhh2 {
     sf_trigger->process(event);
     hist_triggerSF->fill(event);
 
-    if(debug) cout << "Reweight DeepJet distributions for AK4 jets" << endl;
-    sf_deepjet->process(event);
-    hist_deepjetSF->fill(event);
-
     if(debug) cout << "Apply corrections to AK8 jets and clean them" << endl;
     hist_ak8_preCorr->fill(event);
     ak8corrections->process(event); // don't sort AK8 jets after correcting them to have consistent preCorr and postCorr histograms
@@ -441,6 +562,11 @@ namespace uhh2 {
     handle_btaggedjets->process(event);
     handle_toptaggedjets->process(event);
     handle_wboson->process(event); // the leptonic one!
+
+    if(debug) cout << "Reweight DeepJet distributions for AK4 jets" << endl;
+    hist_deepjet_preSF->fill(event);
+    sf_deepjet->process(event);
+    hist_deepjetSF->fill(event);
 
     if(debug) cout << "Handle HEM15/16 issue for 2018" << endl;
     if(slct_hemissue->passes(event)) {
@@ -466,11 +592,14 @@ namespace uhh2 {
     bool b_0wtag = slct_0wtag->passes(event);
     bool is_TopTagRegion(false);
     bool is_WTagRegion(false);
-    bool is_ValidationRegion(false);
+    bool is_VetoRegion(false);
+    bool is_ElseRegion(false);
+    int region(0);
 
     // Caveat: The order of analysis modules in the following if-statements is crucial and should be changed with care only!
 
     if(b_1toptag) { // don't veto w-tags since this might hurt the signal efficiency
+      if(debug) cout << "Event belongs to 'TopTag' region." << endl;
       // sf_wtag->process_dummy(event); // Need to call event.set() since all scale factor weights are stored into output tree. Else, an error occurs
 
       if(debug) cout << "SR t(had)W(lep): Set handles for top tag and AK4 jets inside/outside top jet" << endl;
@@ -481,20 +610,36 @@ namespace uhh2 {
       if(debug) cout << "SR t(had)W(lep): Apply HOTVR top-tagging scale factors" << endl;
       handle_hadronictop->process(event);
       sf_toptag->process(event);
-      if(debug) cout << "SR t(had)W(lep): Fill control histograms after HOTVR scale factors" << endl;
-      hist_TopTag_HotvrSF->fill(event);
-      if(debug) cout << "SR t(had)W(lep): Throw away very few events which do not have at least one AK4 jet within top jet" << endl;
-      if(!slct_oneijet_top->passes(event)) return false; // Need to have at least one AK4 jet for pseudotop and also makes sense to have at least one AK4 jet inside HOTVR jet
+      // if(debug) cout << "SR t(had)W(lep): Fill control histograms after HOTVR scale factors" << endl;
+      // hist_TopTag_HotvrSF->fill(event);
+      // if(debug) cout << "SR t(had)W(lep): Throw away very few events which do not have at least one AK4 jet within top jet" << endl;
+      // if(!slct_oneijet_top->passes(event)) return false; // Need to have at least one AK4 jet for pseudotop and also makes sense to have at least one AK4 jet inside HOTVR jet
       if(debug) cout << "SR t(had)W(lep): Fill final control histograms" << endl;
       hist_TopTag_End->fill(event);
 
       if(is_tW) hist_Matching_TopTag->fill(event);
 
-      event.set(h_which_region, 1);
       is_TopTagRegion = true;
+
+      if(b_0btag) {
+        if(debug) cout << "0 b-tags" << endl;
+        hist_TopTag0b->fill(event);
+        region = 1;
+      }
+      else if(b_1btag) {
+        if(debug) cout << "1 b-tag" << endl;
+        hist_TopTag1b->fill(event);
+        region = 4;
+      }
+      else {
+        if(debug) cout << "2 or more b-tags" << endl;
+        hist_TopTag2b->fill(event);
+        region = 7;
+      }
     }
 
     else if(b_0toptag && b_1wtag) {
+      if(debug) cout << "Event belongs to 'WTag' region." << endl;
       sf_toptag->process_dummy(event);
 
       if(debug) cout << "SR t(lep)W(had): Set handles for W tag and AK4 jets inside/outside W jet" << endl;
@@ -502,27 +647,43 @@ namespace uhh2 {
       handle_ak4InExJets_W->process(event);
       if(debug) cout << "SR t(lep)W(had): Fill initial control histograms" << endl;
       hist_WTag_Begin->fill(event);
-      if(debug) cout << "SR t(lep)W(had): Apply DeepAK8 W-tagging scale factors" << endl;
+      // if(debug) cout << "SR t(lep)W(had): Apply DeepAK8 W-tagging scale factors" << endl;
       // sf_wtag->process(event); // TODO: need to check those weird scale factors ...
-      if(debug) cout << "SR t(had)W(lep): Fill control histograms after DeepAK8 scale factors" << endl;
-      hist_WTag_DeepAk8SF->fill(event);
-      if(debug) cout << "SR t(lep)W(had): Require at least one AK4 jet outside W jet as potential candidate for the b jet from leptonic top quark" << endl;
-      if(!slct_onexjet_W->passes(event)) return false; // Need to have at least one AK4 jet for pseudotop and also makes sense due to decay mode (additional AK4 jet potentially represents b jet from leptonic top quark)
+      // if(debug) cout << "SR t(had)W(lep): Fill control histograms after DeepAK8 scale factors" << endl;
+      // hist_WTag_DeepAk8SF->fill(event);
+      // if(debug) cout << "SR t(lep)W(had): Require at least one AK4 jet outside W jet as potential candidate for the b jet from leptonic top quark" << endl;
+      // if(!slct_onexjet_W->passes(event)) return false; // Need to have at least one AK4 jet for pseudotop and also makes sense due to decay mode (additional AK4 jet potentially represents b jet from leptonic top quark)
       if(debug) cout << "SR t(lep)W(had): Fill final control histograms" << endl;
       hist_WTag_End->fill(event);
 
       if(is_tW) hist_Matching_WTag->fill(event);
 
-      event.set(h_which_region, 2);
       is_WTagRegion = true;
+
+      if(b_0btag) {
+        if(debug) cout << "0 b-tags" << endl;
+        hist_WTag0b->fill(event);
+        region = 2;
+      }
+      else if(b_1btag) {
+        if(debug) cout << "1 b-tag" << endl;
+        hist_WTag1b->fill(event);
+        region = 5;
+      }
+      else {
+        if(debug) cout << "2 or more b-tags" << endl;
+        hist_WTag2b->fill(event);
+        region = 8;
+      }
     }
 
     else if(b_0toptag && b_0wtag) {
+      if(debug) cout << "Event belongs to 'Veto' region." << endl;
       sf_toptag->process_dummy(event);
       // sf_wtag->process_dummy(event);
 
       if(debug) cout << "VR: Fill initial control histograms" << endl;
-      hist_Validation_Begin->fill(event);
+      hist_Veto_Begin->fill(event);
       if(debug) cout << "VR: Require at least one AK8 jet" << endl;
       if(!slct_oneAk8jet->passes(event)) return false; // Need to have at least one AK8 jet as W-tag substitute. For the t-tag substitute, we already required one HOTVR jet during the preselection...
       if(debug) cout << "VR: Set handles" << endl;
@@ -530,28 +691,54 @@ namespace uhh2 {
       handle_wtaggedjet->process(event); // leading AK8 jet
       handle_ak4InExJets_top->process(event);
       handle_ak4InExJets_W->process(event);
-      if(debug) cout << "VR: Fill control histograms after AK8 / before AK4 cut" << endl;
-      hist_Validation_Ak8Cut->fill(event);
-      if(debug) cout << "VR: Require at least one AK4 jet" << endl;
-      if(!slct_oneAk4jet->passes(event)) return false; // Need at least one AK4 jet for pseudotop
-      if(debug) cout << "VR: Fill control histograms after AK4 / before b jets cut" << endl;
-      hist_Validation_Ak4Cut->fill(event);
-      if(debug) cout << "VR: Veto loose b jets" << endl; // In order to ensure that the validation region does not have too much signal in it, veto b jets! Needed to validate the data/MC agreement of DNN inputs
-      if(!slct_bJetVeto->passes(event)) return false;
+      // if(debug) cout << "VR: Fill control histograms after AK8 / before AK4 cut" << endl;
+      // hist_Veto_Ak8Cut->fill(event);
+      // if(debug) cout << "VR: Require at least one AK4 jet" << endl;
+      // if(!slct_oneAk4jet->passes(event)) return false; // Need at least one AK4 jet for pseudotop
+      // if(debug) cout << "VR: Fill control histograms after AK4 / before b jets cut" << endl;
+      // hist_Veto_Ak4Cut->fill(event);
+      // if(debug) cout << "VR: Veto loose b jets" << endl; // In order to ensure that the Veto region does not have too much signal in it, veto b jets! Needed to validate the data/MC agreement of DNN inputs
+      // if(!slct_bJetVeto->passes(event)) return false;
       if(debug) cout << "VR: Fill final control histograms" << endl;
-      hist_Validation_End->fill(event);
+      hist_Veto_End->fill(event);
 
-      if(is_tW) hist_Matching_ValidationTopTag->fill(event);
-      if(is_tW) hist_Matching_ValidationWTag->fill(event);
+      is_VetoRegion = true;
 
-      event.set(h_which_region, 3);
-      is_ValidationRegion = true;
+      if(b_0btag) {
+        if(debug) cout << "0 b-tags" << endl;
+        hist_Veto0b->fill(event);
+        region = 3;
+      }
+      else if(b_1btag) {
+        if(debug) cout << "1 b-tag" << endl;
+        hist_Veto1b->fill(event);
+        region = 6;
+      }
+      else {
+        if(debug) cout << "2 or more b-tags" << endl;
+        hist_Veto2b->fill(event);
+        region = 9;
+      }
     }
 
     else {
-      event.set(h_which_region, 0);
-      return false; // Discard events not belonging to one of the three regions above
+      if(debug) cout << "Event belongs to 'Else' region." << endl;
+
+      is_ElseRegion = true;
+      region = 10;
     }
+
+    event.set(h_which_region, region);
+
+    if(debug) cout << "Fill region histogram" << endl;
+    hist_regions->fill(event);
+
+    if(is_ElseRegion) return false;
+
+    if(debug) cout << "Fill histograms based on number of b-tags" << endl;
+    if(region <= 3) hist_0b->fill(event);
+    else if(region <= 6) hist_1b->fill(event);
+    else if(region <= 9) hist_2b->fill(event);
 
     if(debug) cout << "Set handle for leptonic pseudo top" << endl; // Events w/o AK4 jet have already been discarded at this point
     handle_pseudotop->process(event);
@@ -564,21 +751,54 @@ namespace uhh2 {
     if(debug) cout << "Calculate DNN outputs and fill DNN histograms" << endl;
     if(is_TopTagRegion) {
       dnn_app_ttag->process(event);
-      hist_dnn_binned_TopTag->fill(event);
       dnn_app_wtag->process_dummy(event);
+
+      hist_dnn_TopTag->fill(event);
+      if(b_0btag) {
+        hist_dnn_TopTag0b->fill(event);
+      }
+      else if(b_1btag) {
+        hist_dnn_TopTag1b->fill(event);
+      }
+      else {
+        hist_dnn_TopTag2b->fill(event);
+      }
     }
 
     else if(is_WTagRegion) {
       dnn_app_wtag->process(event);
-      hist_dnn_binned_WTag->fill(event);
       dnn_app_ttag->process_dummy(event);
+
+      hist_dnn_WTag->fill(event);
+      if(b_0btag) {
+        hist_dnn_WTag0b->fill(event);
+      }
+      else if(b_1btag) {
+        hist_dnn_WTag1b->fill(event);
+      }
+      else {
+        hist_dnn_WTag2b->fill(event);
+      }
     }
 
-    else if(is_ValidationRegion) {
+    else if(is_VetoRegion) {
       dnn_app_ttag->process(event);
-      hist_dnn_binned_ValidationTopTag->fill(event);
       dnn_app_wtag->process(event);
-      hist_dnn_binned_ValidationWTag->fill(event);
+
+      hist_dnn_VetoTopTag->fill(event);
+      hist_dnn_VetoWTag->fill(event);
+      if(b_0btag) {
+        hist_dnn_VetoTopTag0b->fill(event);
+        hist_dnn_VetoWTag0b->fill(event);
+      }
+      else if(b_1btag) {
+        hist_dnn_VetoTopTag1b->fill(event);
+        hist_dnn_VetoWTag1b->fill(event);
+      }
+      else {
+        hist_dnn_VetoTopTag2b->fill(event);
+        hist_dnn_VetoWTag2b->fill(event);
+      }
     }
 
 
@@ -606,7 +826,7 @@ namespace uhh2 {
 	  //     else hist_dnn_0bxjet->fill(event);
     //   }
     // }
-    // else { // Fill validation region DNN plots
+    // else { // Fill Veto region DNN plots
     //   hist_dnn_0toptag->fill(event);
     // }
     //
@@ -616,7 +836,7 @@ namespace uhh2 {
     // End of Module
     if(debug) cout << "End of module reached. Yay!" << endl;
     bool keep_event(true);
-    if(empty_output_tree || !(is_TopTagRegion || is_WTagRegion)) keep_event = false;
+    if(empty_output_tree || !((is_TopTagRegion || is_WTagRegion) && !b_0btag)) keep_event = false;
     return keep_event;
   }
 

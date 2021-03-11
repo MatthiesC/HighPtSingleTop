@@ -453,15 +453,15 @@ bool DNNSetup::process(Event & event) {
 
   const int region = event.get(m_h_which_region);
 
-  if(region == 1) {
+  if(region == 1 || region == 4 || region == 7) {
     calculate_inputs_for_ttag_dnn(event);
     set_dummy_inputs_for_wtag_dnn(event);
   }
-  else if(region == 2) {
+  else if(region == 2 || region == 5 || region == 8) {
     calculate_inputs_for_wtag_dnn(event);
     set_dummy_inputs_for_ttag_dnn(event);
   }
-  else if(region == 3) {
+  else if(region == 3 || region == 6 || region == 9) {
     calculate_inputs_for_ttag_dnn(event);
     calculate_inputs_for_wtag_dnn(event);
   }
