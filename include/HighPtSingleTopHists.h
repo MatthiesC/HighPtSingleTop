@@ -3,6 +3,8 @@
 #include "UHH2/core/include/Event.h"
 #include "UHH2/core/include/Hists.h"
 
+#include "UHH2/common/include/Utils.h"
+
 namespace uhh2 {
 
 
@@ -14,9 +16,14 @@ namespace uhh2 {
 
   private:
     uhh2::Event::Handle<int> h_which_region;
+    Year m_year;
+    int m_year_int;
+    int m_channel_int;
 
   protected:
     TH1F *hist_regions;
+    TH1F *hist_regions_per_year_and_channel;
+    TH1F *hist_regions_per_year;
   };
 
 

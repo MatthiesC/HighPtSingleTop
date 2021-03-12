@@ -18,10 +18,37 @@ RegionHist::RegionHist(Context & ctx, const string & dirname): Hists(ctx, dirnam
 
   h_which_region = ctx.get_handle<int>("which_region");
 
+  m_year = extract_year(ctx);
+  m_year_int = -1;
+  if(m_year == Year::is2016v3) m_year_int = 0;
+  else if(m_year == Year::is2017v2) m_year_int = 1;
+  else if(m_year == Year::is2018) m_year_int = 2;
+
+  m_channel_int = -1;
+  if(extract_channel(ctx) == Channel::isEle) m_channel_int = 0;
+  else if(extract_channel(ctx) == Channel::isMuo) m_channel_int = 1;
+
+
   const int nx = 10;
-  const char *regions[nx] = {"0b1t", "0b0t1W", "0b0t0W", "1b1t", "1b0t1W", "1b0t0W", "#geq2b1t", "#geq2b0t1W", "#geq2b0t0W", "else"};
+  // const char *regions[nx] = {"0b1t", "0b0t1W", "0b0t0W", "1b1t", "1b0t1W", "1b0t0W", "#geq2b1t", "#geq2b0t1W", "#geq2b0t0W", "else"};
+  vector<string> regions = {"0b1t", "0b0t1W", "0b0t0W", "1b1t", "1b0t1W", "1b0t0W", "#geq2b1t", "#geq2b0t1W", "#geq2b0t0W", "else"};
+  vector<string> regions_per_year, regions_per_year_and_channel;
+  for(auto & r : regions) {
+    for(const string & y : {"2016", "2017", "2018"}) {
+      regions_per_year.push_back(y+": "+r);
+      for(const string & c : {"e", "#mu"}) {
+        regions_per_year_and_channel.push_back(y+" "+c+": "+r);
+      }
+    }
+  }
+
+
   hist_regions = book<TH1F>("regions", "Analysis regions", nx, 0.5, 10.5);
-  for(int i = 1; i <= nx; ++i) hist_regions->GetXaxis()->SetBinLabel(i,regions[i-1]);
+  hist_regions_per_year_and_channel = book<TH1F>("regions_per_year_and_channel", "Analysis regions", nx*6, 0.5, 60.5);
+  hist_regions_per_year = book<TH1F>("regions_per_year", "Analysis regions", nx*3, 0.5, 30.5);
+  for(int i = 1; i <= nx; ++i) hist_regions->GetXaxis()->SetBinLabel(i,regions[i-1].c_str());
+  for(int i = 1; i <= nx*6; ++i) hist_regions_per_year_and_channel->GetXaxis()->SetBinLabel(i,regions_per_year_and_channel[i-1].c_str());
+  for(int i = 1; i <= nx*3; ++i) hist_regions_per_year->GetXaxis()->SetBinLabel(i,regions_per_year[i-1].c_str());
 }
 
 void RegionHist::fill(const Event & event) {
@@ -30,6 +57,8 @@ void RegionHist::fill(const Event & event) {
   const int region = event.get(h_which_region);
 
   hist_regions->Fill(region, w);
+  hist_regions_per_year_and_channel->Fill(1+(region-1)*6+m_year_int*2+m_channel_int, w);
+  hist_regions_per_year->Fill(1+(region-1)*3+m_year_int, w);
 }
 
 
