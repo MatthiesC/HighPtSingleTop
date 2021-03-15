@@ -31,7 +31,7 @@ RegionHist::RegionHist(Context & ctx, const string & dirname): Hists(ctx, dirnam
 
   const int nx = 10;
   // const char *regions[nx] = {"0b1t", "0b0t1W", "0b0t0W", "1b1t", "1b0t1W", "1b0t0W", "#geq2b1t", "#geq2b0t1W", "#geq2b0t0W", "else"};
-  vector<string> regions = {"0b1t", "0b0t1W", "0b0t0W", "1b1t", "1b0t1W", "1b0t0W", "#geq2b1t", "#geq2b0t1W", "#geq2b0t0W", "else"};
+  vector<string> regions = {"0b 1t", "0b 0t 1W", "0b 0t 0W", "1b 1t", "1b 0t 1W", "1b 0t 0W", "#geq2b 1t", "#geq2b 0t 1W", "#geq2b 0t 0W", "else"};
   vector<string> regions_ints = {"(0, 1, #minus)", "(0, 0, 1)", "(0, 0, 0)", "(1, 1, #minus)", "(1, 0, 1)", "(1, 0, 0)", "(#geq2, 1, #minus)", "(#geq2, 0, 1)", "(#geq2, 0, 0)", "else"};
   vector<string> regions_per_year, regions_per_year_and_channel;
   for(auto & r : regions_ints) {
