@@ -36,6 +36,7 @@ parser.add_argument('-l', '--legend', action='store_true')
 parser.add_argument('-n', '--no', choices=['data', 'qcd'], nargs='*', default=[])
 parser.add_argument('-t', '--tar', action='store_true')
 parser.add_argument('-p', '--plot', action='store_true')
+parser.add_argument('-q', '--qcd', action='store_true') # QCD sideband region
 args = parser.parse_args(sys.argv[1:])
 
 if args.all == True:
@@ -86,7 +87,9 @@ for year, channel in combos:
     template_file = open(templateDir+template_name, 'r')
     steerFilePath = workDir+'_'.join(['mainsel', year, channel])+'.steer'
     fCycleName = mainselDir+year+'/'+channel+'/nominal/hadded/uhh2.AnalysisModuleRunner'
+    if args.qcd: fCycleName = fCycleName.replace('/nominal/', '/QCDsideband/')
     outputDirName = ('plots_single' if args.singleeps else 'plots')+'_'+'_'.join([year, channel])
+    if args.qcd: outputDirName += '_QCDsideband'
     thisMainselDir = mainselDir+year+'/'+channel+'/'
     outputDir = thisMainselDir+outputDirName
     fOutputPsFile = outputDir+'/'+'_'.join(['mainsel', year, channel])+'.ps'
