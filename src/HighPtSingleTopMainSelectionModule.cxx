@@ -30,6 +30,7 @@
 #include "UHH2/HighPtSingleTop/include/TaggingScaleFactors.h"
 #include "UHH2/HighPtSingleTop/include/TheoryCorrections.h"
 #include "UHH2/HighPtSingleTop/include/MyUtils.h"
+#include "UHH2/HighPtSingleTop/include/VariablesOfInterest.h"
 
 
 using namespace std;
@@ -83,6 +84,8 @@ namespace uhh2 {
     unique_ptr<AndHists> hist_0b, hist_1b, hist_2b;
     unique_ptr<RegionHist> hist_regions;
 
+    unique_ptr<AnalysisModule> handle_voi;
+
     //unique_ptr<Hists> hist_count_TopHadWLep_before, hist_count_TopHadWLep_after, hist_count_TopLepWHad_before, hist_count_TopLepWHad_after, hist_count_Veto_before, hist_count_Veto_after;
     // unique_ptr<Hists> hist_decaymatch, hist_decaymatch_Pt0to300, hist_decaymatch_Pt300toInf, hist_decaymatch_Pt300to400, hist_decaymatch_Pt0to400, hist_decaymatch_Pt400toInf;
     // unique_ptr<BinnedDNNHists> hist_dnn_ttag;
@@ -118,7 +121,8 @@ namespace uhh2 {
 
     is_QCDsideband = string2bool(ctx.get("QCD_sideband"));
 
-    empty_output_tree = string2bool(ctx.get("EmptyOutputTree"));
+    empty_output_tree = string2bool(ctx.get("EmptyOutputTree")); // handy to not have output trees for systematics files, reduces root file size
+    ctx.undeclare_all_event_output(); // throw away all output trees (jet collections etc.) which are not needed in further steps of the analysis
 
     dataset_version = ctx.get("dataset_version");
     is_WJetsHeavy = dataset_version.find("WJetsHeavy") == 0;
@@ -129,7 +133,20 @@ namespace uhh2 {
 
     string syst_pileup = ctx.get("SystDirection_Pileup", "nominal");
     string syst_toptag = ctx.get("SystDirection_HOTVRTopTagSF", "nominal");
-    string syst_btag = ctx.get("SystDirection_DeepJetBTagSF", "nominal");
+
+    BTag::algo btag_algo;
+    if(ctx.get("BTagAlgorithm") == "DeepJet") {
+      btag_algo = BTag::DEEPJET;
+      ctx.set("BTagCalibration", ctx.get("BTagCalibration_DeepJet"));
+    }
+    else if(ctx.get("BTagAlgorithm") == "DeepCSV") {
+      btag_algo = BTag::DEEPCSV;
+      ctx.set("BTagCalibration", ctx.get("BTagCalibration_DeepCSV"));
+    }
+    else {
+      throw invalid_argument("You need to specify either DeepJet or DeepCSV as b-tagging algorithm in your XML config file.");
+    }
+    string syst_btag = ctx.get("SystDirection_BTagSF", "nominal");
 
 
     //---------------------//
@@ -154,7 +171,7 @@ namespace uhh2 {
     //-----------------//
 
     TopJetId StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
-    BTag::algo btag_algo = BTag::DEEPJET;
+
     BTag::wp btag_workingpoint = BTag::WP_LOOSE; // working point needed by some histogram classes ("analysis b-tag workingpoint"); should be removed at some point
     JetId BJetID = BTag(btag_algo, btag_workingpoint);
     WTaggedJets::wp wtag_workingpoint = WTaggedJets::WP_LOOSE;
@@ -204,6 +221,8 @@ namespace uhh2 {
     handle_ak4InExJets_W.reset(new InExAK4Jets(ctx, btag_algo, btag_workingpoint, "_W", "WTaggedJet", false));
 
     h_which_region = ctx.declare_event_output<int>("which_region"); // need to declare this event output before initializing DNNSetup class
+
+    handle_voi.reset(new VariablesOfInterest(ctx));
 
     dnn_setup.reset(new DNNSetup(ctx));
     dnn_app_ttag.reset(new DNNApplication(ctx, "Top"));
@@ -742,6 +761,9 @@ namespace uhh2 {
 
     if(debug) cout << "Set handle for leptonic pseudo top" << endl; // Events w/o AK4 jet have already been discarded at this point
     handle_pseudotop->process(event);
+
+    if(debug) cout << "Setup handles for variables of interest (VOI)" << endl;
+    handle_voi->process(event);
 
     // DNN-related code starts here...
 
