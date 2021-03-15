@@ -32,8 +32,9 @@ RegionHist::RegionHist(Context & ctx, const string & dirname): Hists(ctx, dirnam
   const int nx = 10;
   // const char *regions[nx] = {"0b1t", "0b0t1W", "0b0t0W", "1b1t", "1b0t1W", "1b0t0W", "#geq2b1t", "#geq2b0t1W", "#geq2b0t0W", "else"};
   vector<string> regions = {"0b1t", "0b0t1W", "0b0t0W", "1b1t", "1b0t1W", "1b0t0W", "#geq2b1t", "#geq2b0t1W", "#geq2b0t0W", "else"};
+  vector<string> regions_ints = {"(0, 1, #minus)", "(0, 0, 1)", "(0, 0, 0)", "(1, 1, #minus)", "(1, 0, 1)", "(1, 0, 0)", "(#geq2, 1, #minus)", "(#geq2, 0, 1)", "(#geq2, 0, 0)", "else"};
   vector<string> regions_per_year, regions_per_year_and_channel;
-  for(auto & r : regions) {
+  for(auto & r : regions_ints) {
     for(const string & y : {"2016", "2017", "2018"}) {
       regions_per_year.push_back(y+": "+r);
       for(const string & c : {"e", "#mu"}) {
@@ -44,8 +45,8 @@ RegionHist::RegionHist(Context & ctx, const string & dirname): Hists(ctx, dirnam
 
 
   hist_regions = book<TH1F>("regions", "Analysis regions", nx, 0.5, 10.5);
-  hist_regions_per_year_and_channel = book<TH1F>("regions_per_year_and_channel", "Analysis regions", nx*6, 0.5, 60.5);
-  hist_regions_per_year = book<TH1F>("regions_per_year", "Analysis regions", nx*3, 0.5, 30.5);
+  hist_regions_per_year_and_channel = book<TH1F>("regions_per_year_and_channel", "Analysis regions (N_{b-tags}, N_{t-tags}, N_{W-tags})", nx*6, 0.5, 60.5);
+  hist_regions_per_year = book<TH1F>("regions_per_year", "Analysis regions (N_{b-tags}, N_{t-tags}, N_{W-tags})", nx*3, 0.5, 30.5);
   for(int i = 1; i <= nx; ++i) hist_regions->GetXaxis()->SetBinLabel(i,regions[i-1].c_str());
   for(int i = 1; i <= nx*6; ++i) hist_regions_per_year_and_channel->GetXaxis()->SetBinLabel(i,regions_per_year_and_channel[i-1].c_str());
   for(int i = 1; i <= nx*3; ++i) hist_regions_per_year->GetXaxis()->SetBinLabel(i,regions_per_year[i-1].c_str());
