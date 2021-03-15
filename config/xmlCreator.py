@@ -59,10 +59,22 @@ class configContainer:
          '2018': self.uhh2Dir+'HOTVR/data/2018TopTaggingScaleFactors.root',
       }
 
+      self.yearVars['btagalgo'] = {
+         '2016': 'DeepCSV',
+         '2017': 'DeepCSV',
+         '2018': 'DeepCSV',
+      }
+
       self.yearVars['deepjetSFFiles'] = {
          '2016': self.uhh2Dir+'HighPtSingleTop/data/ScaleFactors/2016/DeepJet_2016LegacySF_V1__reduced.csv', # if using CP5 samples, need to use other sf file
          '2017': self.uhh2Dir+'HighPtSingleTop/data/ScaleFactors/2017/DeepFlavour_94XSF_V4_B_F__reduced.csv',
          '2018': self.uhh2Dir+'HighPtSingleTop/data/ScaleFactors/2018/DeepJet_102XSF_V2__reduced.csv',
+      }
+
+      self.yearVars['deepcsvSFFiles'] = {
+         '2016': self.uhh2Dir+'HighPtSingleTop/data/ScaleFactors/2016/DeepCSV_2016LegacySF_V1__reduced.csv', # if using CP5 samples, need to use other sf file
+         '2017': self.uhh2Dir+'HighPtSingleTop/data/ScaleFactors/2017/DeepCSV_94XSF_V5_B_F__reduced.csv',
+         '2018': self.uhh2Dir+'HighPtSingleTop/data/ScaleFactors/2018/DeepCSV_102XSF_V2__reduced.csv',
       }
 
       self.yearVars['NNFiles'] = {
@@ -131,7 +143,7 @@ class configContainer:
             self.systematics.append(systEntity('electronreco', 'SystDirection_ElectronReco'))
          self.systematics.append(systEntity('hotvr', 'SystDirection_HOTVRTopTagSF', directions=['merged_up', 'merged_down', 'semimerged_up', 'semimerged_down', 'notmerged_up', 'notmerged_down']))
          self.systematics.append(systEntity('deepak8', 'SystDirection_DeepAK8WTagSF'))
-         # self.systematics.append(systEntity('deepjet', 'SystDirection_DeepJetBTagSF')) # TODO: Check how to properly vary deepjet shapes
+         # self.systematics.append(systEntity('btagging', 'SystDirection_BTagSF')) # TODO: Check how to properly vary b-tagging shapes
 
 
 class sampleEntity:
@@ -300,7 +312,9 @@ class xmlCreator:
             file.write('''\n''')
             file.write('''<Item Name="HOTVRTopTagSFs" Value="'''+self.yearVars['hotvrSFFiles'][self.year]+'''"/>\n''')
             file.write('''<Item Name="DeepAK8WTagSFs" Value="'''+self.uhh2Dir+'''HighPtSingleTop/data/ScaleFactors/201X/DeepAK8V2_Top_W_SFs.csv.root"/>\n''')
-            file.write('''<Item Name="BTagCalibration" Value="'''+self.yearVars['deepjetSFFiles'][self.year]+'''"/>\n''')
+            file.write('''<Item Name="BTagAlgorithm" Value="'''+self.yearVars['btagalgo'][self.year]+'''"/>\n''')
+            file.write('''<Item Name="BTagCalibration_DeepJet" Value="'''+self.yearVars['deepjetSFFiles'][self.year]+'''"/>\n''')
+            file.write('''<Item Name="BTagCalibration_DeepCSV" Value="'''+self.yearVars['deepcsvSFFiles'][self.year]+'''"/>\n''')
             file.write('''\n''')
             file.write('''<Item Name="TopPtReweighting" Value="false"/>\n''')
             file.write('''<Item Name="VJetsReweighting_do_EWK" Value="true"/>\n''')
@@ -321,6 +335,7 @@ class xmlCreator:
          file.write('''<Item Name="AnalysisModule" Value="'''+('HighPtSingleTopMainSelectionModule' if self.is_mainsel else 'HighPtSingleTopPreSelectionModule')+'''"/>\n''')
          file.write('''<Item Name="analysis_channel" Value="'''+self.channel+'''"/>\n''')
          file.write('''<Item Name="QCD_sideband" Value="false"/>\n''')
+         file.write('''<Item Name="apply_DNNs" Value="false"/>\n''')
          file.write('''<Item Name="uhh2Dir" Value="'''+self.uhh2Dir+'''"/>\n''')
          file.write('''<Item Name="EmptyOutputTree" Value="'''+('false' if not self.is_mainsel or self.force_empty_output_tree == False else 'true')+'''"/>\n''')
          file.write('''\n''')
@@ -456,6 +471,6 @@ if __name__=='__main__':
             x = xmlCreator(selection, year, channel)
             x.force_eot(args.eot)
             x.write_xml()
-            # x.write_qcd_sideband_xml()
+            x.write_qcd_sideband_xml()
             if args.syst:
                x.write_all_systematics_xmls()

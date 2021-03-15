@@ -47,7 +47,7 @@ namespace uhh2 {
     virtual ~AndHists();
     void add_hist(uhh2::Hists *hist);
     void add_Ak8Hists(uhh2::Context & ctx, const std::string & ak8_handle_name="Ak8Jets");
-    void add_DeepJetHists(uhh2::Context & ctx);
+    void add_BTagHists(uhh2::Context & ctx, const BTag::algo & algo = BTag::algo::DEEPCSV);
     void add_WTagHists(uhh2::Context & ctx, const bool & var_binned=true);
     void add_TopTagHists(uhh2::Context & ctx, const bool & var_binned=true);
     void add_TaggedJetsHists(uhh2::Context & ctx, const std::string & h_name_taggedjet, const std::string & h_name_postfix);

@@ -6,6 +6,7 @@
 #include "UHH2/core/include/Jet.h"
 #include "UHH2/core/include/Utils.h"
 #include "UHH2/common/include/JetCorrections.h"
+#include "UHH2/common/include/JetIds.h"
 #include "UHH2/common/include/Utils.h"
 
 
@@ -79,10 +80,22 @@ bool inverted_ElectronID_Fall17_veto(const Electron&, const uhh2::Event&);
 
 bool inverted_ElectronID_Fall17_tight(const Electron&, const uhh2::Event&);
 
-void it_works();
-
+double btagdisc(const Jet&, const BTag::algo&);
 
 // Sort jets by DeepJet discriminant
 inline void sort_by_deepjet(std::vector<Jet> & jets) {
   std::sort(jets.begin(), jets.end(), [](const Jet & j1, const Jet & j2){return j1.btag_DeepJet() > j2.btag_DeepJet();});
 }
+
+// Sort jets by DeepCSV discriminant
+inline void sort_by_deepcsv(std::vector<Jet> & jets) {
+  std::sort(jets.begin(), jets.end(), [](const Jet & j1, const Jet & j2){return j1.btag_DeepCSV() > j2.btag_DeepCSV();});
+}
+
+inline void sort_by_btagdisc(std::vector<Jet> & jets, const BTag::algo algo) {
+  if(algo == BTag::DEEPJET) sort_by_deepjet(jets);
+  else if(algo == BTag::DEEPCSV) sort_by_deepcsv(jets);
+  else throw std::invalid_argument("sort_by_btagdisc(): invalid b-tagging algorithm passed");
+}
+
+void it_works();

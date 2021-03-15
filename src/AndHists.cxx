@@ -14,7 +14,7 @@
 #include "UHH2/HighPtSingleTop/include/TopTagHists.h"
 #include "UHH2/HighPtSingleTop/include/MyAk8Hists.h"
 #include "UHH2/HighPtSingleTop/include/TaggedJetsHists.h"
-#include "UHH2/HighPtSingleTop/include/DeepJetHists.h"
+#include "UHH2/HighPtSingleTop/include/BTagHists.h"
 
 
 using namespace std;
@@ -75,7 +75,7 @@ AndHists::AndHists(Context & ctx, const string & dirname):
   hists_vector.push_back(new MyElectronHists(ctx, dirname + "_Electron"));
   hists_vector.push_back(new MyMuonHists(ctx, dirname + "_Muon"));
   hists_vector.push_back(new JetHists(ctx, dirname + "_Jets"));
-  // hists_vector.push_back(new DeepJetHists(ctx, dirname + "_DeepJet"));
+  // hists_vector.push_back(new BTagHists(ctx, dirname + "_BTag"));
   hists_vector.push_back(new HOTVRHists(ctx, dirname +"_HOTVR"));
 }
 
@@ -102,9 +102,9 @@ void AndHists::add_Ak8Hists(Context & ctx, const string & ak8_handle_name) {
 }
 
 
-void AndHists::add_DeepJetHists(Context & ctx) {
+void AndHists::add_BTagHists(Context & ctx, const BTag::algo & algo) {
 
-  hists_vector.push_back(new DeepJetHists(ctx, m_dirname + "_DeepJet"));
+  hists_vector.push_back(new BTagHists(ctx, m_dirname + "_BTag", algo));
 }
 
 

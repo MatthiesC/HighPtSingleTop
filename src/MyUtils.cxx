@@ -140,6 +140,15 @@ bool inverted_ElectronID_Fall17_veto(const Electron& ele, const uhh2::Event& evt
 
 bool inverted_ElectronID_Fall17_tight(const Electron& ele, const uhh2::Event& evt) { return !Electron_CutBasedID(ele, evt, "Fall17", "TIGHT", true); }
 
+double btagdisc(const Jet& jet, const BTag::algo& algo) {
+  double result;
+  if(algo == BTag::DEEPCSV) result = jet.btag_DeepCSV();
+  else if(algo == BTag::DEEPJET) result = jet.btag_DeepJet();
+  else if(algo == BTag::CSVV2) result = jet.btag_combinedSecondaryVertex();
+  else throw std::invalid_argument("btagdisc(): invalid b-tagging algorithm passed");
+  return result;
+}
+
 
 // for fun
 void it_works() {

@@ -11,10 +11,11 @@ DNNInput::DNNInput(string arg_input_name, string arg_plot_label, double arg_xlow
   _input_name(arg_input_name), _plot_label(arg_plot_label), _xlow(arg_xlow), _xhigh(arg_xhigh), _nbins(arg_nbins) {}
 
 
-DNNSetup::DNNSetup(Context & ctx, const double & zero_padding_value) {
+DNNSetup::DNNSetup(Context & ctx, const BTag::algo & algo, const double & zero_padding_value) {
 
   cout << "Hello World from DNNSetup!" << endl;
 
+  m_btag_algo = algo;
   m_zeropadding = zero_padding_value;
 
   m_year = extract_year(ctx);
@@ -40,9 +41,6 @@ DNNSetup::DNNSetup(Context & ctx, const double & zero_padding_value) {
   m_h_ijets_wjet = ctx.get_handle<vector<Jet>>("InJets_W");
 
   m_h_event_weight = ctx.declare_event_output<double>("DNNinfo_event_weight");
-  m_h_tjet_pt = ctx.declare_event_output<double>("DNNinfo_tjet_pt");
-  m_h_wjet_pt = ctx.declare_event_output<double>("DNNinfo_wjet_pt");
-  m_h_lepton_pt = ctx.declare_event_output<double>("DNNinfo_lepton_pt");
 
   /*
   * Define DNN inputs for t-tag region:
@@ -89,27 +87,27 @@ DNNSetup::DNNSetup(Context & ctx, const double & zero_padding_value) {
   m_inputs_template_ttag.push_back(DNNInput("xjet1pt_pt", "p_{T}(p_{T}-leading xjet) [GeV]", 0, 500));
   m_inputs_template_ttag.push_back(DNNInput("xjet1pt_eta", "#eta(p_{T}-leading xjet)", -3, 3));
   m_inputs_template_ttag.push_back(DNNInput("xjet1pt_phi", "#phi(p_{T}-leading xjet) [rad]", -M_PI, M_PI));
-  m_inputs_template_ttag.push_back(DNNInput("xjet1pt_deepjet", "#it{O}_{DeepJet}(p_{T}-leading xjet)", 0, 1));
+  m_inputs_template_ttag.push_back(DNNInput("xjet1pt_btag", "#it{O}_{b-tag}(p_{T}-leading xjet)", 0, 1));
   m_inputs_template_ttag.push_back(DNNInput("mass_xjet1pt_lepton", "m(p_{T}-leading xjet, lepton) [GeV]", 0, 800));
   m_inputs_template_ttag.push_back(DNNInput("dr_xjet1pt_lepton", "#DeltaR(p_{T}-leading xjet, lepton)", 0, 5));
   m_inputs_template_ttag.push_back(DNNInput("dr_xjet1pt_tjet", "#DeltaR(p_{T}-leading xjet, t jet)", 0, 5));
-  // m_inputs_template_ttag.push_back(DNNInput("xjet1dj_m", "m_{jet}(#it{O}_{DeepJet}-leading xjet) [GeV]", 0, 100));
-  m_inputs_template_ttag.push_back(DNNInput("xjet1dj_pt", "p_{T}(#it{O}_{DeepJet}-leading xjet) [GeV]", 0, 500));
-  m_inputs_template_ttag.push_back(DNNInput("xjet1dj_eta", "#eta(#it{O}_{DeepJet}-leading xjet)", -3, 3));
-  m_inputs_template_ttag.push_back(DNNInput("xjet1dj_phi", "#phi(#it{O}_{DeepJet}-leading xjet) [rad]", -M_PI, M_PI));
-  m_inputs_template_ttag.push_back(DNNInput("xjet1dj_deepjet", "#it{O}_{DeepJet}(#it{O}_{DeepJet}-leading xjet)", 0, 1));
-  m_inputs_template_ttag.push_back(DNNInput("mass_xjet1dj_lepton", "m(#it{O}_{DeepJet}-leading xjet, lepton) [GeV]", 0, 800));
-  m_inputs_template_ttag.push_back(DNNInput("dr_xjet1dj_lepton", "#DeltaR(#it{O}_{DeepJet}-leading xjet, lepton)", 0, 5));
-  m_inputs_template_ttag.push_back(DNNInput("dr_xjet1dj_tjet", "#DeltaR(#it{O}_{DeepJet}-leading xjet, t jet)", 0, 5));
-  // m_inputs_template_ttag.push_back(DNNInput("xjet2dj_deepjet", "#it{O}_{DeepJet}(#it{O}_{DeepJet}-subleading xjet)", 0, 1));
-  m_inputs_template_ttag.push_back(DNNInput("ijet1dj_deepjet", "#it{O}_{DeepJet}(#it{O}_{DeepJet}-leading ijet)", 0, 1));
-  // m_inputs_template_ttag.push_back(DNNInput("ijet2dj_deepjet", "#it{O}_{DeepJet}(#it{O}_{DeepJet}-subleading ijet)", 0, 1));
+  // m_inputs_template_ttag.push_back(DNNInput("xjet1btag_m", "m_{jet}(#it{O}_{b-tag}-leading xjet) [GeV]", 0, 100));
+  m_inputs_template_ttag.push_back(DNNInput("xjet1btag_pt", "p_{T}(#it{O}_{b-tag}-leading xjet) [GeV]", 0, 500));
+  m_inputs_template_ttag.push_back(DNNInput("xjet1btag_eta", "#eta(#it{O}_{b-tag}-leading xjet)", -3, 3));
+  m_inputs_template_ttag.push_back(DNNInput("xjet1btag_phi", "#phi(#it{O}_{b-tag}-leading xjet) [rad]", -M_PI, M_PI));
+  m_inputs_template_ttag.push_back(DNNInput("xjet1btag_btag", "#it{O}_{b-tag}(#it{O}_{b-tag}-leading xjet)", 0, 1));
+  m_inputs_template_ttag.push_back(DNNInput("mass_xjet1btag_lepton", "m(#it{O}_{b-tag}-leading xjet, lepton) [GeV]", 0, 800));
+  m_inputs_template_ttag.push_back(DNNInput("dr_xjet1btag_lepton", "#DeltaR(#it{O}_{b-tag}-leading xjet, lepton)", 0, 5));
+  m_inputs_template_ttag.push_back(DNNInput("dr_xjet1btag_tjet", "#DeltaR(#it{O}_{b-tag}-leading xjet, t jet)", 0, 5));
+  // m_inputs_template_ttag.push_back(DNNInput("xjet2btag_btag", "#it{O}_{b-tag}(#it{O}_{b-tag}-subleading xjet)", 0, 1));
+  m_inputs_template_ttag.push_back(DNNInput("ijet1btag_btag", "#it{O}_{b-tag}(#it{O}_{b-tag}-leading ijet)", 0, 1));
+  // m_inputs_template_ttag.push_back(DNNInput("ijet2btag_btag", "#it{O}_{b-tag}(#it{O}_{b-tag}-subleading ijet)", 0, 1));
   m_inputs_template_ttag.push_back(DNNInput("dr_tjet_xjet", "#DeltaR(t jet, nearest xjet)", 0, 5));
   // m_inputs_template_ttag.push_back(DNNInput("tnearestxjet_m", "m(t-jet-nearest xjet) [GeV]", 0, 100));
   m_inputs_template_ttag.push_back(DNNInput("tnearestxjet_pt", "p_{T}(t-jet-nearest xjet) [GeV]", 0, 500));
   m_inputs_template_ttag.push_back(DNNInput("tnearestxjet_eta", "#eta(t-jet-nearest xjet)", -3, 3));
   m_inputs_template_ttag.push_back(DNNInput("tnearestxjet_phi", "#phi(t-jet-nearest xjet) [rad]", -M_PI, M_PI));
-  m_inputs_template_ttag.push_back(DNNInput("tnearestxjet_deepjet", "#it{O}_{DeepJet}(t-jet-nearest xjet)", 0, 1));
+  m_inputs_template_ttag.push_back(DNNInput("tnearestxjet_btag", "#it{O}_{b-tag}(t-jet-nearest xjet)", 0, 1));
 
   /*
   * Define DNN inputs for W-tag region:
@@ -155,27 +153,27 @@ DNNSetup::DNNSetup(Context & ctx, const double & zero_padding_value) {
   m_inputs_template_wtag.push_back(DNNInput("xjet1pt_pt", "p_{T}(p_{T}-leading xjet) [GeV]", 0, 500));
   m_inputs_template_wtag.push_back(DNNInput("xjet1pt_eta", "#eta(p_{T}-leading xjet)", -3, 3));
   m_inputs_template_wtag.push_back(DNNInput("xjet1pt_phi", "#phi(p_{T}-leading xjet) [rad]", -M_PI, M_PI));
-  m_inputs_template_wtag.push_back(DNNInput("xjet1pt_deepjet", "#it{O}_{DeepJet}(p_{T}-leading xjet)", 0, 1));
+  m_inputs_template_wtag.push_back(DNNInput("xjet1pt_btag", "#it{O}_{b-tag}(p_{T}-leading xjet)", 0, 1));
   m_inputs_template_wtag.push_back(DNNInput("mass_xjet1pt_lepton", "m(p_{T}-leading xjet, lepton) [GeV]", 0, 800));
   m_inputs_template_wtag.push_back(DNNInput("dr_xjet1pt_lepton", "#DeltaR(p_{T}-leading xjet, lepton)", 0, 5));
   m_inputs_template_wtag.push_back(DNNInput("dr_xjet1pt_wjet", "#DeltaR(p_{T}-leading xjet, W jet)", 0, 5));
-  // m_inputs_template_wtag.push_back(DNNInput("xjet1dj_m", "m_{jet}(#it{O}_{DeepJet}-leading xjet) [GeV]", 0, 100));
-  m_inputs_template_wtag.push_back(DNNInput("xjet1dj_pt", "p_{T}(#it{O}_{DeepJet}-leading xjet) [GeV]", 0, 500));
-  m_inputs_template_wtag.push_back(DNNInput("xjet1dj_eta", "#eta(#it{O}_{DeepJet}-leading xjet)", -3, 3));
-  m_inputs_template_wtag.push_back(DNNInput("xjet1dj_phi", "#phi(#it{O}_{DeepJet}-leading xjet) [rad]", -M_PI, M_PI));
-  m_inputs_template_wtag.push_back(DNNInput("xjet1dj_deepjet", "#it{O}_{DeepJet}(#it{O}_{DeepJet}-leading xjet)", 0, 1));
-  m_inputs_template_wtag.push_back(DNNInput("mass_xjet1dj_lepton", "m(#it{O}_{DeepJet}-leading xjet, lepton) [GeV]", 0, 800));
-  m_inputs_template_wtag.push_back(DNNInput("dr_xjet1dj_lepton", "#DeltaR(#it{O}_{DeepJet}-leading xjet, lepton)", 0, 5));
-  m_inputs_template_wtag.push_back(DNNInput("dr_xjet1dj_wjet", "#DeltaR(#it{O}_{DeepJet}-leading xjet, W jet)", 0, 5));
-  // m_inputs_template_wtag.push_back(DNNInput("xjet2dj_deepjet", "#it{O}_{DeepJet}(#it{O}_{DeepJet}-subleading xjet)", 0, 1));
-  m_inputs_template_wtag.push_back(DNNInput("ijet1dj_deepjet", "#it{O}_{DeepJet}(#it{O}_{DeepJet}-leading ijet)", 0, 1));
-  // m_inputs_template_wtag.push_back(DNNInput("ijet2dj_deepjet", "#it{O}_{DeepJet}(#it{O}_{DeepJet}-subleading ijet)", 0, 1));
+  // m_inputs_template_wtag.push_back(DNNInput("xjet1btag_m", "m_{jet}(#it{O}_{b-tag}-leading xjet) [GeV]", 0, 100));
+  m_inputs_template_wtag.push_back(DNNInput("xjet1btag_pt", "p_{T}(#it{O}_{b-tag}-leading xjet) [GeV]", 0, 500));
+  m_inputs_template_wtag.push_back(DNNInput("xjet1btag_eta", "#eta(#it{O}_{b-tag}-leading xjet)", -3, 3));
+  m_inputs_template_wtag.push_back(DNNInput("xjet1btag_phi", "#phi(#it{O}_{b-tag}-leading xjet) [rad]", -M_PI, M_PI));
+  m_inputs_template_wtag.push_back(DNNInput("xjet1btag_btag", "#it{O}_{b-tag}(#it{O}_{b-tag}-leading xjet)", 0, 1));
+  m_inputs_template_wtag.push_back(DNNInput("mass_xjet1btag_lepton", "m(#it{O}_{b-tag}-leading xjet, lepton) [GeV]", 0, 800));
+  m_inputs_template_wtag.push_back(DNNInput("dr_xjet1btag_lepton", "#DeltaR(#it{O}_{b-tag}-leading xjet, lepton)", 0, 5));
+  m_inputs_template_wtag.push_back(DNNInput("dr_xjet1btag_wjet", "#DeltaR(#it{O}_{b-tag}-leading xjet, W jet)", 0, 5));
+  // m_inputs_template_wtag.push_back(DNNInput("xjet2btag_btag", "#it{O}_{b-tag}(#it{O}_{b-tag}-subleading xjet)", 0, 1));
+  m_inputs_template_wtag.push_back(DNNInput("ijet1btag_btag", "#it{O}_{b-tag}(#it{O}_{b-tag}-leading ijet)", 0, 1));
+  // m_inputs_template_wtag.push_back(DNNInput("ijet2btag_btag", "#it{O}_{b-tag}(#it{O}_{b-tag}-subleading ijet)", 0, 1));
   m_inputs_template_wtag.push_back(DNNInput("dr_wjet_xjet", "#DeltaR(W jet, nearest xjet)", 0, 5));
   // m_inputs_template_wtag.push_back(DNNInput("wnearestxjet_m", "m(W-jet-nearest xjet) [GeV]", 0, 100));
   m_inputs_template_wtag.push_back(DNNInput("wnearestxjet_pt", "p_{T}(W-jet-nearest xjet) [GeV]", 0, 500));
   m_inputs_template_wtag.push_back(DNNInput("wnearestxjet_eta", "#eta(W-jet-nearest xjet)", -3, 3));
   m_inputs_template_wtag.push_back(DNNInput("wnearestxjet_phi", "#phi(W-jet-nearest xjet) [rad]", -M_PI, M_PI));
-  m_inputs_template_wtag.push_back(DNNInput("wnearestxjet_deepjet", "#it{O}_{DeepJet}(W-jet-nearest xjet)", 0, 1));
+  m_inputs_template_wtag.push_back(DNNInput("wnearestxjet_btag", "#it{O}_{b-tag}(W-jet-nearest xjet)", 0, 1));
 
 
   string prefix = "DNNinput_";
@@ -214,10 +212,10 @@ void DNNSetup::calculate_inputs_for_ttag_dnn(Event & event) {
   const auto & xjets = event.get(m_h_xjets_tjet);
   const auto & ijets = event.get(m_h_ijets_tjet);
 
-  vector<Jet> xjets_sortedByDj = xjets;
-  sort_by_deepjet(xjets_sortedByDj);
-  vector<Jet> ijets_sortedByDj = ijets;
-  sort_by_deepjet(ijets_sortedByDj);
+  vector<Jet> xjets_sortedByBTag = xjets;
+  sort_by_btagdisc(xjets_sortedByBTag, m_btag_algo);
+  vector<Jet> ijets_sortedByBTag = ijets;
+  sort_by_btagdisc(ijets_sortedByBTag, m_btag_algo);
 
   bool no_xjets = (xjets.size() == 0);
   bool no_ijets = (ijets.size() == 0);
@@ -284,21 +282,21 @@ void DNNSetup::calculate_inputs_for_ttag_dnn(Event & event) {
   values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).v4().Pt();
   values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).v4().Eta();
   values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).v4().Phi();
-  values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).btag_DeepJet();
+  values.at(i++) = no_xjets ? m_zeropadding : btagdisc(xjets.at(0), m_btag_algo);
   values.at(i++) = no_xjets ? m_zeropadding : (xjets.at(0).v4() + lepton.v4()).M();
   values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets.at(0).v4(), lepton.v4());
   values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets.at(0).v4(), topjet.v4());
-  // values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).v4().M();
-  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).v4().Pt();
-  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).v4().Eta();
-  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).v4().Phi();
-  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).btag_DeepJet();
-  values.at(i++) = no_xjets ? m_zeropadding : (xjets_sortedByDj.at(0).v4() + lepton.v4()).M();
-  values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByDj.at(0).v4(), lepton.v4());
-  values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByDj.at(0).v4(), topjet.v4());
-  // values.at(i++) = (xjets.size() > 1) ? xjets_sortedByDj.at(1).btag_DeepJet() : m_zeropadding;
-  values.at(i++) = no_ijets ? m_zeropadding : ijets_sortedByDj.at(0).btag_DeepJet();
-  // values.at(i++) = (ijets.size() > 1) ? ijets_sortedByDj.at(1).btag_DeepJet() : m_zeropadding;
+  // values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByBTag.at(0).v4().M();
+  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByBTag.at(0).v4().Pt();
+  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByBTag.at(0).v4().Eta();
+  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByBTag.at(0).v4().Phi();
+  values.at(i++) = no_xjets ? m_zeropadding : btagdisc(xjets_sortedByBTag.at(0), m_btag_algo);
+  values.at(i++) = no_xjets ? m_zeropadding : (xjets_sortedByBTag.at(0).v4() + lepton.v4()).M();
+  values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByBTag.at(0).v4(), lepton.v4());
+  values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByBTag.at(0).v4(), topjet.v4());
+  // values.at(i++) = (xjets.size() > 1) ? btagdisc(xjets_sortedByBTag.at(1), m_btag_algo) : m_zeropadding;
+  values.at(i++) = no_ijets ? m_zeropadding : btagdisc(ijets_sortedByBTag.at(0), m_btag_algo);
+  // values.at(i++) = (ijets.size() > 1) ? btagdisc(ijets_sortedByBTag.at(1), m_btag_algo) : m_zeropadding;
   if(no_xjets) {
     for(int j = 0; j < 5; j++) values.at(i++) = m_zeropadding;
   } else {
@@ -308,24 +306,19 @@ void DNNSetup::calculate_inputs_for_ttag_dnn(Event & event) {
     values.at(i++) = next_xjet_to_tjet->v4().Pt();
     values.at(i++) = next_xjet_to_tjet->v4().Eta();
     values.at(i++) = next_xjet_to_tjet->v4().Phi();
-    values.at(i++) = next_xjet_to_tjet->btag_DeepJet();
+    values.at(i++) = btagdisc(*next_xjet_to_tjet, m_btag_algo);
   }
 
   if(values.size() != i) throw runtime_error("DNNSetup::calculate_inputs_for_ttag_dnn(): Lengths of input and value vectors are not equal. Please check!");
 
   for(unsigned int j = 0; j < i; j++) {
     event.set(m_h_dnn_inputs_ttag.at(j), values.at(j)); }
-
-  event.set(m_h_tjet_pt, topjet.v4().Pt());
-  event.set(m_h_lepton_pt, lepton.v4().Pt());
 }
 
 void DNNSetup::set_dummy_inputs_for_ttag_dnn(Event & event) {
 
   for(unsigned int i = 0; i < m_input_names_ttag.size(); i++) {
     event.set(m_h_dnn_inputs_ttag.at(i), m_zeropadding); }
-
-  event.set(m_h_tjet_pt, m_zeropadding);
 }
 
 void DNNSetup::calculate_inputs_for_wtag_dnn(Event & event) {
@@ -337,10 +330,10 @@ void DNNSetup::calculate_inputs_for_wtag_dnn(Event & event) {
   const auto & xjets = event.get(m_h_xjets_wjet);
   const auto & ijets = event.get(m_h_ijets_wjet);
 
-  vector<Jet> xjets_sortedByDj = xjets;
-  sort_by_deepjet(xjets_sortedByDj);
-  vector<Jet> ijets_sortedByDj = ijets;
-  sort_by_deepjet(ijets_sortedByDj);
+  vector<Jet> xjets_sortedByBTag = xjets;
+  sort_by_btagdisc(xjets_sortedByBTag, m_btag_algo);
+  vector<Jet> ijets_sortedByBTag = ijets;
+  sort_by_btagdisc(ijets_sortedByBTag, m_btag_algo);
 
   bool no_xjets = (xjets.size() == 0);
   bool no_ijets = (ijets.size() == 0);
@@ -405,21 +398,21 @@ void DNNSetup::calculate_inputs_for_wtag_dnn(Event & event) {
   values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).v4().Pt();
   values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).v4().Eta();
   values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).v4().Phi();
-  values.at(i++) = no_xjets ? m_zeropadding : xjets.at(0).btag_DeepJet();
+  values.at(i++) = no_xjets ? m_zeropadding : btagdisc(xjets.at(0), m_btag_algo);
   values.at(i++) = no_xjets ? m_zeropadding : (xjets.at(0).v4() + lepton.v4()).M();
   values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets.at(0).v4(), lepton.v4());
   values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets.at(0).v4(), wjet.v4());
-  // values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).v4().M();
-  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).v4().Pt();
-  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).v4().Eta();
-  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).v4().Phi();
-  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByDj.at(0).btag_DeepJet();
-  values.at(i++) = no_xjets ? m_zeropadding : (xjets_sortedByDj.at(0).v4() + lepton.v4()).M();
-  values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByDj.at(0).v4(), lepton.v4());
-  values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByDj.at(0).v4(), wjet.v4());
-  // values.at(i++) = (xjets.size() > 1) ? xjets_sortedByDj.at(1).btag_DeepJet() : m_zeropadding;
-  values.at(i++) = no_ijets ? m_zeropadding : ijets_sortedByDj.at(0).btag_DeepJet();
-  // values.at(i++) = (ijets.size() > 1) ? ijets_sortedByDj.at(1).btag_DeepJet() : m_zeropadding;
+  // values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByBTag.at(0).v4().M();
+  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByBTag.at(0).v4().Pt();
+  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByBTag.at(0).v4().Eta();
+  values.at(i++) = no_xjets ? m_zeropadding : xjets_sortedByBTag.at(0).v4().Phi();
+  values.at(i++) = no_xjets ? m_zeropadding : btagdisc(xjets_sortedByBTag.at(0), m_btag_algo);
+  values.at(i++) = no_xjets ? m_zeropadding : (xjets_sortedByBTag.at(0).v4() + lepton.v4()).M();
+  values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByBTag.at(0).v4(), lepton.v4());
+  values.at(i++) = no_xjets ? m_zeropadding : deltaR(xjets_sortedByBTag.at(0).v4(), wjet.v4());
+  // values.at(i++) = (xjets.size() > 1) ? btagdisc(xjets_sortedByBTag.at(1), m_btag_algo) : m_zeropadding;
+  values.at(i++) = no_ijets ? m_zeropadding : btagdisc(ijets_sortedByBTag.at(0), m_btag_algo);
+  // values.at(i++) = (ijets.size() > 1) ? btagdisc(ijets_sortedByBTag.at(1), m_btag_algo) : m_zeropadding;
   if(no_xjets) {
     for(int j = 0; j < 5; j++) values.at(i++) = m_zeropadding;
   } else {
@@ -429,24 +422,19 @@ void DNNSetup::calculate_inputs_for_wtag_dnn(Event & event) {
     values.at(i++) = next_xjet_to_wjet->v4().Pt();
     values.at(i++) = next_xjet_to_wjet->v4().Eta();
     values.at(i++) = next_xjet_to_wjet->v4().Phi();
-    values.at(i++) = next_xjet_to_wjet->btag_DeepJet();
+    values.at(i++) = btagdisc(*next_xjet_to_wjet, m_btag_algo);
   }
 
   if(values.size() != i) throw runtime_error("DNNSetup::calculate_inputs_for_wtag_dnn(): Lengths of input and value vectors are not equal. Please check!");
 
   for(unsigned int j = 0; j < i; j++) {
     event.set(m_h_dnn_inputs_wtag.at(j), values.at(j)); }
-
-  event.set(m_h_wjet_pt, wjet.v4().Pt());
-  event.set(m_h_lepton_pt, lepton.v4().Pt());
 }
 
 void DNNSetup::set_dummy_inputs_for_wtag_dnn(Event & event) {
 
   for(unsigned int i = 0; i < m_input_names_wtag.size(); i++) {
     event.set(m_h_dnn_inputs_wtag.at(i), m_zeropadding); }
-
-  event.set(m_h_wjet_pt, m_zeropadding);
 }
 
 bool DNNSetup::process(Event & event) {

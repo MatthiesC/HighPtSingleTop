@@ -3,6 +3,7 @@
 #include "UHH2/core/include/AnalysisModule.h"
 #include "UHH2/core/include/Event.h"
 
+#include "UHH2/common/include/JetIds.h"
 #include "UHH2/common/include/Utils.h"
 
 
@@ -32,7 +33,7 @@ class DNNSetup: public uhh2::AnalysisModule {
 
  public:
 
-  explicit DNNSetup(uhh2::Context & ctx, const double & zero_padding_value = -10.);
+  explicit DNNSetup(uhh2::Context & ctx, const BTag::algo & algo, const double & zero_padding_value = 0.);
   virtual bool process(uhh2::Event & event) override;
 
   std::vector<std::string> get_input_names_ttag() { return m_input_names_ttag; };
@@ -47,6 +48,7 @@ class DNNSetup: public uhh2::AnalysisModule {
   void calculate_inputs_for_wtag_dnn(uhh2::Event & event);
   void set_dummy_inputs_for_wtag_dnn(uhh2::Event & event);
 
+  BTag::algo m_btag_algo;
   double m_zeropadding;
 
   Year m_year;
@@ -66,9 +68,6 @@ class DNNSetup: public uhh2::AnalysisModule {
   uhh2::Event::Handle<std::vector<Jet>> m_h_ijets_wjet;
 
   uhh2::Event::Handle<double> m_h_event_weight;
-  uhh2::Event::Handle<double> m_h_tjet_pt;
-  uhh2::Event::Handle<double> m_h_wjet_pt;
-  uhh2::Event::Handle<double> m_h_lepton_pt;
 
   std::vector<DNNInput> m_inputs_template_ttag, m_inputs_template_wtag, m_inputs_info_ttag, m_inputs_info_wtag;
   std::vector<std::string> m_input_names_ttag, m_input_names_wtag;

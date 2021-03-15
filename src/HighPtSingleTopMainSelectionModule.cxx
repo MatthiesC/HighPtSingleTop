@@ -16,7 +16,7 @@
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
 #include "UHH2/HighPtSingleTop/include/TaggedJets.h"
-#include "UHH2/HighPtSingleTop/include/DeepJetHists.h"
+#include "UHH2/HighPtSingleTop/include/BTagHists.h"
 #include "UHH2/HighPtSingleTop/include/DNNSetup.h"
 #include "UHH2/HighPtSingleTop/include/DNNApplication.h"
 #include "UHH2/HighPtSingleTop/include/DNNHists.h"
@@ -48,7 +48,7 @@ namespace uhh2 {
 
     bool debug, empty_output_tree;
 
-    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_prefiring, sf_deepjet, scale_variation;
+    unique_ptr<AnalysisModule> sf_lumi, sf_pileup, sf_lepton, sf_trigger, sf_prefiring, sf_btagging, scale_variation;
     // unique_ptr<AnalysisModule> sf_toppt;
     unique_ptr<AnalysisModule> sf_vjets;
     unique_ptr<MyHOTVRScaleFactor> sf_toptag;
@@ -70,8 +70,9 @@ namespace uhh2 {
 
     unique_ptr<AndHists> hist_presel_noweights, hist_presel_lumiSF, hist_presel_pileupSF, hist_presel_leptonSF, hist_presel_prefiringSF, hist_hemissue, hist_trigger, hist_triggerSF;
     // unique_ptr<AndHists> hist_topptSF;
-    unique_ptr<DeepJetHists> hist_deepjet_preSF;
-    unique_ptr<AndHists> hist_deepjetSF;
+    unique_ptr<Hists> hist_btagging_preSF_deepcsv, hist_btagging_preSF_deepjet;
+    unique_ptr<Hists> hist_btagging_postSF_deepcsv, hist_btagging_postSF_deepjet;
+    unique_ptr<AndHists> hist_btaggingSF;
     unique_ptr<AndHists> hist_vjetsSF;
     unique_ptr<Hists> hist_ak8_preCorr, hist_ak8_postCorr, hist_ak8_postCleaning;
     unique_ptr<AndHists> hist_TopTag_Begin, hist_TopTag_HotvrSF, hist_TopTag_End;
@@ -105,6 +106,7 @@ namespace uhh2 {
     bool is_muo, is_ele;
     bool is_WJetsHeavy, is_WJetsLight;
     bool is_tW, is_tW_Bkg, is_tW_Sig;
+    bool apply_DNNs;
   };
 
 
@@ -148,6 +150,8 @@ namespace uhh2 {
     }
     string syst_btag = ctx.get("SystDirection_BTagSF", "nominal");
 
+    apply_DNNs = string2bool(ctx.get("apply_DNNs"));
+
 
     //---------------------//
     // KINEMATIC VARIABLES //
@@ -172,9 +176,10 @@ namespace uhh2 {
 
     TopJetId StandardHOTVRTopTagID = AndId<TopJet>(HOTVRTopTag(hotvr_fpt_max, hotvr_jetmass_min, hotvr_jetmass_max, hotvr_mpair_min), Tau32Groomed(hotvr_tau32_max));
 
-    BTag::wp btag_workingpoint = BTag::WP_LOOSE; // working point needed by some histogram classes ("analysis b-tag workingpoint"); should be removed at some point
-    JetId BJetID = BTag(btag_algo, btag_workingpoint);
     WTaggedJets::wp wtag_workingpoint = WTaggedJets::WP_LOOSE;
+
+    BTag::wp btag_workingpoint = BTag::WP_LOOSE;
+    JetId BJetID = BTag(btag_algo, btag_workingpoint);
 
 
     //---------------//
@@ -191,7 +196,7 @@ namespace uhh2 {
     sf_vjets.reset(new VJetsReweighting(ctx));
     sf_toptag.reset(new MyHOTVRScaleFactor(ctx, StandardHOTVRTopTagID));
     // sf_wtag.reset(new DeepAK8ScaleFactor(ctx, "W", false, wtag_workingpoint)); // false = don't use mass-decorrelated (MD) but nominal DeepAK8
-    sf_deepjet.reset(new MCBTagDiscriminantReweighting(ctx, btag_algo, "jets", syst_btag));
+    sf_btagging.reset(new MCBTagDiscriminantReweighting(ctx, btag_algo, "jets", syst_btag));
 
 
     //---------------//
@@ -211,7 +216,7 @@ namespace uhh2 {
     handle_btaggedjets.reset(new BTaggedJets(ctx, btag_algo, btag_workingpoint));
     handle_toptaggedjets.reset(new TopTaggedJets(ctx, StandardHOTVRTopTagID));
     handle_wboson.reset(new WBosonLeptonic(ctx));
-    handle_pseudotop.reset(new PseudoTopLeptonic(ctx, true, "WBosonLeptonic", "BJetsLoose")); // true = use b jets (if there are no b jets, all ak4 jets will be used instead to avoid crashes; important for Veto region)
+    handle_pseudotop.reset(new PseudoTopLeptonic(ctx, true, "WBosonLeptonic", "BJets")); // true = use b jets (if there are no b jets, all ak4 jets will be used instead to avoid crashes; important for Veto region)
 
     handle_toptaggedjet.reset(new TopTaggedJet(ctx));
     handle_ak4InExJets_top.reset(new InExAK4Jets(ctx, btag_algo, btag_workingpoint, "_Top", "TopTaggedJet", true));
@@ -224,9 +229,11 @@ namespace uhh2 {
 
     handle_voi.reset(new VariablesOfInterest(ctx));
 
-    dnn_setup.reset(new DNNSetup(ctx));
-    dnn_app_ttag.reset(new DNNApplication(ctx, "Top"));
-    dnn_app_wtag.reset(new DNNApplication(ctx, "W"));
+    dnn_setup.reset(new DNNSetup(ctx, btag_algo));
+    if(apply_DNNs) {
+      dnn_app_ttag.reset(new DNNApplication(ctx, "Top"));
+      dnn_app_wtag.reset(new DNNApplication(ctx, "W"));
+    }
 
 
     //------------//
@@ -257,11 +264,11 @@ namespace uhh2 {
     slct_0wtag.reset(new MyNTopJetSelection(ctx, 0, 0, "WJets"));
     slct_1wtag.reset(new MyNTopJetSelection(ctx, 1, 1, "WJets"));
 
-    slct_oneijet_top.reset(new MyNJetSelection(ctx, 1, -1, "InBJetsLoose_Top")); // InJets_Top
-    slct_onexjet_W.reset(new MyNJetSelection(ctx, 1, -1, "ExBJetsLoose_W")); // "ExJets_W"
+    slct_oneijet_top.reset(new MyNJetSelection(ctx, 1, -1, "InBJets_Top")); // InJets_Top
+    slct_onexjet_W.reset(new MyNJetSelection(ctx, 1, -1, "ExBJets_W")); // "ExJets_W"
     slct_oneAk8jet.reset(new MyNTopJetSelection(ctx, 1, -1, "Ak8Jets"));
     slct_oneAk4jet.reset(new NJetSelection(1, -1));
-    slct_bJetVeto.reset(new MyNJetSelection(ctx, 0, 0, "BJetsLoose"));
+    slct_bJetVeto.reset(new MyNJetSelection(ctx, 0, 0, "BJets"));
 
 
     // slct_tW_merged3.reset(new MergeScenarioSelection(ctx, 3));
@@ -294,27 +301,30 @@ namespace uhh2 {
     hist_ak8_postCorr.reset(new MyAk8Hists(ctx, "2_Ak8Setup_PostCorr", ctx.get("Ak8recCollection"))); // AK8 handles not yet set, use additional branch directly
     hist_ak8_postCleaning.reset(new MyAk8Hists(ctx, "2_Ak8Setup_PostCleaning"));
 
-    hist_deepjet_preSF.reset(new DeepJetHists(ctx, "2_DeepJetPreSF"));
-    hist_deepjetSF.reset(new AndHists(ctx, "2_DeepJetPostSF"));
-    hist_deepjetSF->add_DeepJetHists(ctx);
+    hist_btagging_preSF_deepcsv.reset(new BTagHists(ctx, "2_BTaggingPreSF_DeepCSV", BTag::algo::DEEPCSV));
+    hist_btagging_preSF_deepjet.reset(new BTagHists(ctx, "2_BTaggingPreSF_DeepJet", BTag::algo::DEEPJET));
+    hist_btaggingSF.reset(new AndHists(ctx, "2_BTaggingPostSF"));
+    // hist_btaggingSF->add_BTagHists(ctx);
+    hist_btagging_postSF_deepcsv.reset(new BTagHists(ctx, "2_BTaggingPostSF_DeepCSV", BTag::algo::DEEPCSV));
+    hist_btagging_postSF_deepjet.reset(new BTagHists(ctx, "2_BTaggingPostSF_DeepJet", BTag::algo::DEEPJET));
 
     hist_hemissue.reset(new AndHists(ctx, "2_HEM"));
     hist_hemissue->add_Ak8Hists(ctx);
-    hist_hemissue->add_DeepJetHists(ctx);
+    hist_hemissue->add_BTagHists(ctx);
 
     // hist_topptSF.reset(new AndHists(ctx, "2_TopPtSF"));
     // hist_topptSF->add_Ak8Hists(ctx);
-    // hist_topptSF->add_DeepJetHists(ctx);
+    // hist_topptSF->add_BTagHists(ctx);
 
     hist_vjetsSF.reset(new AndHists(ctx, "2_VJetsSF"));
     hist_vjetsSF->add_Ak8Hists(ctx);
-    hist_vjetsSF->add_DeepJetHists(ctx);
+    hist_vjetsSF->add_BTagHists(ctx);
 
     hist_TopTag_Begin.reset(new AndHists(ctx, "3_TopTag_Begin"));
     hist_TopTag_Begin->add_TopTagHists(ctx);
     hist_TopTag_Begin->add_Ak8Hists(ctx);
     hist_TopTag_Begin->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
-    hist_TopTag_Begin->add_DeepJetHists(ctx);
+    hist_TopTag_Begin->add_BTagHists(ctx);
     // hist_TopTag_HotvrSF.reset(new AndHists(ctx, "3_TopTag_HotvrSF"));
     // hist_TopTag_HotvrSF->add_TopTagHists(ctx);
     // hist_TopTag_HotvrSF->add_Ak8Hists(ctx);
@@ -323,13 +333,13 @@ namespace uhh2 {
     hist_TopTag_End->add_TopTagHists(ctx);
     hist_TopTag_End->add_Ak8Hists(ctx);
     hist_TopTag_End->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
-    hist_TopTag_End->add_DeepJetHists(ctx);
+    hist_TopTag_End->add_BTagHists(ctx);
 
     hist_WTag_Begin.reset(new AndHists(ctx, "3_WTag_Begin"));
     hist_WTag_Begin->add_WTagHists(ctx);
     hist_WTag_Begin->add_Ak8Hists(ctx);
     hist_WTag_Begin->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
-    hist_WTag_Begin->add_DeepJetHists(ctx);
+    hist_WTag_Begin->add_BTagHists(ctx);
     // hist_WTag_DeepAk8SF.reset(new AndHists(ctx, "3_WTag_DeepAk8SF"));
     // hist_WTag_DeepAk8SF->add_WTagHists(ctx);
     // hist_WTag_DeepAk8SF->add_Ak8Hists(ctx);
@@ -338,11 +348,11 @@ namespace uhh2 {
     hist_WTag_End->add_WTagHists(ctx);
     hist_WTag_End->add_Ak8Hists(ctx);
     hist_WTag_End->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
-    hist_WTag_End->add_DeepJetHists(ctx);
+    hist_WTag_End->add_BTagHists(ctx);
 
     hist_Veto_Begin.reset(new AndHists(ctx, "3_Veto_Begin"));
     hist_Veto_Begin->add_Ak8Hists(ctx);
-    hist_Veto_Begin->add_DeepJetHists(ctx);
+    hist_Veto_Begin->add_BTagHists(ctx);
     // hist_Veto_Ak8Cut.reset(new AndHists(ctx, "3_Veto_Ak8Cut"));
     // hist_Veto_Ak8Cut->add_TopTagHists(ctx);
     // hist_Veto_Ak8Cut->add_WTagHists(ctx);
@@ -359,45 +369,45 @@ namespace uhh2 {
     hist_Veto_End->add_Ak8Hists(ctx);
     hist_Veto_End->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
     hist_Veto_End->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
-    hist_Veto_End->add_DeepJetHists(ctx);
+    hist_Veto_End->add_BTagHists(ctx);
 
 
     hist_TopTag0b.reset(new AndHists(ctx, "3_TopTag0b"));
     hist_TopTag0b->add_TopTagHists(ctx);
     hist_TopTag0b->add_Ak8Hists(ctx);
     hist_TopTag0b->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
-    hist_TopTag0b->add_DeepJetHists(ctx);
+    hist_TopTag0b->add_BTagHists(ctx);
 
     hist_TopTag1b.reset(new AndHists(ctx, "3_TopTag1b"));
     hist_TopTag1b->add_TopTagHists(ctx);
     hist_TopTag1b->add_Ak8Hists(ctx);
     hist_TopTag1b->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
-    hist_TopTag1b->add_DeepJetHists(ctx);
+    hist_TopTag1b->add_BTagHists(ctx);
 
     hist_TopTag2b.reset(new AndHists(ctx, "3_TopTag2b"));
     hist_TopTag2b->add_TopTagHists(ctx);
     hist_TopTag2b->add_Ak8Hists(ctx);
     hist_TopTag2b->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
-    hist_TopTag2b->add_DeepJetHists(ctx);
+    hist_TopTag2b->add_BTagHists(ctx);
 
 
     hist_WTag0b.reset(new AndHists(ctx, "3_WTag0b"));
     hist_WTag0b->add_WTagHists(ctx);
     hist_WTag0b->add_Ak8Hists(ctx);
     hist_WTag0b->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
-    hist_WTag0b->add_DeepJetHists(ctx);
+    hist_WTag0b->add_BTagHists(ctx);
 
     hist_WTag1b.reset(new AndHists(ctx, "3_WTag1b"));
     hist_WTag1b->add_WTagHists(ctx);
     hist_WTag1b->add_Ak8Hists(ctx);
     hist_WTag1b->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
-    hist_WTag1b->add_DeepJetHists(ctx);
+    hist_WTag1b->add_BTagHists(ctx);
 
     hist_WTag2b.reset(new AndHists(ctx, "3_WTag2b"));
     hist_WTag2b->add_WTagHists(ctx);
     hist_WTag2b->add_Ak8Hists(ctx);
     hist_WTag2b->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
-    hist_WTag2b->add_DeepJetHists(ctx);
+    hist_WTag2b->add_BTagHists(ctx);
 
 
     hist_Veto0b.reset(new AndHists(ctx, "3_Veto0b"));
@@ -406,7 +416,7 @@ namespace uhh2 {
     hist_Veto0b->add_Ak8Hists(ctx);
     hist_Veto0b->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
     hist_Veto0b->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
-    hist_Veto0b->add_DeepJetHists(ctx);
+    hist_Veto0b->add_BTagHists(ctx);
 
     hist_Veto1b.reset(new AndHists(ctx, "3_Veto1b"));
     hist_Veto1b->add_TopTagHists(ctx);
@@ -414,7 +424,7 @@ namespace uhh2 {
     hist_Veto1b->add_Ak8Hists(ctx);
     hist_Veto1b->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
     hist_Veto1b->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
-    hist_Veto1b->add_DeepJetHists(ctx);
+    hist_Veto1b->add_BTagHists(ctx);
 
     hist_Veto2b.reset(new AndHists(ctx, "3_Veto2b"));
     hist_Veto2b->add_TopTagHists(ctx);
@@ -422,19 +432,19 @@ namespace uhh2 {
     hist_Veto2b->add_Ak8Hists(ctx);
     hist_Veto2b->add_TaggedJetsHists(ctx, "TopTaggedJet", "_Top");
     hist_Veto2b->add_TaggedJetsHists(ctx, "WTaggedJet", "_W");
-    hist_Veto2b->add_DeepJetHists(ctx);
+    hist_Veto2b->add_BTagHists(ctx);
 
 
     hist_0b.reset(new AndHists(ctx, "3_0b"));
     hist_0b->add_Ak8Hists(ctx);
-    hist_0b->add_DeepJetHists(ctx);
+    hist_0b->add_BTagHists(ctx);
 
     hist_1b.reset(new AndHists(ctx, "3_1b"));
     hist_1b->add_Ak8Hists(ctx);
-    hist_1b->add_DeepJetHists(ctx);
+    hist_1b->add_BTagHists(ctx);
 
     hist_2b.reset(new AndHists(ctx, "3_2b"));
-    hist_2b->add_DeepJetHists(ctx);
+    hist_2b->add_BTagHists(ctx);
     hist_2b->add_Ak8Hists(ctx);
 
     hist_regions.reset(new RegionHist(ctx, "AnalysisRegions"));
@@ -454,25 +464,27 @@ namespace uhh2 {
     // hist_dnn_binned_VetoTopTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_VetoTopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names())); // For the Veto region, it makes no sense to look at the pT of the t jet/pseudtop or W jet/leptonic W boson
     // hist_dnn_binned_VetoWTag.reset(new BinnedDNNHists(ctx, "BinnedDNNHists_VetoWTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
 
-    hist_dnn_TopTag.reset(new DNNHists(ctx, "DNNHists_TopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
-    hist_dnn_TopTag0b.reset(new DNNHists(ctx, "DNNHists_TopTag0b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
-    hist_dnn_TopTag1b.reset(new DNNHists(ctx, "DNNHists_TopTag1b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
-    hist_dnn_TopTag2b.reset(new DNNHists(ctx, "DNNHists_TopTag2b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+    if(apply_DNNs) {
+      hist_dnn_TopTag.reset(new DNNHists(ctx, "DNNHists_TopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+      hist_dnn_TopTag0b.reset(new DNNHists(ctx, "DNNHists_TopTag0b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+      hist_dnn_TopTag1b.reset(new DNNHists(ctx, "DNNHists_TopTag1b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+      hist_dnn_TopTag2b.reset(new DNNHists(ctx, "DNNHists_TopTag2b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
 
-    hist_dnn_WTag.reset(new DNNHists(ctx, "DNNHists_WTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
-    hist_dnn_WTag0b.reset(new DNNHists(ctx, "DNNHists_WTag0b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
-    hist_dnn_WTag1b.reset(new DNNHists(ctx, "DNNHists_WTag1b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
-    hist_dnn_WTag2b.reset(new DNNHists(ctx, "DNNHists_WTag2b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+      hist_dnn_WTag.reset(new DNNHists(ctx, "DNNHists_WTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+      hist_dnn_WTag0b.reset(new DNNHists(ctx, "DNNHists_WTag0b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+      hist_dnn_WTag1b.reset(new DNNHists(ctx, "DNNHists_WTag1b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+      hist_dnn_WTag2b.reset(new DNNHists(ctx, "DNNHists_WTag2b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
 
-    hist_dnn_VetoTopTag.reset(new DNNHists(ctx, "DNNHists_VetoTopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
-    hist_dnn_VetoTopTag0b.reset(new DNNHists(ctx, "DNNHists_VetoTopTag0b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
-    hist_dnn_VetoTopTag1b.reset(new DNNHists(ctx, "DNNHists_VetoTopTag1b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
-    hist_dnn_VetoTopTag2b.reset(new DNNHists(ctx, "DNNHists_VetoTopTag2b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+      hist_dnn_VetoTopTag.reset(new DNNHists(ctx, "DNNHists_VetoTopTag", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+      hist_dnn_VetoTopTag0b.reset(new DNNHists(ctx, "DNNHists_VetoTopTag0b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+      hist_dnn_VetoTopTag1b.reset(new DNNHists(ctx, "DNNHists_VetoTopTag1b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
+      hist_dnn_VetoTopTag2b.reset(new DNNHists(ctx, "DNNHists_VetoTopTag2b", dnn_setup->get_input_names_ttag(), dnn_setup->get_inputs_info_ttag(), dnn_app_ttag->get_output_names()));
 
-    hist_dnn_VetoWTag.reset(new DNNHists(ctx, "DNNHists_VetoWTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
-    hist_dnn_VetoWTag0b.reset(new DNNHists(ctx, "DNNHists_VetoWTag0b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
-    hist_dnn_VetoWTag1b.reset(new DNNHists(ctx, "DNNHists_VetoWTag1b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
-    hist_dnn_VetoWTag2b.reset(new DNNHists(ctx, "DNNHists_VetoWTag2b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+      hist_dnn_VetoWTag.reset(new DNNHists(ctx, "DNNHists_VetoWTag", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+      hist_dnn_VetoWTag0b.reset(new DNNHists(ctx, "DNNHists_VetoWTag0b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+      hist_dnn_VetoWTag1b.reset(new DNNHists(ctx, "DNNHists_VetoWTag1b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+      hist_dnn_VetoWTag2b.reset(new DNNHists(ctx, "DNNHists_VetoWTag2b", dnn_setup->get_input_names_wtag(), dnn_setup->get_inputs_info_wtag(), dnn_app_wtag->get_output_names()));
+    }
   }
 
 
@@ -582,17 +594,20 @@ namespace uhh2 {
     handle_toptaggedjets->process(event);
     handle_wboson->process(event); // the leptonic one!
 
-    if(debug) cout << "Reweight DeepJet distributions for AK4 jets" << endl;
-    hist_deepjet_preSF->fill(event);
-    sf_deepjet->process(event);
-    hist_deepjetSF->fill(event);
-
     if(debug) cout << "Handle HEM15/16 issue for 2018" << endl;
     if(slct_hemissue->passes(event)) {
       if(event.isRealData) return false;
       else event.weight *= slct_hemissue->MCWeight();
     }
     hist_hemissue->fill(event);
+
+    if(debug) cout << "Reweight b-tagging distributions for AK4 jets" << endl;
+    hist_btagging_preSF_deepcsv->fill(event);
+    hist_btagging_preSF_deepjet->fill(event);
+    sf_btagging->process(event);
+    hist_btaggingSF->fill(event);
+    hist_btagging_postSF_deepcsv->fill(event);
+    hist_btagging_postSF_deepjet->fill(event);
 
     // if(debug) cout << "Apply top-pt reweighting for ttbar events" << endl;
     // sf_toppt->process(event);
@@ -770,57 +785,62 @@ namespace uhh2 {
     if(debug) cout << "Setting up input handles for the DNNs" << endl;
     dnn_setup->process(event);
 
-    if(debug) cout << "Calculate DNN outputs and fill DNN histograms" << endl;
-    if(is_TopTagRegion) {
-      dnn_app_ttag->process(event);
-      dnn_app_wtag->process_dummy(event);
+    if(apply_DNNs) {
+      if(debug) cout << "Calculate DNN outputs and fill DNN histograms" << endl;
+      if(is_TopTagRegion) {
+        dnn_app_ttag->process(event);
+        dnn_app_wtag->process_dummy(event);
 
-      hist_dnn_TopTag->fill(event);
-      if(b_0btag) {
-        hist_dnn_TopTag0b->fill(event);
+        hist_dnn_TopTag->fill(event);
+        if(b_0btag) {
+          hist_dnn_TopTag0b->fill(event);
+        }
+        else if(b_1btag) {
+          hist_dnn_TopTag1b->fill(event);
+        }
+        else {
+          hist_dnn_TopTag2b->fill(event);
+        }
       }
-      else if(b_1btag) {
-        hist_dnn_TopTag1b->fill(event);
+
+      else if(is_WTagRegion) {
+        dnn_app_wtag->process(event);
+        dnn_app_ttag->process_dummy(event);
+
+        hist_dnn_WTag->fill(event);
+        if(b_0btag) {
+          hist_dnn_WTag0b->fill(event);
+        }
+        else if(b_1btag) {
+          hist_dnn_WTag1b->fill(event);
+        }
+        else {
+          hist_dnn_WTag2b->fill(event);
+        }
       }
-      else {
-        hist_dnn_TopTag2b->fill(event);
+
+      else if(is_VetoRegion) {
+        dnn_app_ttag->process(event);
+        dnn_app_wtag->process(event);
+
+        hist_dnn_VetoTopTag->fill(event);
+        hist_dnn_VetoWTag->fill(event);
+        if(b_0btag) {
+          hist_dnn_VetoTopTag0b->fill(event);
+          hist_dnn_VetoWTag0b->fill(event);
+        }
+        else if(b_1btag) {
+          hist_dnn_VetoTopTag1b->fill(event);
+          hist_dnn_VetoWTag1b->fill(event);
+        }
+        else {
+          hist_dnn_VetoTopTag2b->fill(event);
+          hist_dnn_VetoWTag2b->fill(event);
+        }
       }
     }
-
-    else if(is_WTagRegion) {
-      dnn_app_wtag->process(event);
-      dnn_app_ttag->process_dummy(event);
-
-      hist_dnn_WTag->fill(event);
-      if(b_0btag) {
-        hist_dnn_WTag0b->fill(event);
-      }
-      else if(b_1btag) {
-        hist_dnn_WTag1b->fill(event);
-      }
-      else {
-        hist_dnn_WTag2b->fill(event);
-      }
-    }
-
-    else if(is_VetoRegion) {
-      dnn_app_ttag->process(event);
-      dnn_app_wtag->process(event);
-
-      hist_dnn_VetoTopTag->fill(event);
-      hist_dnn_VetoWTag->fill(event);
-      if(b_0btag) {
-        hist_dnn_VetoTopTag0b->fill(event);
-        hist_dnn_VetoWTag0b->fill(event);
-      }
-      else if(b_1btag) {
-        hist_dnn_VetoTopTag1b->fill(event);
-        hist_dnn_VetoWTag1b->fill(event);
-      }
-      else {
-        hist_dnn_VetoTopTag2b->fill(event);
-        hist_dnn_VetoWTag2b->fill(event);
-      }
+    else {
+      if(debug) cout << "Skipping DNN application." << endl;
     }
 
 
