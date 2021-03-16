@@ -27,8 +27,11 @@ bool WBosonLeptonic::process(Event & event) {
 
   // take the neutrino solution that has *higher* absolute value of pZ, following https://twiki.cern.ch/twiki/bin/view/LHCPhysics/ParticleLevelTopDefinitions
   LorentzVector wboson = solutions.at(0);
-  if(neutrinos.size() > 1 && abs(solutions.at(1).Pz()) > abs(solutions.at(0).Pz())) {
-    wboson = solutions.at(1);
+  if(neutrinos.size() > 1) {
+    // bool switch = abs(solutions.at(1).Pz()) > abs(solutions.at(0).Pz());
+    // take solution which is closer to the lepton in pz:
+    bool take_other = abs(neutrinos.at(1).Pz() - primlep.v4().Pz()) < abs(neutrinos.at(0).Pz() - primlep.v4().Pz());
+    if(take_other) wboson = solutions.at(1);
   }
   event.set(h_wboson, wboson);
 
