@@ -31,6 +31,8 @@ protected:
     TH1F *hist_ak8jet2_deepWvsQCD;
     TH1F *hist_ak8jet2_deepTvsQCD;
 
+    TH2F *hist_n_ak8_vs_n_hotvr;
+
 private:
     uhh2::Event::Handle<std::vector<TopJet>> h_ak8jets;
     uhh2::Event::Handle<FlavorParticle> h_primlep;

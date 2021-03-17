@@ -4,6 +4,7 @@
 #include "UHH2/HighPtSingleTop/include/MyAk8Hists.h"
 
 #include "TH1F.h"
+#include "TH2F.h"
 
 using namespace std;
 using namespace uhh2;
@@ -34,6 +35,8 @@ MyAk8Hists::MyAk8Hists(Context & ctx, const string & dirname, const string & ak8
     hist_ak8jet2_mSD = book<TH1F>("ak8jet2_mSD", "Sub-leading AK8 jet m_{SD} [GeV]", 100, 0, 500);
     hist_ak8jet2_deepWvsQCD = book<TH1F>("ak8jet2_deepWvsQCD", "Sub-leading AK8 jet #it{O}_{DeepAK8}(W vs. QCD)", 100, 0, 1);
     hist_ak8jet2_deepTvsQCD = book<TH1F>("ak8jet2_deepTvsQCD", "Sub-leading AK8 jet #it{O}_{DeepAK8}(t vs. QCD)", 100, 0, 1);
+
+    hist_n_ak8_vs_n_hotvr = book<TH2F>("n_ak8_vs_n_hotvr", "Number of jets (x: HOTVR, y: AK8)", 11, -0.5, 10.5, 11, -0.5, 10.5);
 }
 
 
@@ -43,6 +46,7 @@ void MyAk8Hists::fill(const Event & event) {
 
     const vector<TopJet> ak8jets = event.get(h_ak8jets);
     const FlavorParticle primlep = event.get(h_primlep);
+    const vector<TopJet> hotvrjets = *event.topjets;
 
     hist_number->Fill(ak8jets.size(), w);
 
@@ -70,4 +74,6 @@ void MyAk8Hists::fill(const Event & event) {
         hist_ak8jet2_deepWvsQCD->Fill(ak8jets.at(1).btag_DeepBoosted_WvsQCD(), w);
         hist_ak8jet2_deepTvsQCD->Fill(ak8jets.at(1).btag_DeepBoosted_TvsQCD(), w);
     }
+
+    hist_n_ak8_vs_n_hotvr->Fill(hotvrjets.size(), ak8jets.size(), w);
 }
