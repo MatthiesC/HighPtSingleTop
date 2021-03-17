@@ -297,9 +297,9 @@ class xmlCreator:
          file.write('''<Item Name="GenParticleCollection" Value="GenParticles"/>\n''')
          file.write('''<Item Name="GenInfoName" Value="genInfo"/>\n''')
          file.write('''<Item Name="additionalBranches" Value="jetsAk8PuppiSubstructure_SoftDropPuppi genjetsAk8SubstructureSoftDrop"/>\n''')
-         if self.is_mainsel:
-            file.write('''<Item Name="Ak8recCollection" Value="jetsAk8PuppiSubstructure_SoftDropPuppi"/>\n''')
-            file.write('''<Item Name="Ak8genCollection" Value="genjetsAk8SubstructureSoftDrop"/>\n''')
+         # if self.is_mainsel:
+         file.write('''<Item Name="Ak8recCollection" Value="jetsAk8PuppiSubstructure_SoftDropPuppi"/>\n''')
+         file.write('''<Item Name="Ak8genCollection" Value="genjetsAk8SubstructureSoftDrop"/>\n''')
          file.write('''\n''')
          file.write('''<Item Name="lumi_file" Value="'''+self.yearVars['lumiFiles'][self.year]+'''"/>\n''')
          file.write('''<Item Name="lumihists_lumi_per_bin" Value="500."/>\n''')

@@ -20,6 +20,8 @@
 #include "UHH2/HOTVR/include/HOTVRJetCorrectionModule.h"
 #include "UHH2/HOTVR/include/HOTVRIds.h"
 
+#include "UHH2/HighPtSingleTop/include/Ak8Corrections.h"
+#include "UHH2/HighPtSingleTop/include/MyAk8Hists.h"
 #include "UHH2/HighPtSingleTop/include/AndHists.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopSelections.h"
 #include "UHH2/HighPtSingleTop/include/HighPtSingleTopHists.h"
@@ -29,6 +31,7 @@
 #include "UHH2/HighPtSingleTop/include/LeptonAndTriggerScaleFactors.h"
 #include "UHH2/HighPtSingleTop/include/HcalAndEcalModules.h"
 #include "UHH2/HighPtSingleTop/include/MyUtils.h"
+#include "UHH2/HighPtSingleTop/include/TaggedJets.h"
 
 
 using namespace std;
@@ -52,15 +55,18 @@ namespace uhh2 {
     unique_ptr<CommonModules> common_modules;
 
     unique_ptr<AnalysisModule> clnr_muon, clnr_elec, clnr_hotvr, hotvr_jec_module, clnr_jetLeptonOverlap;
+    unique_ptr<Ak8Corrections> ak8corrections;
+    unique_ptr<AnalysisModule> ak8cleaning, handle_ak8jets;
     unique_ptr<AnalysisModule> primarylep, sf_lepton, sf_prefiring;
     unique_ptr<AnalysisModule> met_xy_correction;
 
     unique_ptr<Selection> slct_lumi, slct_mttbarGenCut;
     unique_ptr<Selection> slct_1muon, slct_0muon, slct_1elec, slct_0elec;
-    unique_ptr<Selection> slct_met, slct_1hotvr;
+    unique_ptr<Selection> slct_met, slct_1hotvr, slct_1ak8;
 
     unique_ptr<MttHist> hist_mtt_before, hist_mtt_after;
-    unique_ptr<AndHists> hist_common, hist_cleaning, hist_prefiring, hist_1lepton, hist_leptonSF, hist_jetleptonoverlapremoval, hist_metXYcorrection, hist_met, hist_hotvrJEC, hist_hotvrCleaner, hist_1hotvr;
+    unique_ptr<AndHists> hist_common, hist_cleaning, hist_prefiring, hist_1lepton, hist_leptonSF, hist_jetleptonoverlapremoval, hist_metXYcorrection, hist_met, hist_hotvrJEC, hist_hotvrCleaner, hist_1largejet;
+    unique_ptr<MyAk8Hists> hist_ak8_preCorr, hist_ak8_postCorr, hist_ak8_postCleaning;
 
     bool is_muo, is_ele, is_QCDsideband;
     string dataset_version, met_name, jet_collection;
@@ -103,7 +109,6 @@ namespace uhh2 {
 
     double elecPt_min_veto = 30.0;
     double elecEta_max_veto = 2.4;
-    double elecIso_max_veto_QCDsideband = 1.0;
 
     double jetPt_min = 30.0;
     double jetEta_max = 2.4;
@@ -123,6 +128,10 @@ namespace uhh2 {
 
     double met_min = 50.0;
 
+    double ak8_pt_min = 200.0;
+    double ak8_eta_max = 2.4;
+    double ak8_deltaRlepton_min = 0.8;
+
 
     //-----------------//
     // IDENTIFICATIONS //
@@ -137,18 +146,10 @@ namespace uhh2 {
     }
 
     // Recommendation for complete Run 2: https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2
-    ElectronId elecID_veto;
-    if(is_QCDsideband && is_ele) {
-      // elecID_veto = AndId<Electron>(PtEtaCut(elecPt_min_veto, elecEta_max_veto), ElectronIso(elecIso_max_QCDsideband));
-      // elecID_veto = PtEtaCut(elecPt_min_veto, elecEta_max_veto);
-      elecID_veto = AndId<Electron>(ElectronID_Fall17_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
-    } else {
-      elecID_veto = AndId<Electron>(ElectronID_Fall17_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
-    }
+    ElectronId elecID_veto = AndId<Electron>(ElectronID_Fall17_veto, PtEtaCut(elecPt_min_veto, elecEta_max_veto));
     ElectronId elecID;
     if(is_QCDsideband && is_ele) {
-      // elecID = AndId<Electron>(inverted_ElectronID_Fall17_veto, PtEtaCut(elecPt_min, elecEta_max)); // inverted ID defined in MyUtils.h
-      elecID = AndId<Electron>(inverted_ElectronID_Fall17_tight, PtEtaCut(elecPt_min, elecEta_max)); // inverted ID defined in MyUtils.h
+      elecID = AndId<Electron>(MyElectronID_Fall17_tight_invertedIso, PtEtaCut(elecPt_min, elecEta_max));
     } else {
       elecID = AndId<Electron>(ElectronID_Fall17_tight, PtEtaCut(elecPt_min, elecEta_max));
     }
@@ -187,6 +188,10 @@ namespace uhh2 {
     clnr_hotvr.reset(new TopJetCleaner(ctx, hotvrID));
     clnr_jetLeptonOverlap.reset(new JetLeptonOverlapRemoval(ctx, jetDeltaRToLepton_min));
 
+    ak8corrections.reset(new Ak8Corrections());
+    ak8corrections->init(ctx);
+    ak8cleaning.reset(new Ak8Cleaning(ctx, ak8_pt_min, ak8_eta_max, ak8_deltaRlepton_min));
+
 
     //------------//
     // SELECTIONS //
@@ -200,6 +205,7 @@ namespace uhh2 {
     slct_0elec.reset(new NElectronSelection(0, 0));
     slct_met.reset(new METSelection(met_min));
     slct_1hotvr.reset(new NTopJetSelection(1, -1));
+    slct_1ak8.reset(new MyNTopJetSelection(ctx, 1, -1, "Ak8Jets"));
 
 
     //------------//
@@ -217,7 +223,12 @@ namespace uhh2 {
     hist_met.reset(new AndHists(ctx, "2_MET"));
     hist_hotvrJEC.reset(new AndHists(ctx, "2_HotvrJEC"));
     hist_hotvrCleaner.reset(new AndHists(ctx, "2_HotvrCleaner"));
-    hist_1hotvr.reset(new AndHists(ctx, "3_OneHotvr"));
+    // Control distributions or AK8 jets: JEC+JER and cleaning
+    hist_ak8_preCorr.reset(new MyAk8Hists(ctx, "2_Ak8Setup_PreCorr", ctx.get("Ak8recCollection"))); // AK8 handles not yet set, use additional branch directly
+    hist_ak8_postCorr.reset(new MyAk8Hists(ctx, "2_Ak8Setup_PostCorr", ctx.get("Ak8recCollection"))); // AK8 handles not yet set, use additional branch directly
+    hist_ak8_postCleaning.reset(new MyAk8Hists(ctx, "2_Ak8Setup_PostCleaning"));
+    hist_1largejet.reset(new AndHists(ctx, "3_OneLargeJet"));
+    hist_1largejet->add_Ak8Hists(ctx);
 
 
     //---------------//
@@ -228,6 +239,7 @@ namespace uhh2 {
     sf_lepton.reset(new LeptonScaleFactors(ctx));
     sf_prefiring.reset(new PrefiringWeights(ctx));
     sf_lumi.reset(new MCLumiWeight(ctx));
+    handle_ak8jets.reset(new Ak8Jets(ctx));
   }
 
 
@@ -272,22 +284,20 @@ namespace uhh2 {
     hist_prefiring->fill(event);
 
     if(debug) cout << "Single-lepton selection and veto on additional leptons" << endl;
-    if(is_muo)
-      {
-        if(!(slct_1muon->passes(event) && slct_0elec->passes(event))) return false;
-        clnr_muon->process(event);
-        if(!slct_1muon->passes(event)) return false;
-      }
-    else if(is_ele)
-      {
-        if(!(slct_1elec->passes(event) && slct_0muon->passes(event))) return false;
-        clnr_elec->process(event);
-        if(!slct_1elec->passes(event)) return false;
-      }
+    if(is_muo) {
+      if(!(slct_1muon->passes(event) && slct_0elec->passes(event))) return false;
+      clnr_muon->process(event);
+      if(!slct_1muon->passes(event)) return false;
+    }
+    else if(is_ele) {
+      if(!(slct_1elec->passes(event) && slct_0muon->passes(event))) return false;
+      clnr_elec->process(event);
+      if(!slct_1elec->passes(event)) return false;
+    }
     hist_1lepton->fill(event);
 
     if(debug) cout << "Apply lepton id/iso/reco scale factors" << endl;
-    sf_lepton->process(event);
+    if(!is_QCDsideband) sf_lepton->process(event);
     hist_leptonSF->fill(event);
 
     if(debug) cout << "Remove AK4 jets overlapping with the lepton" << endl;
@@ -313,11 +323,20 @@ namespace uhh2 {
     clnr_hotvr->process(event);
     hist_hotvrCleaner->fill(event);
 
-    if(debug) cout << "At least one HOTVR jet" << endl; // TODO: Or one AK8 jet
-    if(!slct_1hotvr->passes(event)) return false;
-    hist_1hotvr->fill(event);
+    if(debug) cout << "Apply corrections to AK8 jets and clean them" << endl;
+    hist_ak8_preCorr->fill(event);
+    ak8corrections->process(event); // don't sort AK8 jets after correcting them to have consistent preCorr and postCorr histograms
+    hist_ak8_postCorr->fill(event);
+    ak8cleaning->process(event); // clean AK8 jets and sort them by pt
+    handle_ak8jets->process(event);
+    hist_ak8_postCleaning->fill(event);
 
-    // End of Module
+    if(debug) cout << "At least one large-R jet (HOTVR or AK8)" << endl;
+    bool one_large_jet = slct_1hotvr->passes(event) || slct_1ak8->passes(event);
+    if(!one_large_jet) return false;
+    hist_1largejet->fill(event);
+
+    if(debug) cout << "End of PreSelectionModule" << endl;
     return true;
   }
 
