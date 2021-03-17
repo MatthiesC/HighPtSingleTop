@@ -80,6 +80,11 @@ bool inverted_ElectronID_Fall17_veto(const Electron&, const uhh2::Event&);
 
 bool inverted_ElectronID_Fall17_tight(const Electron&, const uhh2::Event&);
 
+bool MyElectron_CutBasedID_invertedIso(const Electron&, const uhh2::Event&, const std::string&, const std::string&, const bool);
+bool MyElectron_CutBasedID_invertedIso(const Electron&, const uhh2::Event&, const std::string&, const std::string&, const int, const bool);
+
+bool MyElectronID_Fall17_tight_invertedIso (const Electron&, const uhh2::Event&);
+
 double btagdisc(const Jet&, const BTag::algo&);
 
 // Sort jets by DeepJet discriminant
