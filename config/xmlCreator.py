@@ -33,9 +33,12 @@ class configContainer:
 
       # Set these values such that there are no more than 2,500 jobs per preselection. This way, you can submit two preselections in parallel to avoid going over 5,000 jobs (current user limit for NAF)
       self.yearVars['preselFileSplit'] = {
-         '2016': '30',
-         '2017': '42',
-         '2018': '50',
+         # '2016': '30',
+         '2016': '70',
+         # '2017': '42',
+         '2017': '70',
+         # '2018': '50',
+         '2018': '70',
       }
 
       self.yearVars['targetLumis'] = {
@@ -130,7 +133,7 @@ class configContainer:
          self.systematics.append(systEntity('mur', 'ScaleVariationMuR'))
          self.systematics.append(systEntity('muf', 'ScaleVariationMuF'))
          self.systematics.append(systEntity('murmuf', 'N/A')) # Need to access ScaleVariationMuR and ScaleVariationMuF in another way
-         self.systematics.append(systEntity('pileup', 'SystDirection_Pileup'))
+         self.systematics.append(systEntity('pileup', 'SystDirection_PileUp'))
          if year in ['2016', '2017']:
             self.systematics.append(systEntity('prefiring', 'SystDirection_Prefiring'))
          if channel=='muo':

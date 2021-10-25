@@ -5,6 +5,8 @@
 
 #include "UHH2/common/include/Utils.h"
 
+#include "UHH2/HighPtSingleTop/include/MyUtils.h"
+
 namespace uhh2 {
 
 
@@ -15,7 +17,7 @@ namespace uhh2 {
     virtual void fill(const uhh2::Event & ev) override;
 
   private:
-    uhh2::Event::Handle<int> h_which_region;
+    uhh2::Event::Handle<Region> h_region;
     Year m_year;
     int m_year_int;
     int m_channel_int;

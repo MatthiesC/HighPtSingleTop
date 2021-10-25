@@ -3,6 +3,8 @@
 #include "UHH2/core/include/AnalysisModule.h"
 #include "UHH2/core/include/Event.h"
 
+#include "UHH2/HighPtSingleTop/include/MyUtils.h"
+
 
 class VariablesOfInterest: public uhh2::AnalysisModule {
 
@@ -11,7 +13,7 @@ public:
   virtual bool process(uhh2::Event & event) override;
 
 private:
-  uhh2::Event::Handle<int> m_h_which_region;
+  uhh2::Event::Handle<GenericRegion> m_h_generic_region;
 
   uhh2::Event::Handle<TopJet> m_h_tjet;
   uhh2::Event::Handle<TopJet> m_h_wjet;

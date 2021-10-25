@@ -236,7 +236,7 @@ namespace uhh2 {
     //---------------//
 
     primarylep.reset(new PrimaryLepton(ctx));
-    sf_lepton.reset(new LeptonScaleFactors(ctx));
+    if(!is_QCDsideband) sf_lepton.reset(new LeptonScaleFactors(ctx));
     sf_prefiring.reset(new PrefiringWeights(ctx));
     sf_lumi.reset(new MCLumiWeight(ctx));
     handle_ak8jets.reset(new Ak8Jets(ctx));

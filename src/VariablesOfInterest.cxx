@@ -6,7 +6,7 @@ using namespace uhh2;
 
 VariablesOfInterest::VariablesOfInterest(Context & ctx) {
 
-  m_h_which_region = ctx.get_handle<int>("which_region");
+  m_h_generic_region = ctx.get_handle<GenericRegion>("generic_region");
 
   m_h_tjet = ctx.get_handle<TopJet>("TopTaggedJet");
   m_h_wjet = ctx.get_handle<TopJet>("WTaggedJet");
@@ -92,17 +92,17 @@ void VariablesOfInterest::set_wtag_dummies(Event & event) {
 
 bool VariablesOfInterest::process(Event & event) {
 
-  const int region = event.get(m_h_which_region);
+  const GenericRegion generic_region = event.get(m_h_generic_region);
 
-  if(region == 1 || region == 4 || region == 7) {
+  if(generic_region == GenericRegion::TopTag) {
     set_ttag_variables(event);
     set_wtag_dummies(event);
   }
-  else if(region == 2 || region == 5 || region == 8) {
+  else if(generic_region == GenericRegion::WTag) {
     set_wtag_variables(event);
     set_ttag_dummies(event);
   }
-  else if(region == 3 || region == 6 || region == 9) {
+  else if(generic_region == GenericRegion::Veto) {
     set_ttag_variables(event);
     set_wtag_variables(event);
   }

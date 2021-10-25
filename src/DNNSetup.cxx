@@ -28,7 +28,7 @@ DNNSetup::DNNSetup(Context & ctx, const BTag::algo & algo, const double & zero_p
   if(extract_channel(ctx) == Channel::isEle) m_channel_int = -1;
   else if(extract_channel(ctx) == Channel::isMuo) m_channel_int = 1;
 
-  m_h_which_region = ctx.get_handle<int>("which_region");
+  m_h_region = ctx.get_handle<Region>("region");
 
   m_h_tjet = ctx.get_handle<TopJet>("TopTaggedJet");
   m_h_wjet = ctx.get_handle<TopJet>("WTaggedJet");
@@ -439,17 +439,17 @@ void DNNSetup::set_dummy_inputs_for_wtag_dnn(Event & event) {
 
 bool DNNSetup::process(Event & event) {
 
-  const int region = event.get(m_h_which_region);
+  const Region region = event.get(m_h_region);
 
-  if(region == 1 || region == 4 || region == 7) {
+  if(region == Region::TopTag0b || region == Region::TopTag1b || region == Region::TopTag2b) {
     calculate_inputs_for_ttag_dnn(event);
     set_dummy_inputs_for_wtag_dnn(event);
   }
-  else if(region == 2 || region == 5 || region == 8) {
+  else if(region == Region::WTag0b || region == Region::WTag1b || region == Region::WTag2b) {
     calculate_inputs_for_wtag_dnn(event);
     set_dummy_inputs_for_ttag_dnn(event);
   }
-  else if(region == 3 || region == 6 || region == 9) {
+  else if(region == Region::Veto0b || region == Region::Veto1b || region == Region::Veto2b) {
     calculate_inputs_for_ttag_dnn(event);
     calculate_inputs_for_wtag_dnn(event);
   }

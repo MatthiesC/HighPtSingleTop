@@ -38,6 +38,28 @@ enum class Channel {
   notValid,
 };
 
+enum class GenericRegion {
+  not_defined,
+  TopTag,
+  WTag,
+  Veto,
+  Else,
+};
+
+enum class Region {
+  not_defined = 0,
+  TopTag0b = 1,
+  WTag0b = 2,
+  Veto0b = 3,
+  TopTag1b = 4,
+  WTag1b = 5,
+  Veto1b = 6,
+  TopTag2b = 7,
+  WTag2b = 8,
+  Veto2b = 9,
+  Else = 10,
+};
+
 Channel extract_channel(const uhh2::Context&);
 
 // returns the transverse W boson mass, using a given lepton and the MET in the event

@@ -6,6 +6,8 @@
 #include "UHH2/common/include/JetIds.h"
 #include "UHH2/common/include/Utils.h"
 
+#include "UHH2/HighPtSingleTop/include/MyUtils.h"
+
 
 class DNNInput {
 
@@ -55,7 +57,7 @@ class DNNSetup: public uhh2::AnalysisModule {
   int m_year_int;
   int m_channel_int;
 
-  uhh2::Event::Handle<int> m_h_which_region;
+  uhh2::Event::Handle<Region> m_h_region;
 
   uhh2::Event::Handle<TopJet> m_h_tjet;
   uhh2::Event::Handle<TopJet> m_h_wjet;

@@ -16,7 +16,7 @@ using namespace uhh2;
 
 RegionHist::RegionHist(Context & ctx, const string & dirname): Hists(ctx, dirname) {
 
-  h_which_region = ctx.get_handle<int>("which_region");
+  h_region = ctx.get_handle<Region>("region");
 
   m_year = extract_year(ctx);
   m_year_int = -1;
@@ -55,7 +55,7 @@ RegionHist::RegionHist(Context & ctx, const string & dirname): Hists(ctx, dirnam
 void RegionHist::fill(const Event & event) {
 
   double w = event.weight;
-  const int region = event.get(h_which_region);
+  const int region = (int)event.get(h_region); // converting enum class "Region" to int
 
   hist_regions->Fill(region, w);
   hist_regions_per_year_and_channel->Fill(1+(region-1)*6+m_year_int*2+m_channel_int, w);
