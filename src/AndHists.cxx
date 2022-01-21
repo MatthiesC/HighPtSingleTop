@@ -19,6 +19,7 @@
 
 using namespace std;
 using namespace uhh2;
+using namespace btw;
 
 
 CountingHist::CountingHist(Context & ctx, const string & dirname):
@@ -157,25 +158,25 @@ BinnedDNNHists::BinnedDNNHists(Context & ctx, const string & dirname, const vect
   h_lepton_pt = ctx.get_handle<double>("DNNinfo_lepton_pt");
   // h_tquark_pt = ctx.get_handle<double>("VOI_tquark_pt");
 
-  hist_tjet_pt = book<TH1F>("tjet_pt", "t jet p_{T} [GeV]", MyConstants::binning__tjet_pt.size(), MyConstants::binning_edges__tjet_pt);
-  hist_wjet_pt = book<TH1F>("wjet_pt", "W jet p_{T} [GeV]", MyConstants::binning__wjet_pt.size(), MyConstants::binning_edges__wjet_pt);
-  hist_lepton_pt = book<TH1F>("lepton_pt", "Lepton p_{T} [GeV]", MyConstants::binning__lepton_pt.size(), MyConstants::binning_edges__lepton_pt);
-  // hist_tquark_pt = book<TH1F>("tquark_pt", "t quark candidate p_{T} [GeV]", MyConstants::binning__tquark_pt.size(), MyConstants::binning_edges__tquark_pt);
+  hist_tjet_pt = book<TH1F>("tjet_pt", "t jet p_{T} [GeV]", kBinning__tjet_pt.size(), kBinning_edges__tjet_pt);
+  hist_wjet_pt = book<TH1F>("wjet_pt", "W jet p_{T} [GeV]", kBinning__wjet_pt.size(), kBinning_edges__wjet_pt);
+  hist_lepton_pt = book<TH1F>("lepton_pt", "Lepton p_{T} [GeV]", kBinning__lepton_pt.size(), kBinning_edges__lepton_pt);
+  // hist_tquark_pt = book<TH1F>("tquark_pt", "t quark candidate p_{T} [GeV]", kBinning__tquark_pt.size(), kBinning_edges__tquark_pt);
 
   hists_vector.push_back(new DNNHists(ctx, dirname+"_Full", inputs, inputs_info, outputs));
   // hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt200to350", inputs, inputs_info, "DNN_TopTagPt", 0, 350));
   // hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt350toInf", inputs, inputs_info, "DNN_TopTagPt", 350));
-  for(auto i : MyConstants::binning__tjet_pt) {
+  for(auto i : kBinning__tjet_pt) {
     hists_vector.push_back(new DNNHists(ctx, dirname+"_tjet_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_tjet_pt", i.first, i.second));
   }
-  // for(auto i : MyConstants::binning__wjet_pt) {
+  // for(auto i : kBinning__wjet_pt) {
   //   hists_vector.push_back(new DNNHists(ctx, dirname+"_wjet_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_wjet_pt", i.first, i.second));
   // }
-  // for(auto i : MyConstants::binning__lepton_pt) {
+  // for(auto i : kBinning__lepton_pt) {
   //   hists_vector.push_back(new DNNHists(ctx, dirname+"_lepton_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_lepton_pt", i.first, i.second));
   // }
 
-  // for(auto i : MyConstants::binning__tquark_pt) {
+  // for(auto i : kBinning__tquark_pt) {
   //   hists_vector.push_back(new DNNHists(ctx, dirname+"_tquark_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "VOI_tquark_pt", i.first, i.second));
   // }
 }
