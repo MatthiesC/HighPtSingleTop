@@ -229,7 +229,7 @@ double btagdisc(const Jet& jet, const BTag::algo& algo) {
   double result;
   if(algo == BTag::DEEPCSV) result = jet.btag_DeepCSV();
   else if(algo == BTag::DEEPJET) result = jet.btag_DeepJet();
-  else if(algo == BTag::CSVV2) result = jet.btag_combinedSecondaryVertex();
+  // else if(algo == BTag::CSVV2) result = jet.btag_combinedSecondaryVertex(); // not anymore present in 106X_v2
   else throw std::invalid_argument("btagdisc(): invalid b-tagging algorithm passed");
   return result;
 }
