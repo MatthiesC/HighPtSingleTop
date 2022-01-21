@@ -6,7 +6,7 @@ LWTNNINC=$(shell scram tool tag lwtnn INCLUDE)
 LWTNNLIB=$(shell scram tool tag lwtnn LIBDIR)
 LWTNNLIBNAME=$(shell scram tool tag lwtnn LIB)
 USERCXXFLAGS := -I$(LWTNNINC)
-USERLDFLAGS := -lSUHH2core -lSUHH2common -lSUHH2HOTVR -lGenVector -lSUHH2JetMETObjects -L${LHAPDFLIB} -lLHAPDF -L$(LWTNNLIB) -l$(LWTNNLIBNAME)
+USERLDFLAGS := -lSUHH2core -lSUHH2common -lSUHH2HOTVR -lSUHH2LegacyTopTagging -lGenVector -lSUHH2JetMETObjects -L${LHAPDFLIB} -lLHAPDF -L$(LWTNNLIB) -l$(LWTNNLIBNAME)
 # enable par creation; this is necessary for all packages containing AnalysisModules
 # to be loaded from by AnalysisModuleRunner.
 PAR := 1
