@@ -5,7 +5,9 @@
 
 using namespace std;
 using namespace uhh2;
+using namespace btw;
 
+namespace uhh2 { namespace btw {
 
 PrefiringWeights::PrefiringWeights(Context & ctx) {
 
@@ -82,7 +84,7 @@ bool HEMIssueSelection::passes(const Event & event) {
   const vector<TopJet> wtaggedjets = event.get(h_wtaggedjets);
   const vector<TopJet> toptaggedjets = event.get(h_toptaggedjets);
 
-  if(year == Year::is2018 && ((event.isRealData && event.run >= m_runnumber) || !event.isRealData)) {
+  if((year == Year::is2018 || year == Year::isUL18) && ((event.isRealData && event.run >= m_runnumber) || !event.isRealData)) {
     for(const Electron & e : *event.electrons) {
       if(e.v4().Phi() > m_phi.first && e.v4().Phi() < m_phi.second && e.v4().Eta() > m_eta.first && e.v4().Eta() < m_eta.second) return true;
     }
@@ -92,7 +94,15 @@ bool HEMIssueSelection::passes(const Event & event) {
     for(const TopJet & t : toptaggedjets) {
       if(t.v4().Phi() > m_phi.first && t.v4().Phi() < m_phi.second && t.v4().Eta() > m_eta.first && t.v4().Eta() < m_eta.second) return true;
     }
+
+
+
+    for(const Jet & t : *event.jets) {
+      if(t.v4().Phi() > m_phi.first && t.v4().Phi() < m_phi.second && t.v4().Eta() > m_eta.first && t.v4().Eta() < m_eta.second) return true;
+    }
   }
 
   return false;
 }
+
+}}

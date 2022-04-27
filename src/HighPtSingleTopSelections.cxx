@@ -364,7 +364,7 @@ HighPtSingleTopTriggerSelection::HighPtSingleTopTriggerSelection(Context & ctx) 
 
 bool HighPtSingleTopTriggerSelection::passes(const Event & event) {
 
-  if(year == Year::is2016v3) {
+  if(year == Year::is2016v3 || year == Year::isUL16preVFP || year == Year::isUL16postVFP) {
     if(is_ele) {
       if(event.isRealData) {
         if(b_electron_stream) return trig_ele27->passes(event);
@@ -376,7 +376,7 @@ bool HighPtSingleTopTriggerSelection::passes(const Event & event) {
     else return false;
   }
 
-  else if(year == Year::is2017v2) {
+  else if(year == Year::is2017v2 || year == Year::isUL17) {
     if(is_ele) {
       if(event.isRealData) {
         if(b_electron_stream) return trig_ele35->passes(event);
@@ -388,7 +388,7 @@ bool HighPtSingleTopTriggerSelection::passes(const Event & event) {
     else return false;
   }
 
-  else if(year == Year::is2018) {
+  else if(year == Year::is2018 || year == Year::isUL18) {
     // no need for differentiation between photon and electron stream since EGamma dataset
     if(is_ele) return (trig_ele32->passes(event) || trig_photon200->passes(event));
     else if(is_muo) return (trig_isomu24->passes(event));

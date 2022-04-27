@@ -10,14 +10,18 @@ import subprocess
 # GLOBAL VARIABLES #
 #------------------#
 
-lumis = {
-    '2016': '35.92',
-    '2017': '41.53',
-    '2018': '59.74',
-    'run2': '137.19',
-}
+sys.path.append(os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2/LegacyTopTagging/Analysis'))
+from constants import _YEARS
 
-years = ['2016', '2017', '2018']
+# lumis = {
+#     '2016': '35.92',
+#     '2017': '41.53',
+#     '2018': '59.74',
+#     'run2': '137.19',
+# }
+
+# years = ['2016', '2017', '2018']
+years = ['UL16preVFP', 'UL16postVFP', 'UL17', 'UL18']
 channels = ['ele', 'muo']
 combos = list()
 
@@ -33,6 +37,7 @@ parser.add_argument('-c', '--channels', choices=channels, nargs='*', default=[])
 parser.add_argument('-y', '--years', choices=years, nargs='*', default=[])
 parser.add_argument('-s', '--singleeps', action='store_true')
 parser.add_argument('-l', '--legend', action='store_true')
+parser.add_argument('-r', '--shapenorm', action='store_true')
 parser.add_argument('-n', '--no', choices=['data', 'qcd'], nargs='*', default=[])
 parser.add_argument('-t', '--tar', action='store_true')
 parser.add_argument('-p', '--plot', action='store_true')
@@ -70,7 +75,7 @@ print combos
 print 'Using SFramePlotter at:', subprocess.check_output('which Plots', shell=True).strip('\n')
 
 uhh2Dir = os.environ.get('CMSSW_BASE')+'/src/UHH2/'
-mainselDir = uhh2Dir+'HighPtSingleTop/output/mainsel/'
+mainselDir = uhh2Dir+'HighPtSingleTop/output/Analysis/mainsel/'
 templateDir = uhh2Dir+'HighPtSingleTop/sframeplotter/'
 workDir = templateDir+'workdir/'
 if not os.path.exists(workDir): os.mkdir(workDir)
@@ -102,9 +107,10 @@ for year, channel in combos:
             newline = line
             newline = newline.replace('<<<fCycleName>>>', fCycleName)
             newline = newline.replace('<<<fOutputPsFile>>>', fOutputPsFile)
-            newline = newline.replace('<<<fLumi>>>', lumis[year])
+            newline = newline.replace('<<<fLumi>>>', str(_YEARS[year]['lumi_fb']))
             newline = newline.replace('<<<bSingleEPS>>>', 'true' if args.singleeps else 'false')
             newline = newline.replace('<<<bDrawLegend>>>', 'true' if args.legend else 'false')
+            newline = newline.replace('<<<bShapeNorm>>>', 'true' if args.shapenorm else 'false')
             steerFile.write(newline)
     template_file.close()
     # Plots does not except absolute file paths to steer file, thus get relative path of steer file with working directory = sframeplotterBase
@@ -117,5 +123,6 @@ for year, channel in combos:
         print 'If you wish to run the plotter (compression), use option "-p" ("-t").'
     if args.plot:
         subprocess.Popen((command_Plots), shell=True, cwd=sframeplotterBase, stdout=FNULL, stderr=FNULL)
+        # subprocess.Popen((command_Plots), shell=True, stdout=FNULL, stderr=FNULL)
     if args.tar:
         subprocess.Popen((command_targz), shell=True, cwd=thisMainselDir, stdout=FNULL, stderr=FNULL)

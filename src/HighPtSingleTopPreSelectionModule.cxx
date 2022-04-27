@@ -46,6 +46,9 @@ public:
 
 private:
   const bool debug;
+  unsigned long long i_event = 0;
+  const bool is_mc;
+  const bool is_singlemuon;
   enum class JECVariation {
     nominal,
     jes_up,
@@ -54,13 +57,7 @@ private:
     jer_down,
   };
 
-  const map<JECVariation, string> kJECVariationToString = {
-    {JECVariation::nominal, "nominal"},
-    {JECVariation::jes_up, "jes_up"},
-    {JECVariation::jes_down, "jes_down"},
-    {JECVariation::jer_up, "jer_up"},
-    {JECVariation::jer_down, "jer_down"},
-  };
+  map<JECVariation, string> kJECVariationToString;
 
   /*
   Kinematic variables:
@@ -165,9 +162,19 @@ private:
 //-------------//
 
 HighPtSingleTopPreSelectionModule::HighPtSingleTopPreSelectionModule(Context & ctx):
-  debug(string2bool(ctx.get("debug")))
+  debug(string2bool(ctx.get("debug"))),
+  is_mc(ctx.get("dataset_type") == "MC"),
+  is_singlemuon(!is_mc && ctx.get("dataset_version").find("SingleMuon") != string::npos)
 {
   unsigned int i_hist(0);
+
+  kJECVariationToString[JECVariation::nominal] = "nominal";
+  if(is_mc) {
+    kJECVariationToString[JECVariation::jes_up] = "jes_up";
+    kJECVariationToString[JECVariation::jes_down] = "jes_down";
+    kJECVariationToString[JECVariation::jer_up] = "jer_up";
+    kJECVariationToString[JECVariation::jer_down] = "jer_down";
+  }
 
   slct_lumi.reset(new LumiSelection(ctx));
   sf_lumi.reset(new MCLumiWeight(ctx));
@@ -295,6 +302,8 @@ bool HighPtSingleTopPreSelectionModule::process(Event & event) {
     cout << "+-----------+" << endl;
     cout << "| NEW EVENT |" << endl;
     cout << "+-----------+" << endl;
+    cout << "i_event = " << to_string(i_event++) << endl;
+    cout << endl;
   }
 
   if(debug) cout << "Lumi selection and scale factor" << endl; // else getting error for some data samples, e.g. "RunSwitcher cannot handle run number 275656 for year 2016"
@@ -429,6 +438,14 @@ bool HighPtSingleTopPreSelectionModule::process(Event & event) {
   if(debug) cout << "Clean lepton collections, apply lepton scale factors, and set primary lepton" << endl;
   swap(*event.muons, signal_muon);
   swap(*event.electrons, signal_electron);
+  if(!is_mc) { // It is possible that SingleMuon does contain events with signal electrons and vice-versa. We reject those events here, which would be rejected at the beginning of the MainSelection regardlessly
+    if(is_singlemuon) {
+      if(event.muons->size() != 1) return false;
+    }
+    else {
+      if(event.electrons->size() != 1) return false;
+    }
+  }
   if(passes_muon_highpt) {
     sf_muon_id_highpt->process(event);
     sf_elec_id_dummy->process(event);

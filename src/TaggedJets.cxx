@@ -66,7 +66,7 @@ TopTaggedJet::~TopTaggedJet() {}
 
 Ak8Jets::Ak8Jets(Context & ctx,
        const std::string & h_name_ak8jets):
-  h_ak8jets_rec(ctx.get_handle<vector<TopJet>>(ctx.get("Ak8recCollection"))),
+  h_ak8jets_rec(ctx.get_handle<vector<TopJet>>(ctx.get("AK8Collection_rec"))),
   h_ak8jets(ctx.get_handle<vector<TopJet>>(h_name_ak8jets))
 {}
 
@@ -101,9 +101,9 @@ WTaggedJets::WTaggedJets(Context & ctx,
   year(extract_year(ctx)),
   b_massDecorrelated(b_massDecorrelated_)
 {
-  if(year == Year::is2016v3 || year == Year::is2016v2) { b_massDecorrelated ? wps = wps_W_2016_MD : wps = wps_W_2016; }
-  else if(year == Year::is2017v2 || year == Year::is2017v1) { b_massDecorrelated ? wps = wps_W_2017_MD : wps = wps_W_2017; }
-  else if(year == Year::is2018) { b_massDecorrelated ? wps = wps_W_2018_MD : wps = wps_W_2018; }
+  if(year == Year::is2016v3 || year == Year::is2016v2 || year == Year::isUL16preVFP || year == Year::isUL16postVFP) { b_massDecorrelated ? wps = wps_W_2016_MD : wps = wps_W_2016; }
+  else if(year == Year::is2017v2 || year == Year::is2017v1 || year == Year::isUL17) { b_massDecorrelated ? wps = wps_W_2017_MD : wps = wps_W_2017; }
+  else if(year == Year::is2018 || year == Year::isUL18) { b_massDecorrelated ? wps = wps_W_2018_MD : wps = wps_W_2018; }
   else { throw runtime_error("WTaggedJets: Provided year information not valid."); }
   m_working_point = working_point;
 }

@@ -19,10 +19,16 @@ DNNSetup::DNNSetup(Context & ctx, const BTag::algo & algo, const double & zero_p
   m_zeropadding = zero_padding_value;
 
   m_year = extract_year(ctx);
-  m_year_int = -2;
-  if(m_year == Year::is2016v3) m_year_int = -1;
-  else if(m_year == Year::is2017v2) m_year_int = 0;
-  else if(m_year == Year::is2018) m_year_int = 1;
+  // m_year_int = -2;
+  // if(m_year == Year::is2016v3) m_year_int = -1;
+  // else if(m_year == Year::is2017v2) m_year_int = 0;
+  // else if(m_year == Year::is2018) m_year_int = 1;
+
+  m_year_int = -1;
+  if(m_year == Year::isUL16preVFP) m_year_int = 0;
+  else if(m_year == Year::isUL16postVFP) m_year_int = 1;
+  else if(m_year == Year::isUL17) m_year_int = 2;
+  else if(m_year == Year::isUL18) m_year_int = 3;
 
   m_channel_int = -2;
   if(extract_channel(ctx) == Channel::isEle) m_channel_int = -1;
@@ -47,7 +53,8 @@ DNNSetup::DNNSetup(Context & ctx, const BTag::algo & algo, const double & zero_p
   */
 
   m_inputs_template_ttag.push_back(DNNInput("channel", "Channel [e = #minus1, #mu = +1]", -2.5, 2.5, 5));
-  m_inputs_template_ttag.push_back(DNNInput("year", "Year [2016 = #minus1, 2017 = 0, 2018 = +1]", -2.5, 2.5, 5));
+  // m_inputs_template_ttag.push_back(DNNInput("year", "Year [2016 = #minus1, 2017 = 0, 2018 = +1]", -2.5, 2.5, 5));
+  m_inputs_template_ttag.push_back(DNNInput("year", "Year [2016 early = 0, 2016 late = 1, 2017 = 2, 2018 = 3]", -0.5, 3.5, 4));
   m_inputs_template_ttag.push_back(DNNInput("met_pt", "Missing p_{T} [GeV]", 0, 1000));
   m_inputs_template_ttag.push_back(DNNInput("met_phi", "#phi(MET) [rad]", -M_PI, M_PI));
   m_inputs_template_ttag.push_back(DNNInput("lepton_pt", "Lepton p_{T} [GeV]", 0, 1000));
@@ -114,7 +121,8 @@ DNNSetup::DNNSetup(Context & ctx, const BTag::algo & algo, const double & zero_p
   */
 
   m_inputs_template_wtag.push_back(DNNInput("channel", "Channel [e = #minus1, #mu = +1]", -2.5, 2.5, 5));
-  m_inputs_template_wtag.push_back(DNNInput("year", "Year [2016 = #minus1, 2017 = 0, 2018 = +1]", -2.5, 2.5, 5));
+  // m_inputs_template_wtag.push_back(DNNInput("year", "Year [2016 = #minus1, 2017 = 0, 2018 = +1]", -2.5, 2.5, 5));
+  m_inputs_template_wtag.push_back(DNNInput("year", "Year [2016 early = 0, 2016 late = 1, 2017 = 2, 2018 = 3]", -0.5, 3.5, 4));
   m_inputs_template_wtag.push_back(DNNInput("met_pt", "Missing p_{T} [GeV]", 0, 1000));
   m_inputs_template_wtag.push_back(DNNInput("met_phi", "#phi(MET) [rad]", -M_PI, M_PI));
   m_inputs_template_wtag.push_back(DNNInput("lepton_pt", "Lepton p_{T} [GeV]", 0, 1000));

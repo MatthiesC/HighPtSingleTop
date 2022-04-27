@@ -18,14 +18,15 @@ def check_ttree(fileName, treeName='AnalysisTree'):
 
 
 channels = ['ele', 'muo']
-years = ['2016', '2017', '2018']
+# years = ['2016', '2017', '2018']
+years = ['UL16preVFP', 'UL16postVFP', 'UL17', 'UL18']
 
 if not sys.argv[1:]: sys.exit('No arguments provided. Exit.')
 parser = argparse.ArgumentParser()
 parser.add_argument('--all', action='store_true')
 parser.add_argument('-c', '--channels', choices=channels, nargs='*', default=[])
 parser.add_argument('-y', '--years', choices=years, nargs='*', default=[])
-parser.add_argument('-s', '--systematic')
+parser.add_argument('-s', '--systematic', default="nominal")
 parser.add_argument('--runii', action='store_true', help='Do not hadd individual mainsels but hadd full Run 2. Must be used jointly with "--all" option.')
 args = parser.parse_args(sys.argv[1:])
 
@@ -59,22 +60,22 @@ for channel in channels:
         syst_name = systematic
 
         # configDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/config/config_mainsel_'+year+'_'+channel+'/'
-        outputDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/output/mainsel/'+year+'/'+channel+'/'+syst_name+'/'
+        outputDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/output/Analysis/mainsel/'+year+'/'+channel+'/'+syst_name+'/'
         haddDir = outputDir+'hadded/'
         logDir = haddDir+'log/'
         list_of_all_hadd_dirs.append(haddDir)
         list_of_all_log_dirs.append(logDir)
         prefix = 'uhh2.AnalysisModuleRunner.'
 
-        decays = ['Had', 'Ele', 'Muo', 'Tau']
-        topdecays = ['TopTo'+x for x in decays]
-        wdecays = ['WTo'+x for x in decays]
-        bothdecays = list()
-        for t in topdecays:
-            for w in wdecays:
-                bothdecays.append(t+'_'+w)
-        signaldecays = list()
-        bkgdecays = list()
+        # decays = ['Had', 'Ele', 'Muo', 'Tau']
+        # topdecays = ['TopTo'+x for x in decays]
+        # wdecays = ['WTo'+x for x in decays]
+        # bothdecays = list()
+        # for t in topdecays:
+        #     for w in wdecays:
+        #         bothdecays.append(t+'_'+w)
+        # signaldecays = list()
+        # bkgdecays = list()
         # for b in bothdecays:
         #     if channel == 'ele' and 'ToHad' in b and 'ToEle' in b:
         #         signaldecays.append(b)
@@ -82,8 +83,12 @@ for channel in channels:
         #         signaldecays.append(b)
         #     else:
         #         bkgdecays.append(b)
-        signaldecays = ['Sig']
-        bkgdecays = ['Bkg']
+        # signaldecays = ['Sig']
+        # bkgdecays = ['Bkg']
+        signaldecays_dnn = ['dnnSig']
+        bkgdecays_dnn = ['dnnBkg']
+        signaldecays_true = ['trueSig']
+        bkgdecays_true = ['trueBkg']
 
 
         rootFiles = dict()
@@ -124,45 +129,130 @@ for channel in channels:
         rootFiles['ST_otherChannels']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tChannel*.root') + glob.glob(outputDir+prefix+'MC.ST_sChannel*.root')
         rootFiles['ST_otherChannels']['targetFile'] = 'MC.ST_otherChannels.root'
 
-        rootFiles['ST_tW_DR_NoFullyHadronic'] = dict()
-        rootFiles['ST_tW_DR_NoFullyHadronic']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DR_NoFullyHadronic*.root')
-        rootFiles['ST_tW_DR_NoFullyHadronic']['targetFile'] = 'MC.ST_tW_DR_NoFullyHadronic.root'
+        rootFiles['ST_tW_DR'] = dict()
+        rootFiles['ST_tW_DR']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DR*.root')
+        rootFiles['ST_tW_DR']['targetFile'] = 'MC.ST_tW_DR.root'
 
-        rootFiles['ST_tW_DR_NoFullyHadronic_Sig'] = dict()
-        temp = [outputDir+prefix+'MC.ST_tW_DR_NoFullyHadronic_'+x+'_*.root' for x in signaldecays]
+        rootFiles['ST_tW_DR_dnnSig'] = dict()
+        temp = [outputDir+prefix+'MC.ST_tW_DR*'+x+'_*.root' for x in signaldecays_dnn]
         temp2 = list()
         for t in temp:
             temp2 = temp2 + glob.glob(t)
-        rootFiles['ST_tW_DR_NoFullyHadronic_Sig']['sourceFiles'] = temp2
-        rootFiles['ST_tW_DR_NoFullyHadronic_Sig']['targetFile'] = 'MC.ST_tW_DR_NoFullyHadronic_Sig.root'
+        rootFiles['ST_tW_DR_dnnSig']['sourceFiles'] = temp2
+        rootFiles['ST_tW_DR_dnnSig']['targetFile'] = 'MC.ST_tW_DR_dnnSig.root'
 
-        rootFiles['ST_tW_DR_NoFullyHadronic_Bkg'] = dict()
-        temp = [outputDir+prefix+'MC.ST_tW_DR_NoFullyHadronic_'+x+'_*.root' for x in bkgdecays]
+        rootFiles['ST_tW_DR_dnnBkg'] = dict()
+        temp = [outputDir+prefix+'MC.ST_tW_DR*'+x+'_*.root' for x in bkgdecays_dnn]
         temp2 = list()
         for t in temp:
             temp2 = temp2 + glob.glob(t)
-        rootFiles['ST_tW_DR_NoFullyHadronic_Bkg']['sourceFiles'] = temp2
-        rootFiles['ST_tW_DR_NoFullyHadronic_Bkg']['targetFile'] = 'MC.ST_tW_DR_NoFullyHadronic_Bkg.root'
+        rootFiles['ST_tW_DR_dnnBkg']['sourceFiles'] = temp2
+        rootFiles['ST_tW_DR_dnnBkg']['targetFile'] = 'MC.ST_tW_DR_dnnBkg.root'
 
-        rootFiles['ST_tW_DR_inclusiveDecays'] = dict()
-        rootFiles['ST_tW_DR_inclusiveDecays']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DR_inclusiveDecays*.root')
-        rootFiles['ST_tW_DR_inclusiveDecays']['targetFile'] = 'MC.ST_tW_DR_inclusiveDecays.root'
+        rootFiles['ST_tW_DS'] = dict()
+        rootFiles['ST_tW_DS']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DS*.root')
+        rootFiles['ST_tW_DS']['targetFile'] = 'MC.ST_tW_DS.root'
 
-        rootFiles['ST_tW_DR_inclusiveDecays_Sig'] = dict()
-        temp = [outputDir+prefix+'MC.ST_tW_DR_inclusiveDecays_'+x+'_*.root' for x in signaldecays]
+        rootFiles['ST_tW_DS_dnnSig'] = dict()
+        temp = [outputDir+prefix+'MC.ST_tW_DS*'+x+'_*.root' for x in signaldecays_dnn]
         temp2 = list()
         for t in temp:
             temp2 = temp2 + glob.glob(t)
-        rootFiles['ST_tW_DR_inclusiveDecays_Sig']['sourceFiles'] = temp2
-        rootFiles['ST_tW_DR_inclusiveDecays_Sig']['targetFile'] = 'MC.ST_tW_DR_inclusiveDecays_Sig.root'
+        rootFiles['ST_tW_DS_dnnSig']['sourceFiles'] = temp2
+        rootFiles['ST_tW_DS_dnnSig']['targetFile'] = 'MC.ST_tW_DS_dnnSig.root'
 
-        rootFiles['ST_tW_DR_inclusiveDecays_Bkg'] = dict()
-        temp = [outputDir+prefix+'MC.ST_tW_DR_inclusiveDecays_'+x+'_*.root' for x in bkgdecays]
+        rootFiles['ST_tW_DS_dnnBkg'] = dict()
+        temp = [outputDir+prefix+'MC.ST_tW_DS*'+x+'_*.root' for x in bkgdecays_dnn]
         temp2 = list()
         for t in temp:
             temp2 = temp2 + glob.glob(t)
-        rootFiles['ST_tW_DR_inclusiveDecays_Bkg']['sourceFiles'] = temp2
-        rootFiles['ST_tW_DR_inclusiveDecays_Bkg']['targetFile'] = 'MC.ST_tW_DR_inclusiveDecays_Bkg.root'
+        rootFiles['ST_tW_DS_dnnBkg']['sourceFiles'] = temp2
+        rootFiles['ST_tW_DS_dnnBkg']['targetFile'] = 'MC.ST_tW_DS_dnnBkg.root'
+
+
+
+
+
+
+        rootFiles['ST_tW_DR_trueSig'] = dict()
+        temp = [outputDir+prefix+'MC.ST_tW_DR*'+x+'_*.root' for x in signaldecays_true]
+        temp2 = list()
+        for t in temp:
+            temp2 = temp2 + glob.glob(t)
+        rootFiles['ST_tW_DR_trueSig']['sourceFiles'] = temp2
+        rootFiles['ST_tW_DR_trueSig']['targetFile'] = 'MC.ST_tW_DR_trueSig.root'
+
+        rootFiles['ST_tW_DR_trueBkg'] = dict()
+        temp = [outputDir+prefix+'MC.ST_tW_DR*'+x+'_*.root' for x in bkgdecays_true]
+        temp2 = list()
+        for t in temp:
+            temp2 = temp2 + glob.glob(t)
+        rootFiles['ST_tW_DR_trueBkg']['sourceFiles'] = temp2
+        rootFiles['ST_tW_DR_trueBkg']['targetFile'] = 'MC.ST_tW_DR_trueBkg.root'
+
+        rootFiles['ST_tW_DS_trueSig'] = dict()
+        temp = [outputDir+prefix+'MC.ST_tW_DS*'+x+'_*.root' for x in signaldecays_true]
+        temp2 = list()
+        for t in temp:
+            temp2 = temp2 + glob.glob(t)
+        rootFiles['ST_tW_DS_trueSig']['sourceFiles'] = temp2
+        rootFiles['ST_tW_DS_trueSig']['targetFile'] = 'MC.ST_tW_DS_trueSig.root'
+
+        rootFiles['ST_tW_DS_trueBkg'] = dict()
+        temp = [outputDir+prefix+'MC.ST_tW_DS*'+x+'_*.root' for x in bkgdecays_true]
+        temp2 = list()
+        for t in temp:
+            temp2 = temp2 + glob.glob(t)
+        rootFiles['ST_tW_DS_trueBkg']['sourceFiles'] = temp2
+        rootFiles['ST_tW_DS_trueBkg']['targetFile'] = 'MC.ST_tW_DS_trueBkg.root'
+
+
+
+
+
+
+
+
+
+        # rootFiles['ST_tW_DR_NoFullyHadronic'] = dict()
+        # rootFiles['ST_tW_DR_NoFullyHadronic']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DR_NoFullyHadronic*.root')
+        # rootFiles['ST_tW_DR_NoFullyHadronic']['targetFile'] = 'MC.ST_tW_DR_NoFullyHadronic.root'
+        #
+        # rootFiles['ST_tW_DR_NoFullyHadronic_dnnSig'] = dict()
+        # temp = [outputDir+prefix+'MC.ST_tW_DR_NoFullyHadronic_'+x+'_*.root' for x in signaldecays]
+        # temp2 = list()
+        # for t in temp:
+        #     temp2 = temp2 + glob.glob(t)
+        # rootFiles['ST_tW_DR_NoFullyHadronic_dnnSig']['sourceFiles'] = temp2
+        # rootFiles['ST_tW_DR_NoFullyHadronic_dnnSig']['targetFile'] = 'MC.ST_tW_DR_NoFullyHadronic_dnnSig.root'
+        #
+        # rootFiles['ST_tW_DR_NoFullyHadronic_dnnBkg'] = dict()
+        # temp = [outputDir+prefix+'MC.ST_tW_DR_NoFullyHadronic_'+x+'_*.root' for x in bkgdecays]
+        # temp2 = list()
+        # for t in temp:
+        #     temp2 = temp2 + glob.glob(t)
+        # rootFiles['ST_tW_DR_NoFullyHadronic_dnnBkg']['sourceFiles'] = temp2
+        # rootFiles['ST_tW_DR_NoFullyHadronic_dnnBkg']['targetFile'] = 'MC.ST_tW_DR_NoFullyHadronic_dnnBkg.root'
+        #
+        # rootFiles['ST_tW_DR_inclusiveDecays'] = dict()
+        # rootFiles['ST_tW_DR_inclusiveDecays']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DR_inclusiveDecays*.root')
+        # rootFiles['ST_tW_DR_inclusiveDecays']['targetFile'] = 'MC.ST_tW_DR_inclusiveDecays.root'
+        #
+        # rootFiles['ST_tW_DR_inclusiveDecays_dnnSig'] = dict()
+        # temp = [outputDir+prefix+'MC.ST_tW_DR_inclusiveDecays_'+x+'_*.root' for x in signaldecays]
+        # temp2 = list()
+        # for t in temp:
+        #     temp2 = temp2 + glob.glob(t)
+        # rootFiles['ST_tW_DR_inclusiveDecays_dnnSig']['sourceFiles'] = temp2
+        # rootFiles['ST_tW_DR_inclusiveDecays_dnnSig']['targetFile'] = 'MC.ST_tW_DR_inclusiveDecays_dnnSig.root'
+        #
+        # rootFiles['ST_tW_DR_inclusiveDecays_dnnBkg'] = dict()
+        # temp = [outputDir+prefix+'MC.ST_tW_DR_inclusiveDecays_'+x+'_*.root' for x in bkgdecays]
+        # temp2 = list()
+        # for t in temp:
+        #     temp2 = temp2 + glob.glob(t)
+        # rootFiles['ST_tW_DR_inclusiveDecays_dnnBkg']['sourceFiles'] = temp2
+        # rootFiles['ST_tW_DR_inclusiveDecays_dnnBkg']['targetFile'] = 'MC.ST_tW_DR_inclusiveDecays_dnnBkg.root'
 
 
         # Reorder sourceFiles such that the first file in the list has an AnalysisTree (if there is at least one file having an AnalysisTree).
@@ -220,7 +310,7 @@ if args.runii == False:
 
 else:
 
-    mainselDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/output/mainsel/'
+    mainselDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/output/Analysis/mainsel/'
     run2Dir = mainselDir+'run2/both/nominal/'#+channel+'/'+syst_name+'/'
     haddDir = run2Dir+'hadded/'
     logDir = haddDir+'log/'
@@ -234,7 +324,7 @@ else:
         # print key
         target_file_name = dict_of_target_files['ele']['2016'][key]
         # print target_file_name
-        command_string = 'nice -n 10 hadd '+haddDir+prefix+target_file_name+' '+mainselDir+'201{6,7,8}/{ele,muo}/nominal/hadded/'+prefix+target_file_name
+        command_string = 'nice -n 10 hadd -f '+haddDir+prefix+target_file_name+' '+mainselDir+'UL{16preVFP,16postVFP,17,18}/{ele,muo}/nominal/hadded/'+prefix+target_file_name
         # print command_string
         log_file = logDir+'log.'+target_file_name.replace('.root','.txt')
         # print command_string
