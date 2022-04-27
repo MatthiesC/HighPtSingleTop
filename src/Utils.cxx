@@ -127,8 +127,34 @@ bool BTWTriggerSelection::passes(const Event & event) {
   if(fDataStream == DataStream::isMC && event.isRealData) throw runtime_error("BTWTriggerSelection::passes(): Conflict with event.isRealData and dataset_version");
   if(fYear == Year::isUL16preVFP || fYear == Year::isUL16postVFP) {
     if(fChannel == Channel::isMuo) {
-      if(fLowPt) return fTrigSel_IsoMu24->passes(event) || fTrigSel_IsoTkMu24->passes(event);
-      else return fTrigSel_Mu50->passes(event) || fTrigSel_TkMu50->passes(event);
+      if(fYear == Year::isUL16postVFP) {
+        if(fLowPt) return fTrigSel_IsoMu24->passes(event) || fTrigSel_IsoTkMu24->passes(event);
+        else return fTrigSel_Mu50->passes(event) || fTrigSel_TkMu50->passes(event);
+      }
+      else if(fYear == Year::isUL16preVFP) {
+        if(fDataStream == DataStream::isMC) {
+          if(fLowPt) return fTrigSel_IsoMu24->passes(event) || fTrigSel_IsoTkMu24->passes(event);
+          else {
+            // Use random number generator with eta-dependent seed for reproducibility
+            TRandom3 *random = new TRandom3((int)(fabs(event.muons->at(0).v4().eta()*1000))); // TRandom3 is the same generator as used for gRandom
+            if(random->Rndm() > lumi_percentage_UL16preVFP_without_TkMu50) { // emulation of UL16preVFP Run B with run >= 274889
+              return fTrigSel_Mu50->passes(event) || fTrigSel_TkMu50->passes(event);
+            }
+            else { // emulation of UL16preVFP Run B with run < 274889
+              return fTrigSel_Mu50->passes(event);
+            }
+          }
+        }
+        else if(fDataStream == DataStream::isSingleMuon) {
+          if(fLowPt) return fTrigSel_IsoMu24->passes(event) || fTrigSel_IsoTkMu24->passes(event);
+          else {
+            if(is_UL16preVFP_without_TkMu50(event)) return fTrigSel_Mu50->passes(event);
+            else return fTrigSel_Mu50->passes(event) || fTrigSel_TkMu50->passes(event);
+          }
+        }
+        else return false;
+      }
+      else return false;
     }
     else if(fChannel == Channel::isEle) {
       if(fDataStream == DataStream::isMC) {
