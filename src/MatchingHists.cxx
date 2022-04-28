@@ -38,8 +38,8 @@ MatchingHists::MatchingHists(Context & ctx, const string & dirname, const unsign
   hist_decayChannel = book<TH1F>("decayChannel", "tW decay channel", nx, -0.5, 15.5);
   for(int i = 1; i <= nx; ++i) hist_decayChannel->GetXaxis()->SetBinLabel(i, decayChannels[i-1]);
 
-  const int n_bins = 2000;
-  const float x_max = 2000.f;
+  const int n_bins = 1000;
+  const float x_max = 1000.f;
 
   //____________________________________________________________________________________________________
   // Leptonic W boson, lepton, neutrino
@@ -107,12 +107,12 @@ MatchingHists::MatchingHists(Context & ctx, const string & dirname, const unsign
   hist_1t_parton_pz_tw_rec_over_gen_vs_gen = book<TH1F>("1t_parton_pz_tw_rec_over_gen_vs_gen", "partonic tW: #it{p}_{T} [GeV]", n_bins, 0, x_max);
   hist_1t_parton_pz_tw_rec_over_gen_vs_rec = book<TH1F>("1t_parton_pz_tw_rec_over_gen_vs_rec", "reco tW: #it{p}_{T} [GeV]", n_bins, 0, x_max);
 
-  hist_1t_parton_tw_mass_gen_vs_mass_rec = book<TH2F>("1t_parton_tw_mass_gen_vs_mass_rec", "partonic tW #it{m} [GeV] VS. reco tW #it{m} [GeV]", 20, 0, 1000, 20, 0, 1000);
+  hist_1t_parton_tw_mass_gen_vs_mass_rec = book<TH2F>("1t_parton_tw_mass_gen_vs_mass_rec", "partonic tW #it{m} [GeV] VS. reco tW #it{m} [GeV]", 20, 0, 2000, 20, 0, 2000);
 
-  hist_1t_parton_mass_tw_gen = book<TH1F>("1t_parton_mass_tw_gen", "partonic tW: #it{m} [GeV]", n_bins, 0, x_max);
-  hist_1t_parton_mass_tw_rec = book<TH1F>("1t_parton_mass_tw_rec", "reco tW: #it{m} [GeV]", n_bins, 0, x_max);
-  hist_1t_parton_mass_tw_rec_over_gen_vs_gen = book<TH1F>("1t_parton_mass_tw_rec_over_gen_vs_gen", "partonic tW: #it{m} [GeV]", n_bins, 0, x_max);
-  hist_1t_parton_mass_tw_rec_over_gen_vs_rec = book<TH1F>("1t_parton_mass_tw_rec_over_gen_vs_rec", "reco tW: #it{m} [GeV]", n_bins, 0, x_max);
+  hist_1t_parton_mass_tw_gen = book<TH1F>("1t_parton_mass_tw_gen", "partonic tW: #it{m} [GeV]", 2*n_bins, 0, 2*x_max);
+  hist_1t_parton_mass_tw_rec = book<TH1F>("1t_parton_mass_tw_rec", "reco tW: #it{m} [GeV]", 2*n_bins, 0, 2*x_max);
+  hist_1t_parton_mass_tw_rec_over_gen_vs_gen = book<TH1F>("1t_parton_mass_tw_rec_over_gen_vs_gen", "partonic tW: #it{m} [GeV]", 2*n_bins, 0, 2*x_max);
+  hist_1t_parton_mass_tw_rec_over_gen_vs_rec = book<TH1F>("1t_parton_mass_tw_rec_over_gen_vs_rec", "reco tW: #it{m} [GeV]", 2*n_bins, 0, 2*x_max);
 
   //____________________________________________________________________________________________________
   // Leptonic top quark, hadronic W boson
@@ -147,12 +147,12 @@ MatchingHists::MatchingHists(Context & ctx, const string & dirname, const unsign
   hist_0t1W_parton_pz_tw_rec_over_gen_vs_gen = book<TH1F>("0t1W_parton_pz_tw_rec_over_gen_vs_gen", "partonic tW: #it{p}_{T} [GeV]", n_bins, 0, x_max);
   hist_0t1W_parton_pz_tw_rec_over_gen_vs_rec = book<TH1F>("0t1W_parton_pz_tw_rec_over_gen_vs_rec", "reco tW: #it{p}_{T} [GeV]", n_bins, 0, x_max);
 
-  hist_0t1W_parton_tw_mass_gen_vs_mass_rec = book<TH2F>("0t1W_parton_tw_mass_gen_vs_mass_rec", "partonic tW #it{m} [GeV] VS. reco tW #it{m} [GeV]", 20, 0, 1000, 20, 0, 1000);
+  hist_0t1W_parton_tw_mass_gen_vs_mass_rec = book<TH2F>("0t1W_parton_tw_mass_gen_vs_mass_rec", "partonic tW #it{m} [GeV] VS. reco tW #it{m} [GeV]", 20, 0, 2000, 20, 0, 2000);
 
-  hist_0t1W_parton_mass_tw_gen = book<TH1F>("0t1W_parton_mass_tw_gen", "partonic tW: #it{m} [GeV]", n_bins, 0, x_max);
-  hist_0t1W_parton_mass_tw_rec = book<TH1F>("0t1W_parton_mass_tw_rec", "reco tW: #it{m} [GeV]", n_bins, 0, x_max);
-  hist_0t1W_parton_mass_tw_rec_over_gen_vs_gen = book<TH1F>("0t1W_parton_mass_tw_rec_over_gen_vs_gen", "partonic tW: #it{m} [GeV]", n_bins, 0, x_max);
-  hist_0t1W_parton_mass_tw_rec_over_gen_vs_rec = book<TH1F>("0t1W_parton_mass_tw_rec_over_gen_vs_rec", "reco tW: #it{m} [GeV]", n_bins, 0, x_max);
+  hist_0t1W_parton_mass_tw_gen = book<TH1F>("0t1W_parton_mass_tw_gen", "partonic tW: #it{m} [GeV]", 2*n_bins, 0, 2*x_max);
+  hist_0t1W_parton_mass_tw_rec = book<TH1F>("0t1W_parton_mass_tw_rec", "reco tW: #it{m} [GeV]", 2*n_bins, 0, 2*x_max);
+  hist_0t1W_parton_mass_tw_rec_over_gen_vs_gen = book<TH1F>("0t1W_parton_mass_tw_rec_over_gen_vs_gen", "partonic tW: #it{m} [GeV]", 2*n_bins, 0, 2*x_max);
+  hist_0t1W_parton_mass_tw_rec_over_gen_vs_rec = book<TH1F>("0t1W_parton_mass_tw_rec_over_gen_vs_rec", "reco tW: #it{m} [GeV]", 2*n_bins, 0, 2*x_max);
 }
 
 
