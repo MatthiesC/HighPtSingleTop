@@ -21,8 +21,8 @@ from constants import _YEARS
 # }
 
 # years = ['2016', '2017', '2018']
-years = ['UL16preVFP', 'UL16postVFP', 'UL17', 'UL18']
-channels = ['ele', 'muo']
+all_years = ['UL16preVFP', 'UL16postVFP', 'UL17', 'UL18']
+all_channels = ['ele', 'muo']
 combos = list()
 
 #--------#
@@ -33,8 +33,8 @@ if not sys.argv[1:]: sys.exit('No arguments provided. Exit.')
 parser = argparse.ArgumentParser()
 parser.add_argument('--all', action='store_true')
 parser.add_argument('--runii', action='store_true')
-parser.add_argument('-c', '--channels', choices=channels, nargs='*', default=[])
-parser.add_argument('-y', '--years', choices=years, nargs='*', default=[])
+parser.add_argument('-c', '--channels', choices=all_channels, nargs='*', default=[])
+parser.add_argument('-y', '--years', choices=all_years, nargs='*', default=[])
 parser.add_argument('-s', '--singleeps', action='store_true')
 parser.add_argument('-l', '--legend', action='store_true')
 parser.add_argument('-r', '--shapenorm', action='store_true')
@@ -45,19 +45,27 @@ parser.add_argument('-q', '--qcd', action='store_true') # QCD sideband region
 args = parser.parse_args(sys.argv[1:])
 
 if args.all == True:
+    if args.runii == True:
+        sys.exit('Do not use "--runii" option jointly with "--all" option. Abort.')
     if len(args.channels) or len(args.years):
-        sys.exit('Do not use "--all" option jointly with --channels and/or --years options.')
-    for year in years:
-        for channel in channels:
+        sys.exit('Do not use "--all" option jointly with --channels and/or --years options. Abort.')
+    for year in all_years:
+        for channel in all_channels:
             combos.append((year, channel))
-elif len(args.channels)+len(args.years) == 0:
-    print 'No years or channels given.'
+
+elif args.runii == True:
+    if not len(args.channels):
+        combos.append(('run2', 'both'))
+    else:
+        for channel in args.channels:
+            combos.append(('run2', channel))
+
 else:
-    for year in (args.years if len(args.years) else years):
-        for channel in (args.channels if len(args.channels) else channels):
+    if not len(args.channels) and not len(args.years):
+        sys.exit('No years or channels given. Abort.')
+    for year in (args.years if len(args.years) else all_years):
+        for channel in (args.channels if len(args.channels) else all_channels):
             combos.append((year, channel))
-if args.runii == True:
-    combos.append(('run2', 'both'))
 
 if not len(combos):
     sys.exit('Nothing to plot. Exit.')
@@ -67,6 +75,7 @@ if args.tar and args.plot:
 
 print 'Working on:'
 print combos
+# sys.exit()
 
 #---------#
 # PROGRAM #

@@ -17,29 +17,31 @@ def check_ttree(fileName, treeName='AnalysisTree'):
     return entries > 0
 
 
-channels = ['ele', 'muo']
+all_channels = ['ele', 'muo']
 # years = ['2016', '2017', '2018']
-years = ['UL16preVFP', 'UL16postVFP', 'UL17', 'UL18']
+all_years = ['UL16preVFP', 'UL16postVFP', 'UL17', 'UL18']
 
 if not sys.argv[1:]: sys.exit('No arguments provided. Exit.')
 parser = argparse.ArgumentParser()
 parser.add_argument('--all', action='store_true')
-parser.add_argument('-c', '--channels', choices=channels, nargs='*', default=[])
-parser.add_argument('-y', '--years', choices=years, nargs='*', default=[])
+parser.add_argument('-c', '--channels', choices=all_channels, nargs='*', default=[])
+parser.add_argument('-y', '--years', choices=all_years, nargs='*', default=[])
 parser.add_argument('-s', '--systematic', default="nominal")
-parser.add_argument('--runii', action='store_true', help='Do not hadd individual mainsels but hadd full Run 2. Must be used jointly with "--all" option.')
+parser.add_argument('--runii', action='store_true', help='Do not hadd individual mainsels but hadd full Run 2. If channel not given, will hadd both channels into one')
 args = parser.parse_args(sys.argv[1:])
 
 if args.all == True:
     if len(args.channels) or len(args.years):
         sys.exit('Do not use "--all" option jointly with other options.')
-else:
-    channels = args.channels
-    years = args.years
-if args.runii == True and args.all == False:
-    sys.exit('"--runii" option only allowed if using "--all" option.')
+    args.channels = all_channels
+    args.years = all_years
 
-systematic = args.systematic
+doRun2BothChannels = False
+if args.runii == True:
+    args.years = all_years
+    if not len(args.channels) or len(args.channels) == len(all_channels):
+        doRun2BothChannels = True
+        args.channels = all_channels
 
 
 list_of_all_hadd_commands = list()
@@ -48,16 +50,16 @@ list_of_all_log_dirs = list()
 
 dict_of_target_files = dict()
 
-for channel in channels:
+for channel in args.channels:
 
     dict_of_target_files[channel] = dict()
 
-    for year in years:
+    for year in args.years:
 
         dict_of_target_files[channel][year] = dict()
 
         # syst_name = 'nominal'
-        syst_name = systematic
+        syst_name = args.systematic
 
         # configDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/config/config_mainsel_'+year+'_'+channel+'/'
         outputDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/output/Analysis/mainsel/'+year+'/'+channel+'/'+syst_name+'/'
@@ -276,7 +278,7 @@ for channel in channels:
                     rootFiles[key]['reorderedSourceFiles'].append(rootFiles[key]['sourceFiles'][i])
                     position = 0
 
-            command_string = 'nice -n 10 hadd '+haddDir+prefix+rootFiles[key]['targetFile']+' '+' '.join(rootFiles[key]['reorderedSourceFiles'])
+            command_string = 'nice -n 10 hadd -f '+haddDir+prefix+rootFiles[key]['targetFile']+' '+' '.join(rootFiles[key]['reorderedSourceFiles'])
             hadd_logfile = logDir+'log.'+rootFiles[key]['targetFile'].replace('.root','.txt')
             rootFiles[key]['hadd_command'] = command_string
             rootFiles[key]['hadd_logfile'] = hadd_logfile
@@ -284,12 +286,12 @@ for channel in channels:
 
 
 
-for haddDir in list_of_all_hadd_dirs:
-    if not os.path.exists(haddDir):
-        os.mkdir(haddDir)
-for logDir in list_of_all_log_dirs:
-    if not os.path.exists(logDir):
-        os.mkdir(logDir)
+# for haddDir in list_of_all_hadd_dirs:
+#     if not os.path.exists(haddDir):
+#         os.mkdir(haddDir)
+# for logDir in list_of_all_log_dirs:
+#     if not os.path.exists(logDir):
+#         os.mkdir(logDir)
 
 
 FNULL = open(os.devnull, 'w')
@@ -305,28 +307,38 @@ if args.runii == False:
         if not os.path.exists(logDir):
             os.mkdir(logDir)
 
+    for haddDir in list_of_all_hadd_dirs:
+        print 'Adding into '+haddDir
+
     for command, logfile in list_of_all_hadd_commands:
         subprocess.Popen([command+' > '+logfile], shell=True, stdout=FNULL, stderr=FNULL)
 
 else:
 
-    mainselDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/output/Analysis/mainsel/'
-    run2Dir = mainselDir+'run2/both/nominal/'#+channel+'/'+syst_name+'/'
-    haddDir = run2Dir+'hadded/'
-    logDir = haddDir+'log/'
+    mainselDir = os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2/HighPtSingleTop/output/Analysis/mainsel/')
+    run2Dir = os.path.join(mainselDir, 'run2', 'both' if doRun2BothChannels else args.channels[0], args.systematic)
+    # run2Dir = mainselDir+'run2/both/nominal/'#+channel+'/'+syst_name+'/'
+    haddDir = os.path.join(run2Dir, 'hadded')
+    print 'Adding into '+haddDir
+    # haddDir = run2Dir+'hadded/'
+    logDir = os.path.join(haddDir, 'log')
+    # logDir = haddDir+'log/'
     prefix = 'uhh2.AnalysisModuleRunner.'
     os.system('mkdir -p '+logDir)
 
     list_of_run2_hadd_commands = list()
     list_of_run2_log_files = list()
 
-    for key in dict_of_target_files['ele']['2016']:
+    for key in dict_of_target_files[args.channels[0]][args.years[0]]:
         # print key
-        target_file_name = dict_of_target_files['ele']['2016'][key]
+        target_file_name = dict_of_target_files[args.channels[0]][args.years[0]][key]
         # print target_file_name
-        command_string = 'nice -n 10 hadd -f '+haddDir+prefix+target_file_name+' '+mainselDir+'UL{16preVFP,16postVFP,17,18}/{ele,muo}/nominal/hadded/'+prefix+target_file_name
+        target_file_path = os.path.join(haddDir, prefix+target_file_name)
+        input_file_paths = os.path.join(mainselDir, '{'+','.join(args.years)+'}', '{ele,muo}' if doRun2BothChannels else args.channels[0], args.systematic, 'hadded', prefix+target_file_name)
+        command_string = 'nice -n 10 hadd '+target_file_path+' '+input_file_paths
+        # command_string = 'nice -n 10 hadd '+haddDir+prefix+target_file_name+' '+mainselDir+'UL{16preVFP,16postVFP,17,18}/{ele,muo}/nominal/hadded/'+prefix+target_file_name
         # print command_string
-        log_file = logDir+'log.'+target_file_name.replace('.root','.txt')
+        log_file = os.path.join(logDir, 'log.'+target_file_name.replace('.root','.txt'))
         # print command_string
         # print log_file
         subprocess.Popen([command_string+' > '+log_file], shell=True, stdout=FNULL, stderr=FNULL)
