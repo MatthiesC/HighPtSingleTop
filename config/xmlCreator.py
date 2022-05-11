@@ -486,6 +486,7 @@ class xmlCreator:
             file.write('''<Item Name="VJetsReweighting_do_QCD_EWK" Value="false"/>\n''')
             file.write('''<Item Name="VJetsReweighting_do_QCD_NLO" Value="true"/>\n''')
             file.write('''<Item Name="VJetsReweighting_do_QCD_NNLO" Value="false"/>\n''')
+            file.write('''<Item Name="BTagSFNJetReweightFile" Value="'''+os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2/HighPtSingleTop/Analysis/btag_njet_sf/btag_njet_sf.root')+'''"/>\n''')
             # file.write('''\n''')
             # file.write('''<Item Name="NeuralNetFile_tTag" Value="'''+self.yearVars['NNFiles']['tTag'][self.year]+'''"/>\n''')
             # file.write('''<Item Name="NeuralNetFile_WTag" Value="'''+self.yearVars['NNFiles']['WTag'][self.year]+'''"/>\n''')

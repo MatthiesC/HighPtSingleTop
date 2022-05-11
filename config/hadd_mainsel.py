@@ -131,8 +131,16 @@ for channel in args.channels:
         rootFiles['ST_otherChannels']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tChannel*.root') + glob.glob(outputDir+prefix+'MC.ST_sChannel*.root')
         rootFiles['ST_otherChannels']['targetFile'] = 'MC.ST_otherChannels.root'
 
+        rootFiles['ST_tChannel'] = dict()
+        rootFiles['ST_tChannel']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tChannel*.root')
+        rootFiles['ST_tChannel']['targetFile'] = 'MC.ST_tChannel.root'
+
+        rootFiles['ST_sChannel'] = dict()
+        rootFiles['ST_sChannel']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_sChannel*.root')
+        rootFiles['ST_sChannel']['targetFile'] = 'MC.ST_sChannel.root'
+
         rootFiles['ST_tW_DR'] = dict()
-        rootFiles['ST_tW_DR']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DR*.root')
+        rootFiles['ST_tW_DR']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DR_*_true*.root')
         rootFiles['ST_tW_DR']['targetFile'] = 'MC.ST_tW_DR.root'
 
         rootFiles['ST_tW_DR_dnnSig'] = dict()
@@ -152,7 +160,7 @@ for channel in args.channels:
         rootFiles['ST_tW_DR_dnnBkg']['targetFile'] = 'MC.ST_tW_DR_dnnBkg.root'
 
         rootFiles['ST_tW_DS'] = dict()
-        rootFiles['ST_tW_DS']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DS*.root')
+        rootFiles['ST_tW_DS']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DS_*_true*.root')
         rootFiles['ST_tW_DS']['targetFile'] = 'MC.ST_tW_DS.root'
 
         rootFiles['ST_tW_DS_dnnSig'] = dict()

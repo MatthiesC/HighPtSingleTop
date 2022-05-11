@@ -1,8 +1,6 @@
 #include "UHH2/HighPtSingleTop/include/AnalysisRegions.h"
 #include "UHH2/HighPtSingleTop/include/Constants.h"
 
-#include "UHH2/LegacyTopTagging/include/Constants.h"
-
 #include <TH1F.h>
 
 using namespace std;
@@ -47,7 +45,7 @@ bool AnalysisRegionSetter::process(Event & event) {
     region_bTags = ERegion_bTags::_0b;
   }
   event.set(fHandle_Region_bTags, region_bTags);
-  event.set(fHandle_Region_bTags_int, kRegion_bTags_toInt.at(region_bTags));
+  event.set(fHandle_Region_bTags_int, kRegions_bTags.at(region_bTags).index);
 
   const unsigned int n_tJets = event.get(fHandle_tJets).size();
   const unsigned int n_WJets = event.get(fHandle_WJets).size();
@@ -65,7 +63,7 @@ bool AnalysisRegionSetter::process(Event & event) {
     region_heavyTags = ERegion_heavyTags::_else;
   }
   event.set(fHandle_Region_heavyTags, region_heavyTags);
-  event.set(fHandle_Region_heavyTags_int, kRegion_heavyTags_toInt.at(region_heavyTags));
+  event.set(fHandle_Region_heavyTags_int, kRegions_heavyTags.at(region_heavyTags).index);
 
   ERegion region;
   if(region_heavyTags == ERegion_heavyTags::_1t) {
@@ -162,10 +160,10 @@ AnalysisRegionHists::AnalysisRegionHists(Context & ctx, const string & dirname):
   vector<string> labels_region_channel;
   for(const auto & r : kRegions) {
     labels_region.push_back(r.second.tlatex);
-    for(const auto & y : kYear_toString) {
-      labels_region_year.push_back(y.second+": "+r.second.tlatex);
+    for(const auto & y : kYears) {
+      labels_region_year.push_back(y.second.nice_name+": "+r.second.tlatex);
       for(const auto & c : channel_labels) {
-        labels_region_year_channel.push_back(y.second+" "+c+": "+r.second.tlatex);
+        labels_region_year_channel.push_back(y.second.nice_name+" "+c+": "+r.second.tlatex);
       }
     }
     for(const auto & c : channel_labels) {

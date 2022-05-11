@@ -3,24 +3,42 @@
 #include "UHH2/core/include/AnalysisModule.h"
 #include "UHH2/core/include/Event.h"
 
+#include "UHH2/HighPtSingleTop/include/Utils.h"
+#include "UHH2/HighPtSingleTop/include/Constants.h"
+// #include "UHH2/HighPtSingleTop/include/DNNHists.h"
+
 #include "lwtnn/LightweightNeuralNetwork.hh"
-#include "lwtnn/parse_json.hh"
 
+namespace uhh2 { namespace btw {
 
+//____________________________________________________________________________________________________
 class DNNApplication: public uhh2::AnalysisModule {
+  // friend class btw::DNNHists;
 
- public:
-
-  explicit DNNApplication(uhh2::Context & ctx, const std::string & object_name);
+public:
+  explicit DNNApplication(uhh2::Context & ctx, const ERegion_heavyTags & region_heavyTags);
   virtual bool process(uhh2::Event & event) override;
-  bool process_dummy(uhh2::Event & event);
+  const bool & apply() const { return bApplyDNN; };
+  const std::set<std::string> & get_input_names() const { return fInputNames; };
+  const std::set<std::string> & get_output_names() const { return fOutputHandleNames; };
 
-  std::vector<std::string> get_output_names() { return m_output_names; };
+private:
+  void set_outputs(uhh2::Event & event);
+  void set_dummy_outputs(uhh2::Event & event);
 
- private:
+  const uhh2::Event::Handle<uhh2::btw::ERegion_heavyTags> fHandle_Region_heavyTags;
+  const ERegion_heavyTags fRegion_heavyTags;
 
-  std::unique_ptr<lwt::LightweightNeuralNetwork> m_NeuralNetwork;
-  std::vector<std::string> m_dnn_config_inputNames, m_dnn_config_outputNames;
-  std::vector<uhh2::Event::Handle<double>> m_h_inputs, m_h_outputs;
-  std::vector<std::string> m_output_names;
+  bool bApplyDNN;
+
+  std::unique_ptr<lwt::LightweightNeuralNetwork> fNeuralNetwork;
+  std::set<std::string> fInputNames;
+  std::map<std::string, uhh2::Event::Handle<float>> fInputHandles;
+  std::set<std::string> fOutputNames; // as coming out of lwtnn json config
+  std::set<std::string> fOutputHandleNames; // with dnnOutput ... prefix
+  std::map<std::string, uhh2::Event::Handle<float>> fOutputHandles;
+
+  const float fDummyOutputValue = -1.f;
 };
+
+}}

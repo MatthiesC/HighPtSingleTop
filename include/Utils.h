@@ -19,16 +19,13 @@
 namespace uhh2 { namespace btw {
 
 //____________________________________________________________________________________________________
-Channel extract_channel(const uhh2::Context & ctx);
-
-//____________________________________________________________________________________________________
 class TWClassification_DNN: public uhh2::AnalysisModule {
 public:
   TWClassification_DNN(uhh2::Context & ctx);
   virtual bool process(uhh2::Event & event) override;
 
 private:
-  const Channel fChannel;
+  const ltt::Channel fChannel;
   const uhh2::Event::Handle<ltt::SingleTopGen_tWch> fHandle_GENtW;
   const uhh2::Event::Handle<uhh2::btw::E_dnnClass_tW> fHandle_dnnClass_tW;
 };
@@ -59,7 +56,7 @@ public:
   virtual bool passes(const uhh2::Event & event) override;
 private:
   const Year fYear;
-  const Channel fChannel;
+  const ltt::Channel fChannel;
   const bool fLowPt;
   enum class DataStream {
     isMC,
@@ -270,7 +267,7 @@ public:
   virtual bool process(uhh2::Event & event) override;
 
 private:
-  const Channel fChannel;
+  const ltt::Channel fChannel;
   const uhh2::Event::Handle<ltt::SingleTopGen_tWch> fHandle_GENtW;
   const uhh2::Event::Handle<uhh2::btw::ERegion_heavyTags> fHandle_Region_heavyTags;
   const uhh2::Event::Handle<uhh2::btw::E_trueClass_tW> fHandle_trueClass_tW;
@@ -296,7 +293,7 @@ public:
   virtual bool process(uhh2::Event & event) override;
 
 private:
-  const Channel fChannel;
+  const ltt::Channel fChannel;
   const uhh2::Event::Handle<ltt::SingleTopGen_tWch> fHandle_GENtW;
   const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_Top;
   const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_WAss;

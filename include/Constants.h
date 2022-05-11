@@ -4,24 +4,14 @@
 
 #include "UHH2/common/include/Utils.h"
 
+#include "UHH2/LegacyTopTagging/include/Utils.h"
+
 namespace uhh2 { namespace btw {
 
 // enum class ELepChannel {
 //   muo = 0,
 //   ele = 1,
 // };
-
-enum class Channel {
-  isEle,
-  isMuo,
-  notValid,
-};
-
-const std::map<Channel, int> kChannel_toInt = {
-  { Channel::isEle,    1 },
-  { Channel::isMuo,    2 },
-  { Channel::notValid, 0 },
-};
 
 const std::string kHandleName_tJets = "btw_tJets";
 const std::string kHandleName_TheTopJet = "btw_TheTopJet";
@@ -55,10 +45,17 @@ enum class ERegion_bTags {
   _else,
 };
 
-const std::map<ERegion_bTags, int> kRegion_bTags_toInt = {
-  { ERegion_bTags::_0b, 1 },
-  { ERegion_bTags::_1b, 2 },
-  { ERegion_bTags::_2b, 3 },
+typedef struct {
+  int index;
+  std::string name;
+  std::string tlatex; // using TLatex syntax
+} RegionInfo_bTags;
+
+const std::map<ERegion_bTags, RegionInfo_bTags> kRegions_bTags = {
+  { ERegion_bTags::_0b,   { .index=1, .name="0b",   .tlatex="0b" }},
+  { ERegion_bTags::_1b,   { .index=2, .name="1b",   .tlatex="1b" }},
+  { ERegion_bTags::_2b,   { .index=3, .name="2b",   .tlatex="2b" }},
+  { ERegion_bTags::_else, { .index=0, .name="else", .tlatex="else" }},
 };
 
 //____________________________________________________________________________________________________
@@ -69,11 +66,22 @@ enum class ERegion_heavyTags {
   _else,
 };
 
-const std::map<ERegion_heavyTags, int> kRegion_heavyTags_toInt = {
-  { ERegion_heavyTags::_1t,   1 },
-  { ERegion_heavyTags::_0t1W, 2 },
-  { ERegion_heavyTags::_0t0W, 3 },
-  { ERegion_heavyTags::_else, 0 },
+const std::set<ERegion_heavyTags> kRelevantRegions_heavyTags = {
+  ERegion_heavyTags::_1t,
+  ERegion_heavyTags::_0t1W,
+};
+
+typedef struct {
+  int index;
+  std::string name;
+  std::string tlatex; // using TLatex syntax
+} RegionInfo_heavyTags;
+
+const std::map<ERegion_heavyTags, RegionInfo_heavyTags> kRegions_heavyTags = {
+  { ERegion_heavyTags::_1t,   { .index=1, .name="1t",   .tlatex="1t" }},
+  { ERegion_heavyTags::_0t1W, { .index=2, .name="0t1W", .tlatex="0t 1W" }},
+  { ERegion_heavyTags::_0t0W, { .index=3, .name="0t0W", .tlatex="0t 0W" }},
+  { ERegion_heavyTags::_else, { .index=0, .name="else", .tlatex="else" }},
 };
 
 //____________________________________________________________________________________________________
@@ -91,6 +99,8 @@ enum class ERegion {
 };
 
 const std::set<ERegion> kRelevantRegions = {
+  ERegion::_0b1t,
+  ERegion::_0b0t1W,
   ERegion::_1b1t,
   ERegion::_1b0t1W,
   ERegion::_2b1t,

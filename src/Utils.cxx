@@ -16,18 +16,6 @@ using namespace uhh2::ltt;
 namespace uhh2 { namespace btw {
 
 //____________________________________________________________________________________________________
-Channel extract_channel(const Context & ctx) {
-  Channel channel = Channel::notValid;
-  const TString config = string2lowercase(ctx.get("analysis_channel"));
-  if(config.Contains("ele")) channel = Channel::isEle;
-  if(config.Contains("muo")) channel = Channel::isMuo;
-  if(channel == Channel::notValid) {
-    std::runtime_error("extract_channel(): Invalid channel string in xml file. Please check.");
-  }
-  return channel;
-}
-
-//____________________________________________________________________________________________________
 TWClassification_DNN::TWClassification_DNN(Context & ctx):
   fChannel(extract_channel(ctx)),
   fHandle_GENtW(ctx.get_handle<ltt::SingleTopGen_tWch>(kHandleName_SingleTopGen_tWch)),

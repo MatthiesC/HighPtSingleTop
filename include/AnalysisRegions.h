@@ -8,6 +8,7 @@
 #include "UHH2/HighPtSingleTop/include/Constants.h"
 #include "UHH2/HighPtSingleTop/include/Utils.h"
 
+#include "UHH2/LegacyTopTagging/include/Constants.h"
 
 namespace uhh2 { namespace btw {
 
@@ -47,7 +48,7 @@ private:
   uhh2::Event::Handle<ERegion> fHandle_Region;
   Year fYear;
   int fYearInt;
-  Channel fChannel;
+  ltt::Channel fChannel;
   int fChannelInt;
 
 protected:

@@ -16,6 +16,9 @@
 
 #include "UHH2/HighPtSingleTop/include/AnalysisRegions.h"
 #include "UHH2/HighPtSingleTop/include/Constants.h"
+#include "UHH2/HighPtSingleTop/include/DNNApplication.h"
+#include "UHH2/HighPtSingleTop/include/DNNInputs.h"
+#include "UHH2/HighPtSingleTop/include/DNNHists.h"
 #include "UHH2/HighPtSingleTop/include/LeptonicHemisphereHists.h"
 #include "UHH2/HighPtSingleTop/include/MatchingHists.h"
 #include "UHH2/HighPtSingleTop/include/Utils.h"
@@ -46,7 +49,7 @@ public:
 private:
   const bool debug;
   unsigned long long i_event = 0;
-  const btw::Channel fChannel;
+  const Channel fChannel;
   const Event::Handle<ERegion> fHandle_Region;
 
   /*
@@ -72,7 +75,7 @@ private:
   const double ak8_dr_lep_min = kDeltaRLeptonicHemisphere;
 
   const double ak4_pt_min = 30.;
-  // const double ak4_eta_max = 5.0; // keep forward jets; will define different handles for forward and central jets
+  // const double ak4_eta_max = 5.0; // keep forward jets; will define different handles for central (= b-taggable) and forward jets
   const double ak4_eta_max = 2.5;
   const double ak4_dr_lep_min = 0.4;
 
@@ -143,6 +146,7 @@ private:
   const BTag::wp btagWP = BTag::wp::WP_LOOSE;
   unique_ptr<AnalysisModule> puppichs_matching;
   unique_ptr<AnalysisModule> sf_btagging;
+  unique_ptr<AnalysisModule> sf_btag_njet;
 
   unique_ptr<Selection> slct_met;
   unique_ptr<Selection> slct_metfilter;
@@ -178,18 +182,24 @@ private:
   unique_ptr<AnalysisModule> sf_vjets;
   unique_ptr<ltt::AndHists> hist_vjetsSF;
 
+  unique_ptr<DNNInputs> dnn_inputs;
+  map<ERegion_heavyTags, unique_ptr<DNNApplication>> dnn_application;
+
   unique_ptr<AnalysisRegionHists> hist_analysis_regions;
   map<ERegion, unique_ptr<ltt::AndHists>> hist_region;
 
-  unique_ptr<Selection> slct_top_mass;
-  map<ERegion, unique_ptr<ltt::AndHists>> hist_region_withMTopCut;
+  // unique_ptr<Selection> slct_top_mass;
+  // map<ERegion, unique_ptr<ltt::AndHists>> hist_region_withMTopCut;
+
+  Event::Handle<float> fHandle_weight;
 };
 
 
 HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context & ctx):
   debug(string2bool(ctx.get("debug"))),
-  fChannel(btw::extract_channel(ctx)),
+  fChannel(extract_channel(ctx)),
   fHandle_Region(ctx.get_handle<ERegion>(kHandleName_Region))
+  // fHandle_Region_heavyTags(ctx.get_handle<ERegion_heavyTags>(kHandleName_Region_heavyTags))
 {
   ctx.undeclare_all_event_output(); // throw away all output trees (jet collections etc.) which are not needed in further steps of the analysis
   // empty_output_tree = string2bool(ctx.get("EmptyOutputTree")); // handy to not have output trees for systematics files, reduces root file size
@@ -260,6 +270,7 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
   object_pt_sorter.reset(new ltt::ObjectPtSorter(ctx));
   puppichs_matching.reset(new ltt::MatchPuppiToCHSAndSetBTagHandles(ctx, btagAlgo, btagWP));
   sf_btagging.reset(new MCBTagDiscriminantReweighting(ctx, btagAlgo, kHandleName_pairedCHSjets));
+  sf_btag_njet.reset(new ltt::BTagNJetScaleFactor(ctx));
 
   slct_met.reset(new ltt::METSelection(ctx, met_min));
   slct_metfilter.reset(new ltt::METFilterSelection(ctx));
@@ -300,6 +311,11 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
   hist_vjetsSF.reset(new ltt::AndHists(ctx, to_string(i_hist++)+"_VjetsSF", true, true));
   hist_vjetsSF->add_hist(new btw::LeptonicHemisphereHists(ctx, hist_vjetsSF->dirname()+"_LeptHemi"));
 
+  dnn_inputs.reset(new btw::DNNInputs(ctx));
+  for(const ERegion_heavyTags & region_heavyTags : kRelevantRegions_heavyTags) {
+    dnn_application[region_heavyTags].reset(new btw::DNNApplication(ctx, region_heavyTags));
+  }
+
   hist_analysis_regions.reset(new AnalysisRegionHists(ctx, to_string(i_hist)+"_AnalysisRegions"));
   for(const ERegion & region : kRelevantRegions) {
     hist_region[region].reset(new ltt::AndHists(ctx, to_string(i_hist)+"_Region_"+kRegions.at(region).name, false, true)); // manually add AK8 and HOTVR hists to use argument replacing leading jet with tagged jet
@@ -307,18 +323,21 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
     hist_region[region]->add_hist(new ltt::AK8Hists(ctx, hist_region[region]->dirname()+"_AK8", kCollectionName_AK8_rec, kCollectionName_AK8_gen, kRegions.at(region).region_heavyTags==ERegion_heavyTags::_0t1W ? kHandleName_TheWJet : ""));
     hist_region[region]->add_hist(new btw::LeptonicHemisphereHists(ctx, hist_region[region]->dirname()+"_LeptHemi"));
     hist_region[region]->add_hist(new btw::MatchingHists(ctx, hist_region[region]->dirname()+"_Matching", is_tW));
+    hist_region[region]->add_hist(new btw::DNNHists(ctx, hist_region[region]->dirname()+"_DNN", dnn_inputs, dnn_application.at(kRegions.at(region).region_heavyTags)));
   }
   i_hist++;
 
-  slct_top_mass.reset(new LeptonicTopQuarkMassSelection(ctx, 100., 230.)); // only acts on _0t1W regions
-  for(const ERegion & region : kRelevantRegions) {
-    hist_region_withMTopCut[region].reset(new ltt::AndHists(ctx, to_string(i_hist)+"_Region_"+kRegions.at(region).name, false, true)); // manually add AK8 and HOTVR hists to use argument replacing leading jet with tagged jet
-    hist_region_withMTopCut[region]->add_hist(new ltt::HOTVRHists(ctx, hist_region_withMTopCut[region]->dirname()+"_HOTVR", "", "", kRegions.at(region).region_heavyTags==ERegion_heavyTags::_1t ? kHandleName_TheTopJet : ""));
-    hist_region_withMTopCut[region]->add_hist(new ltt::AK8Hists(ctx, hist_region_withMTopCut[region]->dirname()+"_AK8", kCollectionName_AK8_rec, kCollectionName_AK8_gen, kRegions.at(region).region_heavyTags==ERegion_heavyTags::_0t1W ? kHandleName_TheWJet : ""));
-    hist_region_withMTopCut[region]->add_hist(new btw::LeptonicHemisphereHists(ctx, hist_region_withMTopCut[region]->dirname()+"_LeptHemi"));
-    hist_region_withMTopCut[region]->add_hist(new btw::MatchingHists(ctx, hist_region_withMTopCut[region]->dirname()+"_Matching", is_tW));
-  }
-  i_hist++;
+  // slct_top_mass.reset(new LeptonicTopQuarkMassSelection(ctx, 100., 230.)); // only acts on _0t1W regions
+  // for(const ERegion & region : kRelevantRegions) {
+  //   hist_region_withMTopCut[region].reset(new ltt::AndHists(ctx, to_string(i_hist)+"_Region_"+kRegions.at(region).name, false, true)); // manually add AK8 and HOTVR hists to use argument replacing leading jet with tagged jet
+  //   hist_region_withMTopCut[region]->add_hist(new ltt::HOTVRHists(ctx, hist_region_withMTopCut[region]->dirname()+"_HOTVR", "", "", kRegions.at(region).region_heavyTags==ERegion_heavyTags::_1t ? kHandleName_TheTopJet : ""));
+  //   hist_region_withMTopCut[region]->add_hist(new ltt::AK8Hists(ctx, hist_region_withMTopCut[region]->dirname()+"_AK8", kCollectionName_AK8_rec, kCollectionName_AK8_gen, kRegions.at(region).region_heavyTags==ERegion_heavyTags::_0t1W ? kHandleName_TheWJet : ""));
+  //   hist_region_withMTopCut[region]->add_hist(new btw::LeptonicHemisphereHists(ctx, hist_region_withMTopCut[region]->dirname()+"_LeptHemi"));
+  //   hist_region_withMTopCut[region]->add_hist(new btw::MatchingHists(ctx, hist_region_withMTopCut[region]->dirname()+"_Matching", is_tW));
+  // }
+  // i_hist++;
+
+  fHandle_weight = ctx.declare_event_output<float>("weight");
 }
 
 
@@ -410,6 +429,7 @@ bool HighPtSingleTopMainSelectionModule::process(Event & event) {
   object_pt_sorter->process(event); // needs to come after jet corrections but before PUPPI-CHS matching
   puppichs_matching->process(event);
   sf_btagging->process(event);
+  sf_btag_njet->process(event);
   // hist_jetmet_corrections->fill(event);
 
   if(debug) cout << "MET selection and MET filters" << endl;
@@ -473,12 +493,19 @@ bool HighPtSingleTopMainSelectionModule::process(Event & event) {
   if(debug) cout << "Histograms in individual analysis regions" << endl;
   hist_analysis_regions->fill(event);
   const ERegion region = event.get(fHandle_Region);
-  if(kRelevantRegions.find(region) != kRelevantRegions.end()) hist_region[region]->fill(event);
-
-  if(!slct_top_mass->passes(event)) return false;
-  if(kRelevantRegions.find(region) != kRelevantRegions.end()) hist_region_withMTopCut[region]->fill(event);
+  // const ERegion_heavyTags region_heavyTags = event.get(fHandle_Region_heavyTags);
+  if(!(kRelevantRegions.find(region) != kRelevantRegions.end())) return false;
+  dnn_inputs->process(event);
+  for(const ERegion_heavyTags & region_heavyTags : kRelevantRegions_heavyTags) {
+    dnn_application[region_heavyTags]->process(event);
+  }
+  hist_region[region]->fill(event);
+  // if(kRelevantRegions.find(region) != kRelevantRegions.end()) hist_region[region]->fill(event);
+  // if(!slct_top_mass->passes(event)) return false;
+  // if(kRelevantRegions.find(region) != kRelevantRegions.end()) hist_region_withMTopCut[region]->fill(event);
 
   if(debug) cout << "End of MainSelectionModule. Event passed" << endl;
+  event.set(fHandle_weight, event.weight);
   return true;
 }
 

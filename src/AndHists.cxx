@@ -6,7 +6,7 @@
 #include "UHH2/HOTVR/include/HOTVRHists.h"
 
 #include "UHH2/HighPtSingleTop/include/Constants.h"
-#include "UHH2/HighPtSingleTop/include/DNNHists.h"
+// #include "UHH2/HighPtSingleTop/include/DNNHists.h"
 #include "UHH2/HighPtSingleTop/include/MyEventHists.h"
 #include "UHH2/HighPtSingleTop/include/MyElectronHists.h"
 #include "UHH2/HighPtSingleTop/include/MyMuonHists.h"
@@ -163,12 +163,12 @@ BinnedDNNHists::BinnedDNNHists(Context & ctx, const string & dirname, const vect
   hist_lepton_pt = book<TH1F>("lepton_pt", "Lepton p_{T} [GeV]", kBinning__lepton_pt.size(), kBinning_edges__lepton_pt);
   // hist_tquark_pt = book<TH1F>("tquark_pt", "t quark candidate p_{T} [GeV]", kBinning__tquark_pt.size(), kBinning_edges__tquark_pt);
 
-  hists_vector.push_back(new DNNHists(ctx, dirname+"_Full", inputs, inputs_info, outputs));
+  // hists_vector.push_back(new DNNHists(ctx, dirname+"_Full", inputs, inputs_info, outputs));
   // hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt200to350", inputs, inputs_info, "DNN_TopTagPt", 0, 350));
   // hists_vector.push_back(new DNNHists(ctx, dirname+"_Pt350toInf", inputs, inputs_info, "DNN_TopTagPt", 350));
-  for(auto i : kBinning__tjet_pt) {
-    hists_vector.push_back(new DNNHists(ctx, dirname+"_tjet_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_tjet_pt", i.first, i.second));
-  }
+  // for(auto i : kBinning__tjet_pt) {
+  //   hists_vector.push_back(new DNNHists(ctx, dirname+"_tjet_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_tjet_pt", i.first, i.second));
+  // }
   // for(auto i : kBinning__wjet_pt) {
   //   hists_vector.push_back(new DNNHists(ctx, dirname+"_wjet_pt"+to_string((int)(i.first))+"to"+to_string((int)(i.second)), inputs, inputs_info, outputs, "DNNinfo_wjet_pt", i.first, i.second));
   // }
