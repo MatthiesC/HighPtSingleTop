@@ -75,8 +75,8 @@ private:
   const double ak8_dr_lep_min = kDeltaRLeptonicHemisphere;
 
   const double ak4_pt_min = 30.;
-  // const double ak4_eta_max = 5.0; // keep forward jets; will define different handles for central (= b-taggable) and forward jets
-  const double ak4_eta_max = 2.5;
+  const double ak4_eta_max = 5.0; // keep forward jets; will define different handles for central (= b-taggable) and forward jets
+  // const double ak4_eta_max = 2.5;
   const double ak4_dr_lep_min = 0.4;
 
   /*
@@ -293,7 +293,7 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
   sf_muon_trigger_dummy.reset(new ltt::MuonTriggerScaleFactors(ctx, boost::none, boost::none, boost::none, boost::none, boost::none, true));
 
   fatjet_tagger.reset(new FatJetTagger(ctx, WTag::algo::ParticleNet, WTag::wp::WP_DUMMY));
-  setter_analysis_regions.reset(new AnalysisRegionSetter(ctx));
+  setter_analysis_regions.reset(new AnalysisRegionSetter(ctx, string2bool(ctx.get("bVetoLike"))));
   classify_tW_TrueDecay.reset(new btw::TWClassification_TrueDecay(ctx));
   slct_tW_Sig_TrueDecay.reset(new btw::TWSignalSelection_TrueDecay(ctx));
   setter_toptag.reset(new TopTagSetter(ctx));
