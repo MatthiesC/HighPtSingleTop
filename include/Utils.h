@@ -28,6 +28,7 @@ private:
   const ltt::Channel fChannel;
   const uhh2::Event::Handle<ltt::SingleTopGen_tWch> fHandle_GENtW;
   const uhh2::Event::Handle<uhh2::btw::E_dnnClass_tW> fHandle_dnnClass_tW;
+  const uhh2::Event::Handle<int> fHandle_dnnClass_tW_int;
 };
 
 //____________________________________________________________________________________________________
@@ -303,5 +304,29 @@ private:
   const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_SingleLepton;
   const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_SingleNeutrino;
 };
+
+// //____________________________________________________________________________________________________
+// class VariablesOfInterest: public uhh2::AnalysisModule {
+// public:
+//   VariablesOfInterest(uhh2::Context & ctx);
+//   virtual bool process(uhh2::Event & event) override;
+//
+//   private:
+//     const uhh2::Event::Handle<ltt::SingleTopGen_tWch> fHandle_GENtW;
+//     const uhh2::Event::Handle<uhh2::btw::ERegion_heavyTags> fHandle_Region_heavyTags;
+//
+//     const uhh2::Event::Handle<TopJet> fHandle_TheTopJet;
+//     const uhh2::Event::Handle<TopJet> fHandle_TheWJet;
+//     // const uhh2::Event::Handle<FlavorParticle> fHandle_PrimaryLepton;
+//     const uhh2::Event::Handle<uhh2::btw::LeptonicHemisphere> fHandle_LeptonicHemisphere;
+//
+//     const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_Top;
+//     const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_WAss;
+//     // const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_WTop;
+//     const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_tW_system;
+//     // const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_LeptonicW;
+//     // const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_SingleLepton;
+//     // const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_SingleNeutrino;
+// };
 
 }}

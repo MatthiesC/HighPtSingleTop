@@ -135,7 +135,18 @@ enum class E_dnnClass_tW {
   bkg, // tW backgrounds
 };
 
-const std::string kHandleName_dnnClass_tW = "dnnClass_tW";
+typedef struct {
+  int index;
+} dnnClass_tW_Info;
+
+const std::string kHandleName_dnnClass_tW = "btw_dnnClass_tW";
+const std::string kHandleName_dnnClass_tW_int = "btw_dnnClass_tW_int";
+
+const std::map<E_dnnClass_tW, dnnClass_tW_Info> k_dnnClasses_tW = {
+  { E_dnnClass_tW::none, dnnClass_tW_Info{ .index=0 }},
+  { E_dnnClass_tW::sig,  dnnClass_tW_Info{ .index=1 }},
+  { E_dnnClass_tW::bkg,  dnnClass_tW_Info{ .index=2 }},
+};
 
 //____________________________________________________________________________________________________
 enum class E_trueClass_tW {
@@ -144,13 +155,17 @@ enum class E_trueClass_tW {
   bkg, // tW backgrounds
 };
 
-const std::string kHandleName_trueClass_tW = "trueClass_tW";
-const std::string kHandleName_trueClass_tW_int = "trueClass_tW_int";
+typedef struct {
+  int index;
+} trueClass_tW_Info;
 
-const std::map<E_trueClass_tW, int> k_trueClass_tW_toInt = {
-  { E_trueClass_tW::none, 0 },
-  { E_trueClass_tW::sig,  1 },
-  { E_trueClass_tW::bkg,  2 },
+const std::string kHandleName_trueClass_tW = "btw_trueClass_tW";
+const std::string kHandleName_trueClass_tW_int = "btw_trueClass_tW_int";
+
+const std::map<E_trueClass_tW, trueClass_tW_Info> k_trueClasses_tW = {
+  { E_trueClass_tW::none, trueClass_tW_Info{ .index=0 }},
+  { E_trueClass_tW::sig,  trueClass_tW_Info{ .index=1 }},
+  { E_trueClass_tW::bkg,  trueClass_tW_Info{ .index=2 }},
 };
 
 //____________________________________________________________________________________________________

@@ -19,12 +19,14 @@ namespace uhh2 { namespace btw {
 TWClassification_DNN::TWClassification_DNN(Context & ctx):
   fChannel(extract_channel(ctx)),
   fHandle_GENtW(ctx.get_handle<ltt::SingleTopGen_tWch>(kHandleName_SingleTopGen_tWch)),
-  fHandle_dnnClass_tW(ctx.get_handle<btw::E_dnnClass_tW>(kHandleName_dnnClass_tW))
+  fHandle_dnnClass_tW(ctx.get_handle<btw::E_dnnClass_tW>(kHandleName_dnnClass_tW)),
+  fHandle_dnnClass_tW_int(ctx.declare_event_output<int>(kHandleName_dnnClass_tW_int))
 {}
 
 bool TWClassification_DNN::process(Event & event) {
   if(!event.is_valid(fHandle_GENtW)) {
     event.set(fHandle_dnnClass_tW, E_dnnClass_tW::none);
+    event.set(fHandle_dnnClass_tW_int, k_dnnClasses_tW.at(E_dnnClass_tW::none).index);
     return true;
   }
   const auto & GENtW = event.get(fHandle_GENtW);
@@ -42,6 +44,7 @@ bool TWClassification_DNN::process(Event & event) {
     ) dnnClass_tW = E_dnnClass_tW::sig;
   }
   event.set(fHandle_dnnClass_tW, dnnClass_tW);
+  event.set(fHandle_dnnClass_tW_int, k_dnnClasses_tW.at(dnnClass_tW).index);
   return true;
 }
 
@@ -536,7 +539,7 @@ TWClassification_TrueDecay::TWClassification_TrueDecay(Context & ctx):
 bool TWClassification_TrueDecay::process(Event & event) {
   if(!event.is_valid(fHandle_GENtW)) {
     event.set(fHandle_trueClass_tW, E_trueClass_tW::none);
-    event.set(fHandle_trueClass_tW_int, k_trueClass_tW_toInt.at(E_trueClass_tW::none));
+    event.set(fHandle_trueClass_tW_int, k_trueClasses_tW.at(E_trueClass_tW::none).index);
     return true;
   }
   const auto & GENtW = event.get(fHandle_GENtW);
@@ -555,7 +558,7 @@ bool TWClassification_TrueDecay::process(Event & event) {
     ) trueClass_tW = E_trueClass_tW::sig;
   }
   event.set(fHandle_trueClass_tW, trueClass_tW);
-  event.set(fHandle_trueClass_tW_int, k_trueClass_tW_toInt.at(trueClass_tW));
+  event.set(fHandle_trueClass_tW_int, k_trueClasses_tW.at(trueClass_tW).index);
   return true;
 }
 
@@ -602,5 +605,28 @@ bool GenLevelDefinitions::process(Event & event) {
   }
   return true;
 }
+
+// //____________________________________________________________________________________________________
+// VariablesOfInterest::VariablesOfInterest(Context & ctx):
+//   fHandle_GENtW(ctx.get_handle<ltt::SingleTopGen_tWch>(kHandleName_SingleTopGen_tWch)),
+//   fHandle_Region_heavyTags(ctx.get_handle<ERegion_heavyTags>(kHandleName_Region_heavyTags)),
+//
+//   fHandle_TheTopJet(ctx.get_handle<TopJet>(kHandleName_TheTopJet)),
+//   fHandle_TheWJet(ctx.get_handle<TopJet>(kHandleName_TheWJet)),
+//   // fHandle_PrimaryLepton(ctx.get_handle<FlavorParticle>(kHandleName_PrimaryLepton)),
+//   fHandle_LeptonicHemisphere(ctx.get_handle<LeptonicHemisphere>(kHandleName_LeptonicHemisphere)),
+//
+//   fHandle_Parton_Top(ctx.get_handle<GenLevelDef>(kHandleName_Parton_Top)),
+//   fHandle_Parton_WAss(ctx.get_handle<GenLevelDef>(kHandleName_Parton_WAss)),
+//   // fHandle_Parton_WTop(ctx.get_handle<GenLevelDef>(kHandleName_Parton_WTop)),
+//   fHandle_Parton_tW_system(ctx.get_handle<GenLevelDef>(kHandleName_Parton_tW_system)),
+//   fHandle_Parton_LeptonicW(ctx.get_handle<GenLevelDef>(kHandleName_Parton_LeptonicW)),
+//   fHandle_Parton_SingleLepton(ctx.get_handle<GenLevelDef>(kHandleName_Parton_SingleLepton)),
+//   fHandle_Parton_SingleNeutrino(ctx.get_handle<GenLevelDef>(kHandleName_Parton_SingleNeutrino))
+// {}
+//
+// bool VariablesOfInterest::process(Event & event) {
+//
+// }
 
 }}
