@@ -12,13 +12,21 @@ using namespace uhh2::ltt;
 namespace uhh2 { namespace btw {
 
 //____________________________________________________________________________________________________
-AnalysisRegionSetter::AnalysisRegionSetter(Context & ctx):
-  fHandle_bJets(ctx.get_handle<vector<Jet>>(kHandleName_bJets)),
-  // fHandle_bJets_loose(ctx.get_handle<vector<Jet>>(kHandleName_bJets_loose)),
-  // fHandle_bJets_medium(ctx.get_handle<vector<Jet>>(kHandleName_bJets_medium)),
-  fHandle_bJets_tight(ctx.get_handle<vector<Jet>>(kHandleName_bJets_tight)),
+AnalysisRegionSetter::AnalysisRegionSetter(Context & ctx, const bool b_veto_like):
+  bVetoLike(b_veto_like),
+
   fHandle_tJets(ctx.get_handle<vector<TopJet>>(kHandleName_tJets)),
   fHandle_WJets(ctx.get_handle<vector<TopJet>>(kHandleName_WJets)),
+
+  fHandle_n_bJets(ctx.get_handle<int>(kHandleName_n_bJets)),
+  // fHandle_n_bJets_loose(ctx.get_handle<int>(kHandleName_n_bJets_loose)),
+  // fHandle_n_bJets_medium(ctx.get_handle<int>(kHandleName_n_bJets_medium)),
+  // fHandle_n_bJets_tight(ctx.get_handle<int>(kHandleName_n_bJets_tight)),
+
+  fHandle_n_bJets_hemi(ctx.get_handle<int>(kHandleName_n_bJets_hemi)),
+  // fHandle_n_bJets_hemi_loose(ctx.get_handle<int>(kHandleName_n_bJets_hemi_loose)),
+  // fHandle_n_bJets_hemi_medium(ctx.get_handle<int>(kHandleName_n_bJets_hemi_medium)),
+  // fHandle_n_bJets_hemi_tight(ctx.get_handle<int>(kHandleName_n_bJets_hemi_tight)),
 
   fHandle_Region_bTags(ctx.get_handle<ERegion_bTags>(kHandleName_Region_bTags)),
   fHandle_Region_heavyTags(ctx.get_handle<ERegion_heavyTags>(kHandleName_Region_heavyTags)),
@@ -30,26 +38,10 @@ AnalysisRegionSetter::AnalysisRegionSetter(Context & ctx):
 {}
 
 bool AnalysisRegionSetter::process(Event & event) {
-  const unsigned int n_bJets = event.get(fHandle_bJets).size();
-  // const unsigned int n_bJets_loose = event.get(fHandle_bJets_loose).size();
-  // const unsigned int n_bJets_medium = event.get(fHandle_bJets_medium).size();
-  const unsigned int n_bJets_tight = event.get(fHandle_bJets_tight).size();
-  ERegion_bTags region_bTags;
-  if(n_bJets >= 2 && n_bJets_tight >= 1) {
-    region_bTags = ERegion_bTags::_2b;
-  }
-  else if(n_bJets >= 1) {
-    region_bTags = ERegion_bTags::_1b;
-  }
-  else {
-    region_bTags = ERegion_bTags::_0b;
-  }
-  event.set(fHandle_Region_bTags, region_bTags);
-  event.set(fHandle_Region_bTags_int, kRegions_bTags.at(region_bTags).index);
-
-  const unsigned int n_tJets = event.get(fHandle_tJets).size();
-  const unsigned int n_WJets = event.get(fHandle_WJets).size();
+  //__________________________________________________
   ERegion_heavyTags region_heavyTags;
+  const uint n_tJets = event.get(fHandle_tJets).size();
+  const uint n_WJets = event.get(fHandle_WJets).size();
   if(n_tJets == 1) {
     region_heavyTags = ERegion_heavyTags::_1t;
   }
@@ -65,6 +57,66 @@ bool AnalysisRegionSetter::process(Event & event) {
   event.set(fHandle_Region_heavyTags, region_heavyTags);
   event.set(fHandle_Region_heavyTags_int, kRegions_heavyTags.at(region_heavyTags).index);
 
+  //__________________________________________________
+  ERegion_bTags region_bTags;
+  const uint n_bJets = event.get(fHandle_n_bJets);
+  // const uint n_bJets_loose = event.get(fHandle_n_bJets_loose);
+  // const uint n_bJets_medium = event.get(fHandle_n_bJets_medium);
+  // const uint n_bJets_tight = event.get(fHandle_n_bJets_tight);
+  if(bVetoLike && region_heavyTags == ERegion_heavyTags::_1t) {
+    const uint n_bJets_vetoable = event.get(fHandle_n_bJets_hemi);
+    // const uint n_bJets_vetoable_loose = event.get(fHandle_n_bJets_hemi_loose);
+    // const uint n_bJets_vetoable_medium = event.get(fHandle_n_bJets_hemi_medium);
+    // const uint n_bJets_vetoable_tight = event.get(fHandle_n_bJets_hemi_tight);
+    if(n_bJets == 0) {
+      region_bTags = ERegion_bTags::_0b;
+    }
+    else if(n_bJets_vetoable == 0) {
+      region_bTags = ERegion_bTags::_1b;
+    }
+    else {
+      region_bTags = ERegion_bTags::_2b;
+    }
+  }
+  else if(bVetoLike && region_heavyTags == ERegion_heavyTags::_0t1W) {
+    const uint n_bJets_vetoable = n_bJets - event.get(fHandle_n_bJets_hemi);
+    // const uint n_bJets_vetoable_loose = n_bJets_loose - event.get(fHandle_n_bJets_hemi_loose);
+    // const uint n_bJets_vetoable_medium = n_bJets_medium - event.get(fHandle_n_bJets_hemi_medium);
+    // const uint n_bJets_vetoable_tight = n_bJets_tight - event.get(fHandle_n_bJets_hemi_tight);
+    if(n_bJets == 0) {
+      region_bTags = ERegion_bTags::_0b;
+    }
+    else if(n_bJets_vetoable == 0) {
+      region_bTags = ERegion_bTags::_1b;
+    }
+    else {
+      region_bTags = ERegion_bTags::_2b;
+    }
+  }
+  else {
+    if(n_bJets >= 2) {
+      region_bTags = ERegion_bTags::_2b;
+    }
+    else if(n_bJets == 1) {
+      region_bTags = ERegion_bTags::_1b;
+    }
+    else {
+      region_bTags = ERegion_bTags::_0b;
+    }
+    // if(n_bJets >= 2 && n_bJets_tight >= 1) {
+    //   region_bTags = ERegion_bTags::_2b;
+    // }
+    // else if(n_bJets >= 1) {
+    //   region_bTags = ERegion_bTags::_1b;
+    // }
+    // else {
+    //   region_bTags = ERegion_bTags::_0b;
+    // }
+  }
+  event.set(fHandle_Region_bTags, region_bTags);
+  event.set(fHandle_Region_bTags_int, kRegions_bTags.at(region_bTags).index);
+
+  //__________________________________________________
   ERegion region;
   if(region_heavyTags == ERegion_heavyTags::_1t) {
     if(region_bTags == ERegion_bTags::_0b) {

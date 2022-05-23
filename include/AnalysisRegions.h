@@ -13,21 +13,27 @@
 namespace uhh2 { namespace btw {
 
 //____________________________________________________________________________________________________
-// bool
-
-//____________________________________________________________________________________________________
+// b_veto_like: whether to define 1b region in a way that DR/DS difference is small by imposing a veto on "NLO" b jets and 2b region is DR/DS-sensitive
 class AnalysisRegionSetter: public uhh2::AnalysisModule {
 public:
-  AnalysisRegionSetter(uhh2::Context & ctx);
+  AnalysisRegionSetter(uhh2::Context & ctx, const bool b_veto_like);
   virtual bool process(uhh2::Event & event) override;
 
 private:
-  const uhh2::Event::Handle<std::vector<Jet>> fHandle_bJets;
-  // const uhh2::Event::Handle<std::vector<Jet>> fHandle_bJets_loose;
-  // const uhh2::Event::Handle<std::vector<Jet>> fHandle_bJets_medium;
-  const uhh2::Event::Handle<std::vector<Jet>> fHandle_bJets_tight;
+  const bool bVetoLike;
+
   const uhh2::Event::Handle<std::vector<TopJet>> fHandle_tJets;
   const uhh2::Event::Handle<std::vector<TopJet>> fHandle_WJets;
+
+  const uhh2::Event::Handle<int> fHandle_n_bJets;
+  // const uhh2::Event::Handle<int> fHandle_n_bJets_loose;
+  // const uhh2::Event::Handle<int> fHandle_n_bJets_medium;
+  // const uhh2::Event::Handle<int> fHandle_n_bJets_tight;
+
+  const uhh2::Event::Handle<int> fHandle_n_bJets_hemi;
+  // const uhh2::Event::Handle<int> fHandle_n_bJets_hemi_loose;
+  // const uhh2::Event::Handle<int> fHandle_n_bJets_hemi_medium;
+  // const uhh2::Event::Handle<int> fHandle_n_bJets_hemi_tight;
 
   const uhh2::Event::Handle<ERegion_bTags> fHandle_Region_bTags;
   const uhh2::Event::Handle<ERegion_heavyTags> fHandle_Region_heavyTags;

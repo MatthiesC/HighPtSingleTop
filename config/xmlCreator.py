@@ -488,8 +488,8 @@ class xmlCreator:
             file.write('''<Item Name="VJetsReweighting_do_QCD_NNLO" Value="false"/>\n''')
             file.write('''<Item Name="BTagSFNJetReweightFile" Value="'''+os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2/HighPtSingleTop/Analysis/btag_njet_sf/btag_njet_sf.root')+'''"/>\n''')
             # file.write('''\n''')
-            # file.write('''<Item Name="NeuralNetFile_tTag" Value="'''+self.yearVars['NNFiles']['tTag'][self.year]+'''"/>\n''')
-            # file.write('''<Item Name="NeuralNetFile_WTag" Value="'''+self.yearVars['NNFiles']['WTag'][self.year]+'''"/>\n''')
+            file.write('''<Item Name="NeuralNetFile_1t" Value="/nfs/dust/cms/user/matthies/uhh2-106X-v2/CMSSW_10_6_28/src/UHH2/HighPtSingleTop/data/KerasDNNModels/ttag_dnn_22-05-12-02-46-10/neural_net.json"/>\n''')
+            file.write('''<Item Name="NeuralNetFile_0t1W" Value="/nfs/dust/cms/user/matthies/uhh2-106X-v2/CMSSW_10_6_28/src/UHH2/HighPtSingleTop/data/KerasDNNModels/wtag_dnn_22-05-12-02-49-32/neural_net.json"/>\n''')
          file.write('''\n''')
          file.write('''<!-- Keys for systematic uncertainties -->\n''')
          for syst in systematics.values():
@@ -501,7 +501,8 @@ class xmlCreator:
          file.write('''<Item Name="AnalysisModule" Value="'''+('HighPtSingleTopMainSelectionModule' if is_mainsel else 'HighPtSingleTopPreSelectionModule')+'''"/>\n''')
          if is_mainsel:
             file.write('''<Item Name="analysis_channel" Value="'''+channel+'''"/>\n''')
-            file.write('''<Item Name="apply_DNNs" Value="false"/>\n''')
+            file.write('''<Item Name="bVetoLike" Value="true"/>\n''')
+            file.write('''<Item Name="apply_DNNs" Value="true"/>\n''')
         # file.write('''<Item Name="QCD_sideband" Value="false"/>\n''')
          # file.write('''<Item Name="uhh2Dir" Value="'''+self.uhh2Dir+'''"/>\n''')
          # file.write('''<Item Name="EmptyOutputTree" Value="false"/>\n''')
