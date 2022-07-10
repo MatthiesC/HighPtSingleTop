@@ -28,9 +28,9 @@ private:
   const uhh2::Event::Handle<int> fHandle_n_bJets;
   // const uhh2::Event::Handle<int> fHandle_n_bJets_loose;
   // const uhh2::Event::Handle<int> fHandle_n_bJets_medium;
-  // const uhh2::Event::Handle<int> fHandle_n_bJets_tight;
+  const uhh2::Event::Handle<int> fHandle_n_bJets_tight;
 
-  const uhh2::Event::Handle<int> fHandle_n_bJets_hemi;
+  // const uhh2::Event::Handle<int> fHandle_n_bJets_hemi;
   // const uhh2::Event::Handle<int> fHandle_n_bJets_hemi_loose;
   // const uhh2::Event::Handle<int> fHandle_n_bJets_hemi_medium;
   // const uhh2::Event::Handle<int> fHandle_n_bJets_hemi_tight;

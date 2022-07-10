@@ -38,6 +38,7 @@ DNNInputs::DNNInputs(Context & ctx):
   inputs.push_back(DNNInput{i++, "lepton_phi", "#phi^{lepton} [rad]", -M_PI, M_PI});
   inputs.push_back(DNNInput{i++, "lepton_energy_log", "log_{10}(1 + #it{E}^{lepton} / GeV)", 0, 4});
   inputs.push_back(DNNInput{i++, "lepton_charge", "#it{Q}^{lepton} [#it{e}]", -1.5, 1.5, 3});
+  inputs.push_back(DNNInput{i++, "lepton_relpfiso", "log_{10}(1 + rel. PF isolation)", 0, 2});
   //__________________________________________________
   // MET
   inputs.push_back(DNNInput{i++, "met_pt_log", "log_{10}(1 + #it{p}_{T}^{miss} / GeV)", 0, 4});
@@ -141,6 +142,7 @@ void DNNInputs::set_inputs(Event & event, const ERegion_heavyTags & region_heavy
   inputs.at(i++) = primlep.phi();
   inputs.at(i++) = log10( 1 + primlep.energy() );
   inputs.at(i++) = primlep.charge();
+  inputs.at(i++) = log10( 1 + ( event.muons->size() > 0 ? event.muons->at(0).relIso() : event.electrons->at(0).relIso() ) );
   //__________________________________________________
   // MET
   inputs.at(i++) = log10( 1 + event.met->pt() );

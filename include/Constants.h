@@ -13,6 +13,11 @@ namespace uhh2 { namespace btw {
 //   ele = 1,
 // };
 
+const std::string kHandleName_bool_reco_sel = "btw_bool_reco_sel";
+const std::string kHandleName_bool_matrix_sel = "btw_bool_matrix_sel";
+const std::string kHandleName_bool_parton_sel = "btw_bool_parton_sel";
+const std::string kHandleName_bool_particle_sel = "btw_bool_particle_sel";
+
 const std::string kHandleName_tJets = "btw_tJets";
 const std::string kHandleName_TheTopJet = "btw_TheTopJet";
 const std::string kHandleName_WJets = "btw_WJets";
@@ -28,13 +33,37 @@ const std::string kHandleName_Region_int = "btw_Region_int";
 
 const std::string kHandleName_LeptonicHemisphere = "LeptonicHemisphere";
 
-const std::string kHandleName_Parton_Top = "Parton_Top";
-const std::string kHandleName_Parton_WAss = "Parton_WAss";
-const std::string kHandleName_Parton_WTop = "Parton_WTop";
-const std::string kHandleName_Parton_tW_system = "Parton_tW_system";
-const std::string kHandleName_Parton_LeptonicW = "Parton_LeptonicW";
-const std::string kHandleName_Parton_SingleLepton = "Parton_SingleLepton";
-const std::string kHandleName_Parton_SingleNeutrino = "Parton_SingleNeutrino";
+const std::string kHandleName_Matrix_Top = "Matrix_Top";
+const std::string kHandleName_Matrix_WAss = "Matrix_WAss";
+const std::string kHandleName_Matrix_WTop = "Matrix_WTop";
+const std::string kHandleName_Matrix_tW_system = "Matrix_tW_system";
+const std::string kHandleName_Matrix_LeptonicW = "Matrix_LeptonicW";
+const std::string kHandleName_Matrix_SingleLepton = "Matrix_SingleLepton";
+const std::string kHandleName_Matrix_SingleNeutrino = "Matrix_SingleNeutrino";
+
+const std::string kHandleName_VOI_Reco_TopQuarkPt = "btw_VOI_Reco_TopQuarkPt";
+const std::string kHandleName_VOI_Reco_TopQuarkEta = "btw_VOI_Reco_TopQuarkEta";
+const std::string kHandleName_VOI_Reco_TopQuarkY = "btw_VOI_Reco_TopQuarkY";
+const std::string kHandleName_VOI_Reco_WBosonPt = "btw_VOI_Reco_WBosonPt";
+const std::string kHandleName_VOI_Reco_WBosonEta = "btw_VOI_Reco_WBosonEta";
+const std::string kHandleName_VOI_Reco_WBosonY = "btw_VOI_Reco_WBosonY";
+const std::string kHandleName_VOI_Reco_tWSystemPt = "btw_VOI_Reco_tWSystemPt";
+const std::string kHandleName_VOI_Reco_tWSystemEta = "btw_VOI_Reco_tWSystemEta";
+const std::string kHandleName_VOI_Reco_tWSystemY = "btw_VOI_Reco_tWSystemY";
+const std::string kHandleName_VOI_Reco_tWSystemMass = "btw_VOI_Reco_tWSystemMass";
+const std::string kHandleName_VOI_Reco_tWSystemDPhi = "btw_VOI_Reco_tWSystemDPhi";
+
+const std::string kHandleName_VOI_Matrix_TopQuarkPt = "btw_VOI_Matrix_TopQuarkPt";
+const std::string kHandleName_VOI_Matrix_TopQuarkEta = "btw_VOI_Matrix_TopQuarkEta";
+const std::string kHandleName_VOI_Matrix_TopQuarkY = "btw_VOI_Matrix_TopQuarkY";
+const std::string kHandleName_VOI_Matrix_WBosonPt = "btw_VOI_Matrix_WBosonPt";
+const std::string kHandleName_VOI_Matrix_WBosonEta = "btw_VOI_Matrix_WBosonEta";
+const std::string kHandleName_VOI_Matrix_WBosonY = "btw_VOI_Matrix_WBosonY";
+const std::string kHandleName_VOI_Matrix_tWSystemPt = "btw_VOI_Matrix_tWSystemPt";
+const std::string kHandleName_VOI_Matrix_tWSystemEta = "btw_VOI_Matrix_tWSystemEta";
+const std::string kHandleName_VOI_Matrix_tWSystemY = "btw_VOI_Matrix_tWSystemY";
+const std::string kHandleName_VOI_Matrix_tWSystemMass = "btw_VOI_Matrix_tWSystemMass";
+const std::string kHandleName_VOI_Matrix_tWSystemDPhi = "btw_VOI_Matrix_tWSystemDPhi";
 
 
 //____________________________________________________________________________________________________

@@ -123,6 +123,14 @@ for channel in args.channels:
         rootFiles['WJets']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.WJets*.root')
         rootFiles['WJets']['targetFile'] = 'MC.WJets.root'
 
+        rootFiles['DYJetsAndVV'] = dict()
+        rootFiles['DYJetsAndVV']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.DYJets*.root') + glob.glob(outputDir+prefix+'MC.Diboson*.root')
+        rootFiles['DYJetsAndVV']['targetFile'] = 'MC.DYJetsAndVV.root'
+
+        rootFiles['VJetsAndVV'] = dict()
+        rootFiles['VJetsAndVV']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.WJets*.root') + glob.glob(outputDir+prefix+'MC.DYJets*.root') + glob.glob(outputDir+prefix+'MC.Diboson*.root')
+        rootFiles['VJetsAndVV']['targetFile'] = 'MC.VJetsAndVV.root'
+
         rootFiles['TTbar'] = dict()
         rootFiles['TTbar']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.TTbar*.root')
         rootFiles['TTbar']['targetFile'] = 'MC.TTbar.root'

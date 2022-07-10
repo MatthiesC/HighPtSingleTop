@@ -29,7 +29,9 @@
 #include "UHH2/LegacyTopTagging/include/HOTVRHists.h"
 #include "UHH2/LegacyTopTagging/include/LeptonScaleFactors.h"
 #include "UHH2/LegacyTopTagging/include/JetMETCorrections.h"
+#include "UHH2/LegacyTopTagging/include/SingleTopGen_tWch.h"
 #include "UHH2/LegacyTopTagging/include/TopJetCorrections.h"
+#include "UHH2/LegacyTopTagging/include/TriggerSelection.h"
 #include "UHH2/LegacyTopTagging/include/Utils.h"
 
 
@@ -57,11 +59,11 @@ private:
   */
 
   const double muon_eta_max = 2.4;
-  const double muon_lowpt_pt_min = 30.0;
+  const double muon_lowpt_pt_min = 40.0;
   const double muon_highpt_pt_min = 55.0;
 
   const double electron_eta_max = 2.4;
-  const double electron_lowpt_pt_min = 30.0;
+  const double electron_lowpt_pt_min = 40.0;
   const double electron_highpt_pt_min = 120.0;
 
   const double met_min = 50.0;
@@ -82,6 +84,14 @@ private:
   /*
   All modules etc. in chronological order as used in event loop:
   */
+
+  Event::Handle<bool> fHandle_bool_reco_sel;
+  Event::Handle<bool> fHandle_bool_matrix_sel;
+  Event::Handle<bool> fHandle_bool_parton_sel;
+  Event::Handle<bool> fHandle_bool_particle_sel;
+
+  unique_ptr<AnalysisModule> sf_lumi;
+  Event::Handle<float> fHandle_weight_lumi_only;
 
   bool is_tW;
   bool is_tW_dnnSig;
@@ -127,7 +137,6 @@ private:
   unique_ptr<AnalysisModule> primlep;
   unique_ptr<AnalysisModule> scale_variation;
   unique_ptr<AnalysisModule> ps_variation;
-  unique_ptr<AnalysisModule> sf_lumi;
   unique_ptr<AnalysisModule> sf_pileup;
   unique_ptr<AnalysisModule> sf_prefire;
   unique_ptr<AnalysisModule> weight_trickery;
@@ -191,7 +200,11 @@ private:
   // unique_ptr<Selection> slct_top_mass;
   // map<ERegion, unique_ptr<ltt::AndHists>> hist_region_withMTopCut;
 
+  unique_ptr<AnalysisModule> voi;
+
   Event::Handle<float> fHandle_weight;
+
+  unique_ptr<Selection> slct_matrix;
 };
 
 
@@ -205,7 +218,15 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
   // empty_output_tree = string2bool(ctx.get("EmptyOutputTree")); // handy to not have output trees for systematics files, reduces root file size
   // is_QCDsideband = string2bool(ctx.get("QCD_sideband"));
 
+  fHandle_bool_reco_sel = ctx.declare_event_output<bool>(kHandleName_bool_reco_sel);
+  fHandle_bool_matrix_sel = ctx.declare_event_output<bool>(kHandleName_bool_matrix_sel);
+  fHandle_bool_parton_sel = ctx.declare_event_output<bool>(kHandleName_bool_parton_sel);
+  fHandle_bool_particle_sel = ctx.declare_event_output<bool>(kHandleName_bool_particle_sel);
+
   unsigned int i_hist(0);
+
+  sf_lumi.reset(new MCLumiWeight(ctx));
+  fHandle_weight_lumi_only = ctx.declare_event_output<float>("weight_lumi_only");
 
   const string dataset_version = ctx.get("dataset_version");
   is_tW = dataset_version.find("ST_tW") == 0;
@@ -239,7 +260,6 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
   primlep.reset(new PrimaryLepton(ctx));
   scale_variation.reset(new MCScaleVariation(ctx));
   ps_variation.reset(new ltt::PartonShowerVariation(ctx));
-  sf_lumi.reset(new MCLumiWeight(ctx));
   sf_pileup.reset(new MCPileupReweight(ctx, ctx.get("SystDirection_Pileup", "nominal")));
   sf_prefire.reset(new ltt::PrefiringWeights(ctx));
   weight_trickery.reset(new ltt::WeightTrickery(ctx, kHandleName_SingleTopGen_tWch, false));
@@ -285,14 +305,14 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
 
   hist_presel.reset(new ltt::AndHists(ctx, to_string(i_hist++)+"_Presel", true, true));
 
-  slct_trigger_highpt.reset(new BTWTriggerSelection(ctx, false));
-  slct_trigger_lowpt.reset(new BTWTriggerSelection(ctx, true));
+  slct_trigger_highpt.reset(new ltt::MyTriggerSelection(ctx, false));
+  slct_trigger_lowpt.reset(new ltt::MyTriggerSelection(ctx, true));
 
   sf_muon_trigger_highpt.reset(new ltt::MuonTriggerScaleFactors(ctx, true));
   sf_muon_trigger_lowpt.reset(new ltt::MuonTriggerScaleFactors(ctx, false));
   sf_muon_trigger_dummy.reset(new ltt::MuonTriggerScaleFactors(ctx, boost::none, boost::none, boost::none, boost::none, boost::none, true));
 
-  fatjet_tagger.reset(new FatJetTagger(ctx, WTag::algo::ParticleNet, WTag::wp::WP_DUMMY));
+  fatjet_tagger.reset(new FatJetTagger(ctx, WTag::algo::ParticleNet, WTag::wp::WP_CUSTOM));
   setter_analysis_regions.reset(new AnalysisRegionSetter(ctx, string2bool(ctx.get("bVetoLike"))));
   classify_tW_TrueDecay.reset(new btw::TWClassification_TrueDecay(ctx));
   slct_tW_Sig_TrueDecay.reset(new btw::TWSignalSelection_TrueDecay(ctx));
@@ -337,7 +357,11 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
   // }
   // i_hist++;
 
+  voi.reset(new VariablesOfInterest(ctx));
+
   fHandle_weight = ctx.declare_event_output<float>("weight");
+
+  slct_matrix.reset(new btw::MatrixLevelSelection(ctx, "mainsel"));
 }
 
 
@@ -356,16 +380,34 @@ bool HighPtSingleTopMainSelectionModule::process(Event & event) {
     cout << endl;
   }
 
+  bool passes_reco_sel = event.is_valid(fHandle_bool_reco_sel) ? event.get(fHandle_bool_reco_sel) : true;
+  bool passes_matrix_sel = event.is_valid(fHandle_bool_matrix_sel) ? event.get(fHandle_bool_matrix_sel) : false;
+  bool passes_parton_sel = event.is_valid(fHandle_bool_parton_sel) ? event.get(fHandle_bool_parton_sel) : false;
+  bool passes_particle_sel = event.is_valid(fHandle_bool_particle_sel) ? event.get(fHandle_bool_particle_sel) : false;
+
   if(debug) cout << "Initial stuff after preselection" << endl;
-  if(fChannel == Channel::isMuo) {
-    if(event.muons->size() != 1) return false;
-  }
-  else if(fChannel == Channel::isEle) {
-    if(event.electrons->size() != 1) return false;
-  }
   if(is_tW) {
     prod_SingleTopGen_tWch->process(event);
     genleveldef->process(event);
+  }
+
+  sf_lumi->process(event);
+  weight_trickery->process(event); // needs GENtW
+  event.set(fHandle_weight_lumi_only, event.weight); // actually, it's lumi + weight trickery
+
+  if(fChannel == Channel::isMuo) {
+    if(event.muons->size() != 1) {
+      if(!is_tW) return false;
+      passes_reco_sel = false;
+      event.muons->push_back(Muon());
+    }
+  }
+  else if(fChannel == Channel::isEle) {
+    if(event.electrons->size() != 1) {
+      if(!is_tW) return false;
+      passes_reco_sel = false;
+      event.electrons->push_back(Electron());
+    }
   }
   classify_tW_DNN->process(event);
   const bool passes_tW_Sig_DNN = slct_tW_Sig_DNN->passes(event);
@@ -373,48 +415,79 @@ bool HighPtSingleTopMainSelectionModule::process(Event & event) {
   else if(is_tW_dnnBkg && passes_tW_Sig_DNN) return false;
 
   bool lowpt(false);
-  if(fChannel == Channel::isMuo) {
-    const Muon *muon = &event.muons->at(0);
-    if(muon->pt() < muon_highpt_pt_min) {
-      if(!slct_muon_lowpt->passes(event)) return false;
-      sf_muon_id_lowpt->process(event);
-      sf_muon_iso_lowpt->process(event);
-      lowpt = true;
+  if(passes_reco_sel) {
+    if(fChannel == Channel::isMuo) {
+      const Muon *muon = &event.muons->at(0);
+      if(muon->pt() < muon_highpt_pt_min) {
+        if(!slct_muon_lowpt->passes(event)) {
+          passes_reco_sel = false;
+          if(!is_tW) return false;
+        }
+        if(passes_reco_sel) {
+          sf_muon_id_lowpt->process(event);
+          sf_muon_iso_lowpt->process(event);
+        }
+        lowpt = true;
+      }
+      else {
+        if(!slct_muon_highpt->passes(event)) {
+          passes_reco_sel = false;
+          if(!is_tW) return false;
+        }
+        if(passes_reco_sel) {
+          sf_muon_id_highpt->process(event);
+          sf_muon_iso_highpt->process(event);
+        }
+        lowpt = false;
+      }
+      sf_elec_id_dummy->process(event);
+      sf_elec_reco_dummy->process(event);
     }
-    else {
-      if(!slct_muon_highpt->passes(event)) return false;
-      sf_muon_id_highpt->process(event);
-      sf_muon_iso_highpt->process(event);
-      lowpt = false;
+    else if(fChannel == Channel::isEle) {
+      const Electron *electron = &event.electrons->at(0);
+      const float abseta_sc = fabs(electron->supercluster_eta());
+      if(abseta_sc > 1.4442 && abseta_sc < 1.566) { // gap between ECAL barrel and endcap
+        passes_reco_sel = false;
+        if(!is_tW) return false;
+      }
+      if(electron->pt() < electron_highpt_pt_min) {
+        if(!slct_elec_lowpt->passes(event)) {
+          passes_reco_sel = false;
+          if(!is_tW) return false;
+        }
+        if(passes_reco_sel) {
+          sf_elec_id_lowpt->process(event);
+        }
+        lowpt = true;
+      }
+      else {
+        if(!slct_elec_highpt->passes(event)) {
+          passes_reco_sel = false;
+          if(!is_tW) return false;
+        }
+        if(passes_reco_sel) {
+          sf_elec_id_highpt->process(event);
+        }
+        lowpt = false;
+      }
+      if(passes_reco_sel) {
+        sf_elec_reco->process(event);
+      }
+      sf_muon_id_dummy->process(event);
+      sf_muon_iso_dummy->process(event);
     }
-    sf_elec_id_dummy->process(event);
-    sf_elec_reco_dummy->process(event);
   }
-  else if(fChannel == Channel::isEle) {
-    const Electron *electron = &event.electrons->at(0);
-    const float abseta_sc = fabs(electron->supercluster_eta());
-    if(abseta_sc > 1.4442 && abseta_sc < 1.566) return false; // gap between ECAL barrel and endcap
-    if(electron->pt() < electron_highpt_pt_min) {
-      if(!slct_elec_lowpt->passes(event)) return false;
-      sf_elec_id_lowpt->process(event);
-      lowpt = true;
-    }
-    else {
-      if(!slct_elec_highpt->passes(event)) return false;
-      sf_elec_id_highpt->process(event);
-      lowpt = false;
-    }
-    sf_elec_reco->process(event);
+  if(!passes_reco_sel) {
     sf_muon_id_dummy->process(event);
     sf_muon_iso_dummy->process(event);
+    sf_elec_id_dummy->process(event);
+    sf_elec_reco_dummy->process(event);
   }
   primlep->process(event);
   scale_variation->process(event);
   ps_variation->process(event);
-  sf_lumi->process(event);
   sf_pileup->process(event);
   sf_prefire->process(event);
-  weight_trickery->process(event);
 
   if(debug) cout << "JetMET corrections, pt sorting, and PUPPI-CHS matching" << endl;
   jetmet_corrections_puppi->process(event);
@@ -433,16 +506,28 @@ bool HighPtSingleTopMainSelectionModule::process(Event & event) {
   // hist_jetmet_corrections->fill(event);
 
   if(debug) cout << "MET selection and MET filters" << endl;
-  if(!slct_met->passes(event)) return false;
-  if(!slct_metfilter->passes(event)) return false;
+  if(!slct_met->passes(event)) {
+    passes_reco_sel = false;
+    if(!is_tW) return false;
+  }
+  if(!slct_metfilter->passes(event)) {
+    passes_reco_sel = false;
+    if(!is_tW) return false;
+  }
   // hist_metcut->fill(event);
 
   if(debug) cout << "At least one large-R jet (HOTVR or AK8)" << endl;
-  if(!slct_1largejet->passes(event)) return false;
+  if(!slct_1largejet->passes(event)) {
+    passes_reco_sel = false;
+    if(!is_tW) return false;
+  }
   // hist_1largejet->fill(event);
 
   if(debug) cout << "Select at least one AK4 jet" << endl;
-  if(!slct_1ak4jet->passes(event)) return false; // Require at least one AK4 jet for computational reasons (dR(lepton, jet) etc.); this rejects only \mathcal{O}(0.01\%) of events in real data (tested in pre-UL 2017 muo, RunB)
+  if(!slct_1ak4jet->passes(event)) { // Require at least one AK4 jet for computational reasons (dR(lepton, jet) etc.); this rejects only \mathcal{O}(0.01\%) of events in real data (tested in pre-UL 2017 muo, RunB)
+    passes_reco_sel = false;
+    if(!is_tW) return false;
+  }
   // hist_1ak4jet->fill(event);
 
   if(debug) cout << "2018 HEM15/16 issue selection" << endl;
@@ -451,21 +536,34 @@ bool HighPtSingleTopMainSelectionModule::process(Event & event) {
     else event.weight *= (1. - slct_hem2018->GetAffectedLumiFraction());
   }
   // hist_hem2018->fill(event);
-  hist_presel->fill(event);
+  if(passes_reco_sel) hist_presel->fill(event);
 
   if(debug) cout << "Trigger selection" << endl;
   bool passes_trigger(false);
   if(lowpt) passes_trigger = slct_trigger_lowpt->passes(event);
   else passes_trigger = slct_trigger_highpt->passes(event);
-  if(!passes_trigger) return false;
+  if(!passes_trigger) {
+    passes_reco_sel = false;
+    if(!is_tW) return false;
+  }
 
   if(fChannel == Channel::isMuo) {
-    if(lowpt) sf_muon_trigger_lowpt->process(event);
-    else sf_muon_trigger_highpt->process(event);
+    if(passes_reco_sel) {
+      if(lowpt) sf_muon_trigger_lowpt->process(event);
+      else sf_muon_trigger_highpt->process(event);
+    }
+    else {
+      sf_muon_trigger_dummy->process(event);
+    }
     // sf_elec_trigger_dummy->process(event);
   }
   else if(fChannel == Channel::isEle) {
-    // sf_elec_trigger->process(event); // need to differentiate between 2017 Run B and Run C-F
+    if(passes_reco_sel) {
+      // sf_elec_trigger->process(event); // need to differentiate between 2017 Run B and Run C-F
+    }
+    else {
+      // sf_elec_trigger_dummy->process(event);
+    }
     sf_muon_trigger_dummy->process(event);
   }
   // hist_trigger->fill(event);
@@ -479,34 +577,55 @@ bool HighPtSingleTopMainSelectionModule::process(Event & event) {
   else if(is_tW_trueBkg && passes_tW_Sig_TrueDecay) return false;
   setter_toptag->process(event);
   setter_wtag->process(event);
-  reco_leptonichemisphere->process(event); // requires analysis regions
-  hist_trigger->fill(event);
+  event.set(fHandle_bool_reco_sel, passes_reco_sel); // reco_leptonichemisphere needs to know whether event passes reco level selection or not (more specifically: whether AK4 jet was found or not)
+  reco_leptonichemisphere->process(event); // requires analysis regions, requires at least one AK4 jet
+  if(passes_reco_sel) hist_trigger->fill(event);
 
   if(debug) cout << "Apply top-pt reweighting for ttbar events" << endl;
   sf_toppt->process(event);
-  hist_topptSF->fill(event);
+  if(passes_reco_sel) hist_topptSF->fill(event);
 
   if(debug) cout << "Apply (N)NLO QCD/EWK corrections to V+jets samples" << endl;
   sf_vjets->process(event);
-  hist_vjetsSF->fill(event);
+  if(passes_reco_sel) hist_vjetsSF->fill(event);
 
   if(debug) cout << "Histograms in individual analysis regions" << endl;
-  hist_analysis_regions->fill(event);
+  if(passes_reco_sel) hist_analysis_regions->fill(event);
   const ERegion region = event.get(fHandle_Region);
   // const ERegion_heavyTags region_heavyTags = event.get(fHandle_Region_heavyTags);
-  if(!(kRelevantRegions.find(region) != kRelevantRegions.end())) return false;
+  if(!(kRelevantRegions.find(region) != kRelevantRegions.end())) {
+    passes_reco_sel = false;
+    if(!is_tW) return false;
+  }
   dnn_inputs->process(event);
   for(const ERegion_heavyTags & region_heavyTags : kRelevantRegions_heavyTags) {
     dnn_application[region_heavyTags]->process(event);
   }
-  hist_region[region]->fill(event);
+  if(passes_reco_sel) hist_region[region]->fill(event);
   // if(kRelevantRegions.find(region) != kRelevantRegions.end()) hist_region[region]->fill(event);
   // if(!slct_top_mass->passes(event)) return false;
   // if(kRelevantRegions.find(region) != kRelevantRegions.end()) hist_region_withMTopCut[region]->fill(event);
 
-  if(debug) cout << "End of MainSelectionModule. Event passed" << endl;
+  if(debug) cout << "Write variables needed for the unfolding" << endl;
+  voi->process(event);
+
+  if(debug) cout << "End of MainSelectionModule" << endl;
   event.set(fHandle_weight, event.weight);
-  return true;
+
+  passes_matrix_sel = slct_matrix->passes(event);
+
+  if(debug) {
+    cout << "passes_reco_sel:     " << passes_reco_sel << endl;
+    cout << "passes_matrix_sel:   " << passes_matrix_sel << endl;
+    cout << "passes_parton_sel:   " << passes_parton_sel << endl;
+    cout << "passes_particle_sel: " << passes_particle_sel << endl;
+  }
+  event.set(fHandle_bool_reco_sel, passes_reco_sel);
+  event.set(fHandle_bool_matrix_sel, passes_matrix_sel);
+  event.set(fHandle_bool_parton_sel, passes_parton_sel);
+  event.set(fHandle_bool_particle_sel, passes_particle_sel);
+  return passes_reco_sel || passes_matrix_sel || passes_parton_sel || passes_particle_sel;
+  // return true;
 }
 
 

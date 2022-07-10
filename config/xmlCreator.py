@@ -346,6 +346,7 @@ class xmlCreator:
          for k, v in samplesDict.items():
             use_me = v.get('years') == None or year in v.get('years', [])
             use_me = use_me and (v.get('analysis') == None or 'tw' in v.get('analysis'))
+            # use_me = use_me and ('ST_tW' in k) # HACK
             if use_me:
                sample_entity = sampleEntity('106X_v2', (k, v, year,))
                if self.ignore_data and sample_entity.is_data: continue
@@ -461,7 +462,10 @@ class xmlCreator:
          file.write('''<Item Name="GenTopJetCollection" Value="hotvrGen"/>\n''')
          file.write('''<Item Name="GenParticleCollection" Value="GenParticles"/>\n''')
          file.write('''<Item Name="GenInfoName" Value="genInfo"/>\n''')
-         file.write('''<Item Name="additionalBranches" Value="jetsAk8PuppiSubstructure_SoftDropPuppi genjetsAk8SubstructureSoftDrop jetsAk4CHS slimmedMETs"/>\n''')
+         if is_mainsel:
+            file.write('''<Item Name="additionalBranches" Value="jetsAk8PuppiSubstructure_SoftDropPuppi genjetsAk8SubstructureSoftDrop jetsAk4CHS slimmedMETs btw_bool_reco_sel btw_bool_matrix_sel btw_bool_parton_sel btw_bool_particle_sel"/>\n''')
+         else:
+            file.write('''<Item Name="additionalBranches" Value="jetsAk8PuppiSubstructure_SoftDropPuppi genjetsAk8SubstructureSoftDrop jetsAk4CHS slimmedMETs"/>\n''')
          # if self.is_mainsel:
          # file.write('''<Item Name="AK8Collection_rec" Value="jetsAk8PuppiSubstructure_SoftDropPuppi"/>\n''')
          # file.write('''<Item Name="AK8Collection_gen" Value="genjetsAk8SubstructureSoftDrop"/>\n''')

@@ -18,6 +18,9 @@ public:
 
 protected:
   TH1F *hist_top_mass;
+  TH1F *hist_w_mass;
+
+  TH1F *hist_mtw_k;
   TH1F *hist_mtw;
 
   TH1F *hist_top_pt;

@@ -83,167 +83,6 @@ void MttHist::fill(const Event & event) {
 }
 
 //____________________________________________________________________________________________________
-// Information on EGamma triggers taken from https://twiki.cern.ch/twiki/bin/view/CMS/EgHLTRunIISummary
-BTWTriggerSelection::BTWTriggerSelection(Context & ctx, const bool low_pt):
-  fYear(extract_year(ctx)),
-  fChannel(extract_channel(ctx)),
-  fLowPt(low_pt)
-{
-  const TString dataset_version = ctx.get("dataset_version");
-  if(dataset_version.Contains("SingleMuon")) fDataStream = DataStream::isSingleMuon;
-  else if(dataset_version.Contains("SingleElectron")) fDataStream = DataStream::isSingleElectron;
-  else if(dataset_version.Contains("SinglePhoton")) fDataStream = DataStream::isSinglePhoton;
-  else if(dataset_version.Contains("EGamma")) fDataStream = DataStream::isEGamma;
-  else fDataStream = DataStream::isMC;
-
-  fTrigSel_IsoMu24.reset(new TriggerSelection("HLT_IsoMu24_v*"));
-  fTrigSel_IsoTkMu24.reset(new TriggerSelection("HLT_IsoTkMu24_v*"));
-  fTrigSel_IsoMu27.reset(new TriggerSelection("HLT_IsoMu27_v*"));
-
-  fTrigSel_Mu50.reset(new TriggerSelection("HLT_Mu50_v*"));
-  fTrigSel_TkMu50.reset(new TriggerSelection("HLT_TkMu50_v*"));
-  fTrigSel_OldMu100.reset(new TriggerSelection("HLT_OldMu100_v*"));
-  fTrigSel_TkMu100.reset(new TriggerSelection("HLT_TkMu100_v*"));
-
-  fTrigSel_Ele27_WPTight_Gsf.reset(new TriggerSelection("HLT_Ele27_WPTight_Gsf_v*"));
-  fTrigSel_Ele35_WPTight_Gsf.reset(new TriggerSelection("HLT_Ele35_WPTight_Gsf_v*"));
-  fTrigSel_Ele32_WPTight_Gsf.reset(new TriggerSelection("HLT_Ele32_WPTight_Gsf_v*"));
-
-  fTrigSel_Ele115_CaloIdVT_GsfTrkIdT.reset(new TriggerSelection("HLT_Ele115_CaloIdVT_GsfTrkIdT_v*"));
-  fTrigSel_Photon175.reset(new TriggerSelection("HLT_Photon175_v*"));
-  fTrigSel_Photon200.reset(new TriggerSelection("HLT_Photon200_v*"));
-}
-
-bool BTWTriggerSelection::passes(const Event & event) {
-  if(fDataStream == DataStream::isMC && event.isRealData) throw runtime_error("BTWTriggerSelection::passes(): Conflict with event.isRealData and dataset_version");
-  if(fYear == Year::isUL16preVFP || fYear == Year::isUL16postVFP) {
-    if(fChannel == Channel::isMuo) {
-      if(fYear == Year::isUL16postVFP) {
-        if(fLowPt) return fTrigSel_IsoMu24->passes(event) || fTrigSel_IsoTkMu24->passes(event);
-        else return fTrigSel_Mu50->passes(event) || fTrigSel_TkMu50->passes(event);
-      }
-      else if(fYear == Year::isUL16preVFP) {
-        if(fDataStream == DataStream::isMC) {
-          if(fLowPt) return fTrigSel_IsoMu24->passes(event) || fTrigSel_IsoTkMu24->passes(event);
-          else {
-            // Use random number generator with eta-dependent seed for reproducibility
-            TRandom3 *random = new TRandom3((int)(fabs(event.muons->at(0).v4().eta()*1000))); // TRandom3 is the same generator as used for gRandom
-            if(random->Rndm() > lumi_percentage_UL16preVFP_without_TkMu50) { // emulation of UL16preVFP Run B with run >= 274889
-              return fTrigSel_Mu50->passes(event) || fTrigSel_TkMu50->passes(event);
-            }
-            else { // emulation of UL16preVFP Run B with run < 274889
-              return fTrigSel_Mu50->passes(event);
-            }
-          }
-        }
-        else if(fDataStream == DataStream::isSingleMuon) {
-          if(fLowPt) return fTrigSel_IsoMu24->passes(event) || fTrigSel_IsoTkMu24->passes(event);
-          else {
-            if(is_UL16preVFP_without_TkMu50(event)) return fTrigSel_Mu50->passes(event);
-            else return fTrigSel_Mu50->passes(event) || fTrigSel_TkMu50->passes(event);
-          }
-        }
-        else return false;
-      }
-      else return false;
-    }
-    else if(fChannel == Channel::isEle) {
-      if(fDataStream == DataStream::isMC) {
-        if(fLowPt) return fTrigSel_Ele27_WPTight_Gsf->passes(event);
-        else return fTrigSel_Ele115_CaloIdVT_GsfTrkIdT->passes(event) || fTrigSel_Photon175->passes(event);
-      }
-      else if(fDataStream == DataStream::isSingleElectron) {
-        if(fLowPt) return fTrigSel_Ele27_WPTight_Gsf->passes(event);
-        else return fTrigSel_Ele115_CaloIdVT_GsfTrkIdT->passes(event);
-      }
-      else if(fDataStream == DataStream::isSinglePhoton) {
-        // Veto Ele115 since those events will be in the SingleElectron stream already
-        if(fLowPt) return false;
-        else return !fTrigSel_Ele115_CaloIdVT_GsfTrkIdT->passes(event) && fTrigSel_Photon175->passes(event);
-      }
-      else return false;
-    }
-    else return false;
-  }
-  else if(fYear == Year::isUL17) {
-    if(fChannel == Channel::isMuo) {
-      // if(fLowPt) return fTrigSel_IsoMu27->passes(event);
-      // else return fTrigSel_Mu50->passes(event) || fTrigSel_OldMu100->passes(event) || fTrigSel_TkMu100->passes(event);
-      if(fDataStream == DataStream::isMC) {
-        if(fLowPt) return fTrigSel_IsoMu27->passes(event);
-        else {
-          // Use random number generator with eta-dependent seed for reproducibility
-          TRandom3 *random = new TRandom3((int)(fabs(event.muons->at(0).v4().eta()*1000))); // TRandom3 is the same generator as used for gRandom
-          if(random->Rndm() > lumi_percentage_UL17_RunB) { // Run C-F emulation
-            return fTrigSel_Mu50->passes(event) || fTrigSel_OldMu100->passes(event) || fTrigSel_TkMu100->passes(event);
-          }
-          else { // Run B emulation
-            return fTrigSel_Mu50->passes(event);
-          }
-        }
-      }
-      else if(fDataStream == DataStream::isSingleMuon) {
-        if(fLowPt) return fTrigSel_IsoMu27->passes(event);
-        else {
-          if(is_UL17_RunB(event)) return fTrigSel_Mu50->passes(event);
-          else return fTrigSel_Mu50->passes(event) || fTrigSel_OldMu100->passes(event) || fTrigSel_TkMu100->passes(event);
-        }
-      }
-      else return false;
-    }
-    else if(fChannel == Channel::isEle) {
-      if(fDataStream == DataStream::isMC) {
-        // Use random number generator with eta-dependent seed for reproducibility
-        TRandom3 *random = new TRandom3((int)(fabs(event.electrons->at(0).v4().eta()*1000))); // TRandom3 is the same generator as used for gRandom
-        if(random->Rndm() > lumi_percentage_UL17_RunB) { // Run C-F emulation
-          if(fLowPt) return fTrigSel_Ele35_WPTight_Gsf->passes(event);
-          else return fTrigSel_Ele115_CaloIdVT_GsfTrkIdT->passes(event) || fTrigSel_Photon200->passes(event);
-        }
-        else { // Run B emulation
-          return fTrigSel_Ele35_WPTight_Gsf->passes(event) || fTrigSel_Photon200->passes(event);
-        }
-      }
-      else if(fDataStream == DataStream::isSingleElectron) {
-        if(is_UL17_RunB(event)) {
-          return fTrigSel_Ele35_WPTight_Gsf->passes(event);
-        }
-        else {
-          if(fLowPt) return fTrigSel_Ele35_WPTight_Gsf->passes(event);
-          else return fTrigSel_Ele115_CaloIdVT_GsfTrkIdT->passes(event);
-        }
-      }
-      else if(fDataStream == DataStream::isSinglePhoton) {
-        if(is_UL17_RunB(event)) {
-          // Veto Ele35 since those events will be in the SingleElectron stream already
-          return !fTrigSel_Ele35_WPTight_Gsf->passes(event) && fTrigSel_Photon200->passes(event);
-        }
-        else {
-          // Veto Ele115 since those events will be in the SingleElectron stream already
-          if(fLowPt) return false;
-          else return !fTrigSel_Ele115_CaloIdVT_GsfTrkIdT->passes(event) && fTrigSel_Photon200->passes(event);
-        }
-      }
-      else return false;
-    }
-    else return false;
-  }
-  else if(fYear == Year::isUL18)  {
-    if(fChannel == Channel::isMuo) {
-      if(fLowPt) return fTrigSel_IsoMu24->passes(event);
-      else return fTrigSel_Mu50->passes(event) || fTrigSel_OldMu100->passes(event) || fTrigSel_TkMu100->passes(event);
-    }
-    else if(fChannel == Channel::isEle) {
-      // No need for differentiation between SingleElectron and SinglePhoton streams since we have EGamma in 2018
-      // According to https://twiki.cern.ch/twiki/bin/view/CMS/EgHLTRunIISummary#2018 there is no need for a photon trigger
-      if(fLowPt) return fTrigSel_Ele32_WPTight_Gsf->passes(event);
-      else return fTrigSel_Ele115_CaloIdVT_GsfTrkIdT->passes(event) || fTrigSel_Photon200->passes(event);
-    }
-    else return false;
-  }
-  else return false;
-}
-
-//____________________________________________________________________________________________________
 WTag::WTag(const WTag::algo & algorithm, const WTag::wp & working_point): fAlgo(algorithm), fWP(working_point) {}
 
 bool WTag::operator()(const TopJet & jet, const Event & event) const {
@@ -258,6 +97,13 @@ bool WTag::operator()(const TopJet & jet, const Event & event) const {
           else if(year == "UL16postVFP") x = 0.9;
           else if(year == "UL17") x = 0.9;
           else if(year == "UL18") x = 0.9;
+          else runtime_error((string)"WTag::operator()(): Year '"+year+"' not implemented");
+          break;
+        case WTag::wp::WP_CUSTOM : // BkgEff0p030, derived privately
+          if(year == "UL16preVFP") x = 0.871;
+          else if(year == "UL16postVFP") x = 0.868;
+          else if(year == "UL17") x = 0.868;
+          else if(year == "UL18") x = 0.864;
           else runtime_error((string)"WTag::operator()(): Year '"+year+"' not implemented");
           break;
         // Taken from https://indico.cern.ch/event/1152827/contributions/4840404/attachments/2428856/4162159/ParticleNet_SFs_ULNanoV9_JMAR_25April2022_PK.pdf
@@ -412,6 +258,7 @@ vector<Particle> NeutrinoReconstruction(const FlavorParticle & lepton_, const ME
 
 //____________________________________________________________________________________________________
 LeptonicHemisphereReco::LeptonicHemisphereReco(Context & ctx):
+  fHandle_bool_reco_sel(ctx.get_handle<bool>(kHandleName_bool_reco_sel)),
   fHandle_CHSjets(ctx.get_handle<vector<Jet>>(kCollectionName_AK4CHS)),
   fHandle_pairedPUPPIjets(ctx.get_handle<vector<Jet>>(kHandleName_pairedPUPPIjets)),
   fHandle_bJets(ctx.get_handle<vector<Jet>>(kHandleName_bJets)),
@@ -421,6 +268,7 @@ LeptonicHemisphereReco::LeptonicHemisphereReco(Context & ctx):
 {}
 
 bool LeptonicHemisphereReco::process(Event & event) {
+  const bool passes_reco_sel_so_far = event.get(fHandle_bool_reco_sel);
   const FlavorParticle & primlep = event.get(fHandle_PrimaryLepton);
   const vector<Particle> neutrino_solutions = btw::NeutrinoReconstruction(primlep, *event.met);
   const vector<Jet> bjets = event.get(fHandle_bJets);
@@ -468,12 +316,15 @@ bool LeptonicHemisphereReco::process(Event & event) {
     }
   }
   // throw an error if event has no central jets
-  if(considered_jets.size() == 0) throw runtime_error("LeptonicHemisphereReco::process(): No jets found which could be considered for the top quark reconstruction");
+  if(considered_jets.size() == 0) {
+    if(passes_reco_sel_so_far) throw runtime_error("LeptonicHemisphereReco::process(): No jets found which could be considered for the top quark reconstruction");
+    else considered_jets.push_back(Jet()); // add dummy Jet for events that do not pass reco level selection (more specifically: do not pass >=1 AK4 requirement)
+  }
 
   const ERegion_heavyTags region_heavyTags = event.get(fHandle_Region_heavyTags);
   vector<LeptonicHemisphere> solutions;
   for(const Jet & jet : considered_jets) {
-    const Jet *chsjetPtr = getCHSmatch(jet, event, fHandle_CHSjets);
+    const Jet *chsjetPtr = passes_reco_sel_so_far ? getCHSmatch(jet, event, fHandle_CHSjets) : &jet;
     if(region_heavyTags != ERegion_heavyTags::_1t) {
       // Iterate over neutrino solutions and find best neutrino (and thus best W boson) from top quark mass constraint
       for(const Particle & neutrino : neutrino_solutions) {
@@ -574,59 +425,274 @@ bool TWSignalSelection_TrueDecay::passes(const Event & event) {
 
 //____________________________________________________________________________________________________
 // Only usable with tW Sig events!
+// This class will need to be adjusted once I have the proper Particle and Parton Level definitions available
 GenLevelDefinitions::GenLevelDefinitions(Context & ctx):
-  fChannel(extract_channel(ctx)),
+  // fChannel(extract_channel(ctx)),
   fHandle_GENtW(ctx.get_handle<ltt::SingleTopGen_tWch>(kHandleName_SingleTopGen_tWch)),
-  fHandle_Parton_Top(ctx.get_handle<GenLevelDef>(kHandleName_Parton_Top)),
-  fHandle_Parton_WAss(ctx.get_handle<GenLevelDef>(kHandleName_Parton_WAss)),
-  fHandle_Parton_WTop(ctx.get_handle<GenLevelDef>(kHandleName_Parton_WTop)),
-  fHandle_Parton_tW_system(ctx.get_handle<GenLevelDef>(kHandleName_Parton_tW_system)),
-  fHandle_Parton_LeptonicW(ctx.get_handle<GenLevelDef>(kHandleName_Parton_LeptonicW)),
-  fHandle_Parton_SingleLepton(ctx.get_handle<GenLevelDef>(kHandleName_Parton_SingleLepton)),
-  fHandle_Parton_SingleNeutrino(ctx.get_handle<GenLevelDef>(kHandleName_Parton_SingleNeutrino))
+  fHandle_Matrix_Top(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_Top)),
+  fHandle_Matrix_WAss(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_WAss)),
+  fHandle_Matrix_WTop(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_WTop)),
+  fHandle_Matrix_tW_system(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_tW_system)),
+  fHandle_Matrix_LeptonicW(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_LeptonicW)),
+  fHandle_Matrix_SingleLepton(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_SingleLepton)),
+  fHandle_Matrix_SingleNeutrino(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_SingleNeutrino))
 {}
 
 bool GenLevelDefinitions::process(Event & event) {
   if(!event.is_valid(fHandle_GENtW)) return true;
   const auto & GENtW = event.get(fHandle_GENtW);
-  event.set(fHandle_Parton_Top, GENtW.Top());
-  event.set(fHandle_Parton_WAss, GENtW.WAss());
-  event.set(fHandle_Parton_WTop, GENtW.WTop());
-  Particle tW_system;
-  tW_system.set_v4(GENtW.Top().v4() + GENtW.WAss().v4());
-  tW_system.set_charge(GENtW.Top().charge() + GENtW.WAss().charge());
-  event.set(fHandle_Parton_tW_system, tW_system);
+  event.set(fHandle_Matrix_Top, GENtW.Top());
+  event.set(fHandle_Matrix_WAss, GENtW.WAss());
+  event.set(fHandle_Matrix_WTop, GENtW.WTop());
+  const Particle tW_system = add_Particles(GENtW.Top(), GENtW.WAss());
+  event.set(fHandle_Matrix_tW_system, tW_system);
 
   // This part will crash for non-semileptonic tW events:
   if(GENtW.IsSemiLeptonic(false)) { // no taus
-    event.set(fHandle_Parton_LeptonicW, GENtW.LeptonicW());
-    event.set(fHandle_Parton_SingleLepton, GENtW.SingleLepton());
-    event.set(fHandle_Parton_SingleNeutrino, GENtW.SingleNeutrino());
+    event.set(fHandle_Matrix_LeptonicW, GENtW.LeptonicW());
+    event.set(fHandle_Matrix_SingleLepton, GENtW.SingleLepton());
+    event.set(fHandle_Matrix_SingleNeutrino, GENtW.SingleNeutrino());
   }
   return true;
 }
 
-// //____________________________________________________________________________________________________
-// VariablesOfInterest::VariablesOfInterest(Context & ctx):
-//   fHandle_GENtW(ctx.get_handle<ltt::SingleTopGen_tWch>(kHandleName_SingleTopGen_tWch)),
-//   fHandle_Region_heavyTags(ctx.get_handle<ERegion_heavyTags>(kHandleName_Region_heavyTags)),
-//
-//   fHandle_TheTopJet(ctx.get_handle<TopJet>(kHandleName_TheTopJet)),
-//   fHandle_TheWJet(ctx.get_handle<TopJet>(kHandleName_TheWJet)),
-//   // fHandle_PrimaryLepton(ctx.get_handle<FlavorParticle>(kHandleName_PrimaryLepton)),
-//   fHandle_LeptonicHemisphere(ctx.get_handle<LeptonicHemisphere>(kHandleName_LeptonicHemisphere)),
-//
-//   fHandle_Parton_Top(ctx.get_handle<GenLevelDef>(kHandleName_Parton_Top)),
-//   fHandle_Parton_WAss(ctx.get_handle<GenLevelDef>(kHandleName_Parton_WAss)),
-//   // fHandle_Parton_WTop(ctx.get_handle<GenLevelDef>(kHandleName_Parton_WTop)),
-//   fHandle_Parton_tW_system(ctx.get_handle<GenLevelDef>(kHandleName_Parton_tW_system)),
-//   fHandle_Parton_LeptonicW(ctx.get_handle<GenLevelDef>(kHandleName_Parton_LeptonicW)),
-//   fHandle_Parton_SingleLepton(ctx.get_handle<GenLevelDef>(kHandleName_Parton_SingleLepton)),
-//   fHandle_Parton_SingleNeutrino(ctx.get_handle<GenLevelDef>(kHandleName_Parton_SingleNeutrino))
-// {}
-//
-// bool VariablesOfInterest::process(Event & event) {
-//
-// }
+//____________________________________________________________________________________________________
+MatrixLevelSelection::MatrixLevelSelection(Context & ctx, const string & sel, const boost::optional<ltt::Channel> & channel):
+  fSel(sel),
+  fChannel(channel ? *channel : extract_channel(ctx)),
+  fHandle_Region_heavyTags(ctx.get_handle<ERegion_heavyTags>(kHandleName_Region_heavyTags)),
+  fHandle_GENtW(ctx.get_handle<ltt::SingleTopGen_tWch>(kHandleName_SingleTopGen_tWch)),
+  fHandle_Matrix_Top(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_Top)),
+  fHandle_Matrix_WAss(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_WAss)),
+  fHandle_Matrix_SingleLepton(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_SingleLepton))
+{}
+
+bool MatrixLevelSelection::passes(const Event & event) {
+  if(!event.is_valid(fHandle_GENtW)) return false;
+  const auto & GENtW = event.get(fHandle_GENtW);
+  const GenLevelDef & Matrix_Top = event.get(fHandle_Matrix_Top);
+  const GenLevelDef & Matrix_WAss = event.get(fHandle_Matrix_WAss);
+  const GenLevelDef * Matrix_SingleLepton = event.is_valid(fHandle_Matrix_SingleLepton) ? &event.get(fHandle_Matrix_SingleLepton) : nullptr;
+
+  if(fSel == "presel") {
+    if(
+      // (Matrix_Top.pt() > 200. && fabs(Matrix_Top.eta()) < 2.5) ||
+      // (Matrix_WAss.pt() > 200. && fabs(Matrix_WAss.eta()) < 2.5)
+      (Matrix_Top.pt() > 200.) ||
+      (Matrix_WAss.pt() > 200.)
+    ) return true;
+  }
+
+  else if(fSel == "mainsel") {
+    const ERegion_heavyTags & region_heavyTags = event.get(fHandle_Region_heavyTags);
+    if(fChannel == Channel::isMuo) {
+      if(
+        (
+          (GENtW.IsTopHadronicDecay() && GENtW.IsAssToMuonDecay()) ||
+          (GENtW.IsAssHadronicDecay() && GENtW.IsTopToMuonDecay())
+        )
+        // &&
+        // (
+        //   (region_heavyTags == ERegion_heavyTags::_1t && Matrix_Top.pt() > 200.) ||
+        //   (region_heavyTags == ERegion_heavyTags::_0t1W && Matrix_WAss.pt() > 200.)
+        // )
+        &&
+        (
+          Matrix_SingleLepton->pt() > 40.
+        )
+      ) return true;
+    }
+    else if(fChannel == Channel::isEle) {
+      if(
+        (
+          (GENtW.IsTopHadronicDecay() && GENtW.IsAssToElectronDecay()) ||
+          (GENtW.IsAssHadronicDecay() && GENtW.IsTopToElectronDecay())
+        )
+        // &&
+        // (
+        //   (region_heavyTags == ERegion_heavyTags::_1t && Matrix_Top.pt() > 200.) ||
+        //   (region_heavyTags == ERegion_heavyTags::_0t1W && Matrix_WAss.pt() > 200.)
+        // )
+        &&
+        (
+          Matrix_SingleLepton->pt() > 40.
+        )
+      ) return true;
+    }
+    // const ERegion_heavyTags & region_heavyTags = event.get(fHandle_Region_heavyTags);
+    // if(fChannel == Channel::isMuo) {
+    //   if(
+    //     (
+    //       GENtW.IsTopHadronicDecay() && GENtW.IsAssToMuonDecay() && region_heavyTags == ERegion_heavyTags::_1t
+    //       &&
+    //       Matrix_Top.pt() > 200. && fabs(Matrix_Top.eta()) < 2.5
+    //       &&
+    //       Matrix_SingleLepton->pt() > 40. && fabs(Matrix_SingleLepton->eta()) < 2.4
+    //     )
+    //     ||
+    //     (
+    //       GENtW.IsAssHadronicDecay() && GENtW.IsTopToMuonDecay() && region_heavyTags == ERegion_heavyTags::_0t1W
+    //       &&
+    //       Matrix_WAss.pt() > 200. && fabs(Matrix_WAss.eta()) < 2.5
+    //       &&
+    //       Matrix_SingleLepton->pt() > 40. && fabs(Matrix_SingleLepton->eta()) < 2.4
+    //     )
+    //   ) return true;
+    // }
+    // else if(fChannel == Channel::isEle) {
+    //   if(
+    //     (
+    //       GENtW.IsTopHadronicDecay() && GENtW.IsAssToElectronDecay() && region_heavyTags == ERegion_heavyTags::_1t
+    //       &&
+    //       Matrix_Top.pt() > 200. && fabs(Matrix_Top.eta()) < 2.5
+    //       &&
+    //       Matrix_SingleLepton->pt() > 40. && fabs(Matrix_SingleLepton->eta()) < 2.4
+    //     )
+    //     ||
+    //     (
+    //       GENtW.IsAssHadronicDecay() && GENtW.IsTopToElectronDecay() && region_heavyTags == ERegion_heavyTags::_0t1W
+    //       &&
+    //       Matrix_WAss.pt() > 200. && fabs(Matrix_WAss.eta()) < 2.5
+    //       &&
+    //       Matrix_SingleLepton->pt() > 40. && fabs(Matrix_SingleLepton->eta()) < 2.4
+    //     )
+    //   ) return true;
+    // }
+  }
+
+  return false;
+}
+
+//____________________________________________________________________________________________________
+VariablesOfInterest::VariablesOfInterest(Context & ctx):
+  fHandle_Region_heavyTags(ctx.get_handle<ERegion_heavyTags>(kHandleName_Region_heavyTags)),
+
+  fHandle_TheTopJet(ctx.get_handle<TopJet>(kHandleName_TheTopJet)),
+  fHandle_TheWJet(ctx.get_handle<TopJet>(kHandleName_TheWJet)),
+  // fHandle_PrimaryLepton(ctx.get_handle<FlavorParticle>(kHandleName_PrimaryLepton)),
+  fHandle_LeptonicHemisphere(ctx.get_handle<LeptonicHemisphere>(kHandleName_LeptonicHemisphere)),
+
+  fHandle_GENtW(ctx.get_handle<ltt::SingleTopGen_tWch>(kHandleName_SingleTopGen_tWch)),
+  fHandle_Matrix_Top(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_Top)),
+  fHandle_Matrix_WAss(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_WAss)),
+  // fHandle_Matrix_WTop(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_WTop)),
+  fHandle_Matrix_tW_system(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_tW_system)),
+  // fHandle_Matrix_LeptonicW(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_LeptonicW)),
+  // fHandle_Matrix_SingleLepton(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_SingleLepton)),
+  // fHandle_Matrix_SingleNeutrino(ctx.get_handle<GenLevelDef>(kHandleName_Matrix_SingleNeutrino)),
+
+  fHandle_VOI_Reco_TopQuarkPt(ctx.declare_event_output<float>(kHandleName_VOI_Reco_TopQuarkPt)),
+  fHandle_VOI_Reco_TopQuarkEta(ctx.declare_event_output<float>(kHandleName_VOI_Reco_TopQuarkEta)),
+  fHandle_VOI_Reco_TopQuarkY(ctx.declare_event_output<float>(kHandleName_VOI_Reco_TopQuarkY)),
+  fHandle_VOI_Reco_WBosonPt(ctx.declare_event_output<float>(kHandleName_VOI_Reco_WBosonPt)),
+  fHandle_VOI_Reco_WBosonEta(ctx.declare_event_output<float>(kHandleName_VOI_Reco_WBosonEta)),
+  fHandle_VOI_Reco_WBosonY(ctx.declare_event_output<float>(kHandleName_VOI_Reco_WBosonY)),
+  fHandle_VOI_Reco_tWSystemPt(ctx.declare_event_output<float>(kHandleName_VOI_Reco_tWSystemPt)),
+  fHandle_VOI_Reco_tWSystemEta(ctx.declare_event_output<float>(kHandleName_VOI_Reco_tWSystemEta)),
+  fHandle_VOI_Reco_tWSystemY(ctx.declare_event_output<float>(kHandleName_VOI_Reco_tWSystemY)),
+  fHandle_VOI_Reco_tWSystemMass(ctx.declare_event_output<float>(kHandleName_VOI_Reco_tWSystemMass)),
+  fHandle_VOI_Reco_tWSystemDPhi(ctx.declare_event_output<float>(kHandleName_VOI_Reco_tWSystemDPhi)),
+
+  fHandle_VOI_Matrix_TopQuarkPt(ctx.declare_event_output<float>(kHandleName_VOI_Matrix_TopQuarkPt)),
+  fHandle_VOI_Matrix_TopQuarkEta(ctx.declare_event_output<float>(kHandleName_VOI_Matrix_TopQuarkEta)),
+  fHandle_VOI_Matrix_TopQuarkY(ctx.declare_event_output<float>(kHandleName_VOI_Matrix_TopQuarkY)),
+  fHandle_VOI_Matrix_WBosonPt(ctx.declare_event_output<float>(kHandleName_VOI_Matrix_WBosonPt)),
+  fHandle_VOI_Matrix_WBosonEta(ctx.declare_event_output<float>(kHandleName_VOI_Matrix_WBosonEta)),
+  fHandle_VOI_Matrix_WBosonY(ctx.declare_event_output<float>(kHandleName_VOI_Matrix_WBosonY)),
+  fHandle_VOI_Matrix_tWSystemPt(ctx.declare_event_output<float>(kHandleName_VOI_Matrix_tWSystemPt)),
+  fHandle_VOI_Matrix_tWSystemEta(ctx.declare_event_output<float>(kHandleName_VOI_Matrix_tWSystemEta)),
+  fHandle_VOI_Matrix_tWSystemY(ctx.declare_event_output<float>(kHandleName_VOI_Matrix_tWSystemY)),
+  fHandle_VOI_Matrix_tWSystemMass(ctx.declare_event_output<float>(kHandleName_VOI_Matrix_tWSystemMass)),
+  fHandle_VOI_Matrix_tWSystemDPhi(ctx.declare_event_output<float>(kHandleName_VOI_Matrix_tWSystemDPhi))
+{}
+
+bool VariablesOfInterest::process(Event & event) {
+  const ERegion_heavyTags region_heavyTags = event.get(fHandle_Region_heavyTags);
+
+  const TopJet & theTopJet = event.get(fHandle_TheTopJet);
+  const TopJet & theWJet = event.get(fHandle_TheWJet);
+  const LeptonicHemisphere & hemi = event.get(fHandle_LeptonicHemisphere);
+
+  // const auto & GENtW = event.get(fHandle_GENtW);
+  const bool bGENtW = event.is_valid(fHandle_GENtW);
+  const GenLevelDef * Matrix_Top = bGENtW ? &event.get(fHandle_Matrix_Top) : nullptr;
+  const GenLevelDef * Matrix_WAss = bGENtW ? &event.get(fHandle_Matrix_WAss) : nullptr;
+  const GenLevelDef * Matrix_tW_system = bGENtW ? &event.get(fHandle_Matrix_tW_system) : nullptr;
+
+  const float dummy_value = -1.f;
+
+  //__________________________________________________
+  if(region_heavyTags == ERegion_heavyTags::_1t) {
+    event.set(fHandle_VOI_Reco_TopQuarkPt, theTopJet.pt());
+    event.set(fHandle_VOI_Reco_TopQuarkEta, theTopJet.eta());
+    event.set(fHandle_VOI_Reco_TopQuarkY, ltt::rapidity(theTopJet));
+    event.set(fHandle_VOI_Reco_WBosonPt, hemi.wboson().pt());
+    event.set(fHandle_VOI_Reco_WBosonEta, hemi.wboson().eta());
+    event.set(fHandle_VOI_Reco_WBosonY, ltt::rapidity(hemi.wboson()));
+    const Particle tW_system = add_Particles(theTopJet, hemi.wboson());
+    event.set(fHandle_VOI_Reco_tWSystemPt, tW_system.pt());
+    event.set(fHandle_VOI_Reco_tWSystemEta, tW_system.eta());
+    event.set(fHandle_VOI_Reco_tWSystemY, ltt::rapidity(tW_system));
+    event.set(fHandle_VOI_Reco_tWSystemMass, tW_system.v4().M());
+    event.set(fHandle_VOI_Reco_tWSystemDPhi, fabs(ltt::signedDeltaPhi(theTopJet, hemi.wboson())));
+  }
+  else if(region_heavyTags == ERegion_heavyTags::_0t1W) {
+    event.set(fHandle_VOI_Reco_TopQuarkPt, hemi.pt());
+    event.set(fHandle_VOI_Reco_TopQuarkEta, hemi.eta());
+    event.set(fHandle_VOI_Reco_TopQuarkY, ltt::rapidity(hemi));
+    event.set(fHandle_VOI_Reco_WBosonPt, theWJet.pt());
+    event.set(fHandle_VOI_Reco_WBosonEta, theWJet.eta());
+    event.set(fHandle_VOI_Reco_WBosonY, ltt::rapidity(theWJet));
+    const Particle tW_system = add_Particles(theWJet, hemi);
+    event.set(fHandle_VOI_Reco_tWSystemPt, tW_system.pt());
+    event.set(fHandle_VOI_Reco_tWSystemEta, tW_system.eta());
+    event.set(fHandle_VOI_Reco_tWSystemY, ltt::rapidity(tW_system));
+    event.set(fHandle_VOI_Reco_tWSystemMass, tW_system.v4().M());
+    event.set(fHandle_VOI_Reco_tWSystemDPhi, fabs(ltt::signedDeltaPhi(theWJet, hemi)));
+  }
+  else {
+    event.set(fHandle_VOI_Reco_TopQuarkPt, dummy_value);
+    event.set(fHandle_VOI_Reco_TopQuarkEta, dummy_value);
+    event.set(fHandle_VOI_Reco_TopQuarkY, dummy_value);
+    event.set(fHandle_VOI_Reco_WBosonPt, dummy_value);
+    event.set(fHandle_VOI_Reco_WBosonEta, dummy_value);
+    event.set(fHandle_VOI_Reco_WBosonY, dummy_value);
+    event.set(fHandle_VOI_Reco_tWSystemPt, dummy_value);
+    event.set(fHandle_VOI_Reco_tWSystemEta, dummy_value);
+    event.set(fHandle_VOI_Reco_tWSystemY, dummy_value);
+    event.set(fHandle_VOI_Reco_tWSystemMass, dummy_value);
+    event.set(fHandle_VOI_Reco_tWSystemDPhi, dummy_value);
+  }
+
+  //__________________________________________________
+  if(bGENtW) {
+    event.set(fHandle_VOI_Matrix_TopQuarkPt, Matrix_Top->pt());
+    event.set(fHandle_VOI_Matrix_TopQuarkEta, Matrix_Top->eta());
+    event.set(fHandle_VOI_Matrix_TopQuarkY, ltt::rapidity(*Matrix_Top));
+    event.set(fHandle_VOI_Matrix_WBosonPt, Matrix_WAss->pt());
+    event.set(fHandle_VOI_Matrix_WBosonEta, Matrix_WAss->eta());
+    event.set(fHandle_VOI_Matrix_WBosonY, ltt::rapidity(*Matrix_WAss));
+    event.set(fHandle_VOI_Matrix_tWSystemPt, Matrix_tW_system->pt());
+    event.set(fHandle_VOI_Matrix_tWSystemEta, Matrix_tW_system->eta());
+    event.set(fHandle_VOI_Matrix_tWSystemY, ltt::rapidity(*Matrix_tW_system));
+    event.set(fHandle_VOI_Matrix_tWSystemMass, Matrix_tW_system->v4().M());
+    event.set(fHandle_VOI_Matrix_tWSystemDPhi, fabs(ltt::signedDeltaPhi(*Matrix_Top, *Matrix_WAss)));
+  }
+  else {
+    event.set(fHandle_VOI_Matrix_TopQuarkPt, dummy_value);
+    event.set(fHandle_VOI_Matrix_TopQuarkEta, dummy_value);
+    event.set(fHandle_VOI_Matrix_TopQuarkY, dummy_value);
+    event.set(fHandle_VOI_Matrix_WBosonPt, dummy_value);
+    event.set(fHandle_VOI_Matrix_WBosonEta, dummy_value);
+    event.set(fHandle_VOI_Matrix_WBosonY, dummy_value);
+    event.set(fHandle_VOI_Matrix_tWSystemPt, dummy_value);
+    event.set(fHandle_VOI_Matrix_tWSystemEta, dummy_value);
+    event.set(fHandle_VOI_Matrix_tWSystemY, dummy_value);
+    event.set(fHandle_VOI_Matrix_tWSystemMass, dummy_value);
+    event.set(fHandle_VOI_Matrix_tWSystemDPhi, dummy_value);
+  }
+
+  return true;
+}
 
 }}

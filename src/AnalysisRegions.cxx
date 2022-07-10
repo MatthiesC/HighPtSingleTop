@@ -21,9 +21,9 @@ AnalysisRegionSetter::AnalysisRegionSetter(Context & ctx, const bool b_veto_like
   fHandle_n_bJets(ctx.get_handle<int>(kHandleName_n_bJets)),
   // fHandle_n_bJets_loose(ctx.get_handle<int>(kHandleName_n_bJets_loose)),
   // fHandle_n_bJets_medium(ctx.get_handle<int>(kHandleName_n_bJets_medium)),
-  // fHandle_n_bJets_tight(ctx.get_handle<int>(kHandleName_n_bJets_tight)),
+  fHandle_n_bJets_tight(ctx.get_handle<int>(kHandleName_n_bJets_tight)),
 
-  fHandle_n_bJets_hemi(ctx.get_handle<int>(kHandleName_n_bJets_hemi)),
+  // fHandle_n_bJets_hemi(ctx.get_handle<int>(kHandleName_n_bJets_hemi)),
   // fHandle_n_bJets_hemi_loose(ctx.get_handle<int>(kHandleName_n_bJets_hemi_loose)),
   // fHandle_n_bJets_hemi_medium(ctx.get_handle<int>(kHandleName_n_bJets_hemi_medium)),
   // fHandle_n_bJets_hemi_tight(ctx.get_handle<int>(kHandleName_n_bJets_hemi_tight)),
@@ -62,7 +62,8 @@ bool AnalysisRegionSetter::process(Event & event) {
   const uint n_bJets = event.get(fHandle_n_bJets);
   // const uint n_bJets_loose = event.get(fHandle_n_bJets_loose);
   // const uint n_bJets_medium = event.get(fHandle_n_bJets_medium);
-  // const uint n_bJets_tight = event.get(fHandle_n_bJets_tight);
+  const uint n_bJets_tight = event.get(fHandle_n_bJets_tight);
+  /*
   if(bVetoLike && region_heavyTags == ERegion_heavyTags::_1t) {
     const uint n_bJets_vetoable = event.get(fHandle_n_bJets_hemi);
     // const uint n_bJets_vetoable_loose = event.get(fHandle_n_bJets_hemi_loose);
@@ -103,15 +104,16 @@ bool AnalysisRegionSetter::process(Event & event) {
     else {
       region_bTags = ERegion_bTags::_0b;
     }
-    // if(n_bJets >= 2 && n_bJets_tight >= 1) {
-    //   region_bTags = ERegion_bTags::_2b;
-    // }
-    // else if(n_bJets >= 1) {
-    //   region_bTags = ERegion_bTags::_1b;
-    // }
-    // else {
-    //   region_bTags = ERegion_bTags::_0b;
-    // }
+  }
+  */
+  if(n_bJets >= 2 && n_bJets_tight >= 1) {
+    region_bTags = ERegion_bTags::_2b;
+  }
+  else if(n_bJets >= 1) {
+    region_bTags = ERegion_bTags::_1b;
+  }
+  else {
+    region_bTags = ERegion_bTags::_0b;
   }
   event.set(fHandle_Region_bTags, region_bTags);
   event.set(fHandle_Region_bTags_int, kRegions_bTags.at(region_bTags).index);

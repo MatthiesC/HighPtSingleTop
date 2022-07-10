@@ -10,7 +10,8 @@
 	  <!-- <!ENTITY dyjets_sample "/nfs/dust/cms/user/matthies/uhh2-102X-v2-el7/CMSSW_10_2_17/src/UHH2/HighPtSingleTop/output/presel/2016/muo/nominal/uhh2.AnalysisModuleRunner.MC.DYJetsToLL_HT600to800_2016v3.root"> -->
 		<!-- <!ENTITY wjets_sample "/nfs/dust/cms/user/matthies/uhh2-102X-v2-el7/CMSSW_10_2_17/src/UHH2/HighPtSingleTop/output/presel/2016/muo/nominal/uhh2.AnalysisModuleRunner.MC.WJetsToLNu_HT600to800_2016v3.root"> -->
 		<!-- <!ENTITY tw_sample "/nfs/dust/cms/user/matthies/uhh2-106X-v2/CMSSW_10_6_28/src/UHH2/common/UHH2-datasets/RunII_106X_v2/SM/UL18/ST_tW_top_5f_NoFullyHadronicDecays_CP5_powheg-pythia8_Summer20UL18_v1.xml"> -->
-		<!ENTITY tw_sample "/pnfs/desy.de/cms/tier2//store/group/uhh/uhh2ntuples/RunII_106X_v2/UL18/ST_tW_top_5f_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8/crab_ST_tW_top_5f_NoFullyHadronicDecays_CP5_powheg-pythia8_Summer20UL18_v1/211110_154010/0000/Ntuple_1.root">
+		<!--- <!ENTITY tw_sample "/pnfs/desy.de/cms/tier2//store/group/uhh/uhh2ntuples/RunII_106X_v2/UL18/ST_tW_top_5f_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8/crab_ST_tW_top_5f_NoFullyHadronicDecays_CP5_powheg-pythia8_Summer20UL18_v1/211110_154010/0000/Ntuple_1.root">-->
+                <!ENTITY wjetsqq "/pnfs/desy.de/cms/tier2//store/group/uhh/uhh2ntuples/RunII_106X_v2/UL18/WJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8/crab_WJetsToQQ_HT-200to400_CP5_madgraphMLM-pythia8_Summer20UL18_v2/211203_125413/0000/Ntuple_189.root">
 
 	  ]>
 
@@ -28,8 +29,8 @@
 
 	    <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTdir;/" PostFix="" TargetLumi="&TargetLumi;" >
 
-	      <InputData Lumi="1.0" NEventsMax="&NEVT;" Type="MC" Version="tw_sample" Cacheable="&b_Cacheable;">
-		<In FileName="&tw_sample;" Lumi="0.0"/>
+	      <InputData Lumi="1.0" NEventsMax="&NEVT;" Type="MC" Version="wjetsqq" Cacheable="&b_Cacheable;">
+		<In FileName="&wjetsqq;" Lumi="0.0"/>
 		<InputTree Name="AnalysisTree" />
 		<!--<OutputTree Name="AnalysisTree" /> -->
 	      </InputData>

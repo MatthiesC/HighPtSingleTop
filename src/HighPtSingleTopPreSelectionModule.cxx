@@ -16,6 +16,7 @@
 #include "UHH2/common/include/Utils.h"
 
 #include "UHH2/HighPtSingleTop/include/Constants.h"
+#include "UHH2/HighPtSingleTop/include/Utils.h"
 
 #include "UHH2/LegacyTopTagging/include/AndHists.h"
 #include "UHH2/LegacyTopTagging/include/Constants.h"
@@ -49,6 +50,7 @@ private:
   unsigned long long i_event = 0;
   const bool is_mc;
   const bool is_singlemuon;
+  const bool is_tW;
   enum class JECVariation {
     nominal,
     jes_up,
@@ -86,6 +88,10 @@ private:
   /*
   All modules etc. in chronological order as used in event loop:
   */
+
+  unique_ptr<AnalysisModule> prod_SingleTopGen_tWch;
+  unique_ptr<AnalysisModule> genleveldef;
+  unique_ptr<Selection> slct_matrix;
 
   unique_ptr<Selection> slct_lumi;
   unique_ptr<AnalysisModule> sf_lumi;
@@ -154,6 +160,11 @@ private:
 
   unique_ptr<OrSelection> slct_1largejet;
   unique_ptr<ltt::AndHists> hist_1largejet;
+
+  Event::Handle<bool> fHandle_bool_reco_sel;
+  Event::Handle<bool> fHandle_bool_matrix_sel;
+  Event::Handle<bool> fHandle_bool_parton_sel;
+  Event::Handle<bool> fHandle_bool_particle_sel;
 };
 
 
@@ -164,7 +175,8 @@ private:
 HighPtSingleTopPreSelectionModule::HighPtSingleTopPreSelectionModule(Context & ctx):
   debug(string2bool(ctx.get("debug"))),
   is_mc(ctx.get("dataset_type") == "MC"),
-  is_singlemuon(!is_mc && ctx.get("dataset_version").find("SingleMuon") != string::npos)
+  is_singlemuon(!is_mc && ctx.get("dataset_version").find("SingleMuon") != string::npos),
+  is_tW(ctx.get("dataset_version").find("ST_tW") == 0)
 {
   unsigned int i_hist(0);
 
@@ -175,6 +187,10 @@ HighPtSingleTopPreSelectionModule::HighPtSingleTopPreSelectionModule(Context & c
     kJECVariationToString[JECVariation::jer_up] = "jer_up";
     kJECVariationToString[JECVariation::jer_down] = "jer_down";
   }
+
+  prod_SingleTopGen_tWch.reset(new ltt::SingleTopGen_tWchProducer(ctx, kHandleName_SingleTopGen_tWch));
+  genleveldef.reset(new btw::GenLevelDefinitions(ctx));
+  slct_matrix.reset(new btw::MatrixLevelSelection(ctx, "presel", ltt::Channel::notValid));
 
   slct_lumi.reset(new LumiSelection(ctx));
   sf_lumi.reset(new MCLumiWeight(ctx));
@@ -288,6 +304,11 @@ HighPtSingleTopPreSelectionModule::HighPtSingleTopPreSelectionModule(Context & c
   hist_largejet_correction.reset(new ltt::AndHists(ctx, to_string(i_hist++)+"_LargeJetCorr", true));
 
   hist_1largejet.reset(new ltt::AndHists(ctx, to_string(i_hist++)+"_LargeJetSel", true));
+
+  fHandle_bool_reco_sel = ctx.declare_event_output<bool>(kHandleName_bool_reco_sel);
+  fHandle_bool_matrix_sel = ctx.declare_event_output<bool>(kHandleName_bool_matrix_sel);
+  fHandle_bool_parton_sel = ctx.declare_event_output<bool>(kHandleName_bool_parton_sel);
+  fHandle_bool_particle_sel = ctx.declare_event_output<bool>(kHandleName_bool_particle_sel);
 }
 
 
@@ -306,20 +327,38 @@ bool HighPtSingleTopPreSelectionModule::process(Event & event) {
     cout << endl;
   }
 
+  bool passes_reco_sel(true);
+  bool passes_matrix_sel(false);
+  bool passes_parton_sel(false);
+  bool passes_particle_sel(false);
+  if(is_tW) {
+    prod_SingleTopGen_tWch->process(event);
+    genleveldef->process(event);
+    passes_matrix_sel = slct_matrix->passes(event);
+    passes_parton_sel = false; // FIXME
+    passes_particle_sel = false; // FIXME
+  }
+
   if(debug) cout << "Lumi selection and scale factor" << endl; // else getting error for some data samples, e.g. "RunSwitcher cannot handle run number 275656 for year 2016"
-  if(event.isRealData && !slct_lumi->passes(event)) return false;
+  if(event.isRealData && !slct_lumi->passes(event)) {
+    passes_reco_sel = false;
+    if(!is_tW) return false;
+  }
   sf_lumi->process(event);
-  hist_lumi->fill(event);
+  if(passes_reco_sel) hist_lumi->fill(event);
 
   if(debug) cout << "Primary vertex selection and PU scale factor" << endl;
   clnr_pv->process(event);
-  if(!slct_pv->passes(event)) return false;
+  if(!slct_pv->passes(event)) {
+    passes_reco_sel = false;
+    if(!is_tW) return false;
+  }
   sf_pileup->process(event);
-  hist_pv->fill(event);
+  if(passes_reco_sel) hist_pv->fill(event);
 
   if(debug) cout << "Rochester corrections for muons" << endl;
   rochester->process(event);
-  hist_rochester->fill(event);
+  if(passes_reco_sel) hist_rochester->fill(event);
 
   if(debug) cout << "Identify and count electrons and muons" << endl;
   unsigned int n_electrons_veto(0);
@@ -433,7 +472,10 @@ bool HighPtSingleTopPreSelectionModule::process(Event & event) {
     if(electron_lowpt == nullptr) cout << "Low-pT electron is nullptr" << endl;
     signal_electron.push_back(*electron_lowpt);
   }
-  else return false;
+  else {
+    passes_reco_sel = false;
+    if(!is_tW) return false;
+  }
 
   if(debug) cout << "Clean lepton collections, apply lepton scale factors, and set primary lepton" << endl;
   swap(*event.muons, signal_muon);
@@ -466,41 +508,67 @@ bool HighPtSingleTopPreSelectionModule::process(Event & event) {
     sf_muon_id_dummy->process(event);
     sf_elec_reco->process(event);
   }
-  primlep->process(event);
-  hist_1lepton->fill(event);
+  else { // if not passes_reco_sel
+    sf_muon_id_dummy->process(event);
+    sf_elec_id_dummy->process(event);
+    sf_elec_reco_dummy->process(event);
+  }
+  if(passes_reco_sel) {
+    primlep->process(event);
+  }
+  if(passes_reco_sel) hist_1lepton->fill(event);
 
   if(debug) cout << "AK4 and MET corrections" << endl;
-  for(const auto & jecvar : kJECVariationToString) {
-    event.set(h_ak4puppi_jecvariations[jecvar.first], event.get(h_ak4puppi_orig));
-    event.set(h_metpuppi_jecvariations[jecvar.first], event.get(h_metpuppi_orig));
-    jetmet_corrections_puppi[jecvar.first]->process(event);
-    event.set(h_ak4chs_jecvariations[jecvar.first], event.get(h_ak4chs_orig));
-    event.set(h_metchs_jecvariations[jecvar.first], event.get(h_metchs_orig));
-    jetmet_corrections_chs[jecvar.first]->process(event);
+  if(passes_reco_sel) {
+    for(const auto & jecvar : kJECVariationToString) {
+      event.set(h_ak4puppi_jecvariations[jecvar.first], event.get(h_ak4puppi_orig));
+      event.set(h_metpuppi_jecvariations[jecvar.first], event.get(h_metpuppi_orig));
+      jetmet_corrections_puppi[jecvar.first]->process(event);
+      event.set(h_ak4chs_jecvariations[jecvar.first], event.get(h_ak4chs_orig));
+      event.set(h_metchs_jecvariations[jecvar.first], event.get(h_metchs_orig));
+      jetmet_corrections_chs[jecvar.first]->process(event);
+    }
   }
-  hist_jetmet_corrections->fill(event);
+  if(passes_reco_sel) hist_jetmet_corrections->fill(event);
 
   if(debug) cout << "MET selection" << endl;
-  if(!slct_met->passes(event)) return false;
-  hist_metcut->fill(event);
+  if(passes_reco_sel) {
+    if(!slct_met->passes(event)) {
+      passes_reco_sel = false;
+      if(!is_tW) return false;
+    }
+  }
+  if(passes_reco_sel) hist_metcut->fill(event);
 
   if(debug) cout << "Apply corrections to top jet collections and clean them" << endl;
-  for(const auto & jecvar : kJECVariationToString) {
-    event.set(h_ak8puppi_jecvariations[jecvar.first], event.get(h_ak8puppi_orig));
-    corrections_ak8[jecvar.first]->process(event);
-    cleaner_ak8[jecvar.first]->process(event);
-    event.set(h_hotvrpuppi_jecvariations[jecvar.first], event.get(h_hotvrpuppi_orig));
-    corrections_hotvr[jecvar.first]->process(event);
-    cleaner_hotvr[jecvar.first]->process(event);
+  if(passes_reco_sel) {
+    for(const auto & jecvar : kJECVariationToString) {
+      event.set(h_ak8puppi_jecvariations[jecvar.first], event.get(h_ak8puppi_orig));
+      corrections_ak8[jecvar.first]->process(event);
+      cleaner_ak8[jecvar.first]->process(event);
+      event.set(h_hotvrpuppi_jecvariations[jecvar.first], event.get(h_hotvrpuppi_orig));
+      corrections_hotvr[jecvar.first]->process(event);
+      cleaner_hotvr[jecvar.first]->process(event);
+    }
   }
-  hist_largejet_correction->fill(event);
+  if(passes_reco_sel) hist_largejet_correction->fill(event);
 
   if(debug) cout << "At least one large-R jet (HOTVR or AK8)" << endl;
-  if(!slct_1largejet->passes(event)) return false;
-  hist_1largejet->fill(event);
+  if(passes_reco_sel) {
+    if(!slct_1largejet->passes(event)) {
+      passes_reco_sel = false;
+      if(!is_tW) return false;
+    }
+  }
+  if(passes_reco_sel) hist_1largejet->fill(event);
 
   if(debug) cout << "End of PreSelectionModule. Event passed" << endl;
-  return true;
+  event.set(fHandle_bool_reco_sel, passes_reco_sel);
+  event.set(fHandle_bool_matrix_sel, passes_matrix_sel);
+  event.set(fHandle_bool_parton_sel, passes_parton_sel);
+  event.set(fHandle_bool_particle_sel, passes_particle_sel);
+  return passes_reco_sel || passes_matrix_sel || passes_parton_sel || passes_particle_sel;
+  // return true;
 }
 
 

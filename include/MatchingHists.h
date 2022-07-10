@@ -143,13 +143,13 @@ private:
   // const uhh2::Event::Handle<FlavorParticle> fHandle_PrimaryLepton;
   const uhh2::Event::Handle<uhh2::btw::LeptonicHemisphere> fHandle_LeptonicHemisphere;
 
-  const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_Top;
-  const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_WAss;
-  // const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_WTop;
-  const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_tW_system;
-  const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_LeptonicW;
-  const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_SingleLepton;
-  const uhh2::Event::Handle<GenLevelDef> fHandle_Parton_SingleNeutrino;
+  const uhh2::Event::Handle<GenLevelDef> fHandle_Matrix_Top;
+  const uhh2::Event::Handle<GenLevelDef> fHandle_Matrix_WAss;
+  // const uhh2::Event::Handle<GenLevelDef> fHandle_Matrix_WTop;
+  const uhh2::Event::Handle<GenLevelDef> fHandle_Matrix_tW_system;
+  const uhh2::Event::Handle<GenLevelDef> fHandle_Matrix_LeptonicW;
+  const uhh2::Event::Handle<GenLevelDef> fHandle_Matrix_SingleLepton;
+  const uhh2::Event::Handle<GenLevelDef> fHandle_Matrix_SingleNeutrino;
 };
 
 }}

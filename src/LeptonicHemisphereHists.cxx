@@ -18,7 +18,10 @@ LeptonicHemisphereHists::LeptonicHemisphereHists(Context & ctx, const string & d
   fHandle_LeptonicHemisphere(ctx.get_handle<LeptonicHemisphere>(kHandleName_LeptonicHemisphere))
 {
   hist_top_mass = book<TH1F>("top_mass", "Leptonic top quark #it{m} [GeV]", default_nbins, 0, 500);
-  hist_mtw = book<TH1F>("mtw", "Leptonic W boson #it{m}_{T} [GeV]", default_nbins, 0, 200);
+  hist_w_mass = book<TH1F>("w_mass", "Leptonic W boson #it{m} [GeV]", default_nbins, 0, 200);
+
+  hist_mtw_k = book<TH1F>("mtw_k", "Leptonic W boson #it{m}_{T} [GeV] (w/ kappa)", default_nbins, 0, 200);
+  hist_mtw = book<TH1F>("mtw", "Leptonic W boson #it{m}_{T} [GeV] (w/o kappa)", default_nbins, 0, 200);
 
   hist_top_pt = book<TH1F>("top_pt", "Leptonic top quark #it{p}_{T} [GeV]", default_nbins, 0, 1000);
   hist_w_pt = book<TH1F>("w_pt", "Leptonic W boson #it{p}_{T} [GeV]", default_nbins, 0, 1000);
@@ -59,7 +62,10 @@ void LeptonicHemisphereHists::fill(const Event & event) {
   const LeptonicHemisphere hemi = event.get(fHandle_LeptonicHemisphere);
 
   hist_top_mass->Fill(hemi.v4().M(), w);
-  hist_mtw->Fill(hemi.mtw(), w);
+  hist_w_mass->Fill(hemi.wboson().v4().M(), w);
+
+  hist_mtw_k->Fill(hemi.mtw(), w);
+  hist_mtw->Fill(mTW(hemi.lepton(), *event.met), w);
 
   hist_top_pt->Fill(hemi.pt(), w);
   hist_w_pt->Fill(hemi.wboson().pt(), w);
