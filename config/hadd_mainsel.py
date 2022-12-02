@@ -1,360 +1,265 @@
-#!/usr/bin/env python
-
 import os
 import sys
 import argparse
 import glob
-from ROOT import TFile
+import numpy as np
+import ROOT as root
 import subprocess
+import multiprocessing
+
+sys.path.append(os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2/LegacyTopTagging/Analysis'))
+from constants import _JECSMEAR_SOURCES
+
+years = [
+'UL16preVFP',
+'UL16postVFP',
+'UL17',
+'UL18',
+]
+
+channels = [
+'muo',
+'ele',
+]
+
+possible_systs = [
+'nominal',
+
+# 'jes_up',
+# 'jes_down',
+'jesTotal_up',
+'jesTotal_down',
+'jer_up',
+'jer_down',
+'hdamp_up',
+'hdamp_down',
+'tune_up',
+'tune_down',
+'mtop_mtop171p5',
+'mtop_mtop173p5',
+'cr_cr1',
+'cr_cr2',
+'cr_erdon',
+
+# 'btagging_down_bc',
+# 'btagging_down_udsg',
+# 'btagging_up_bc',
+# 'btagging_up_udsg',
+# 'jec_down',
+# 'jec_up',
+# 'jer_down',
+# 'jer_up',
+# 'muf_down',
+# 'muf_up',
+# 'muonid_down',
+# 'muonid_up',
+# 'muontrigger_down',
+# 'muontrigger_up',
+# 'mur_down',
+# 'mur_up',
+# 'murmuf_down',
+# 'murmuf_up',
+# 'pileup_down',
+# 'pileup_up',
+# 'ps_FSRdown_2',
+# 'ps_FSRup_2',
+# 'ps_ISRdown_2',
+# 'ps_ISRup_2',
+# 'wp_down',
+# 'wp_up',
+# 'tau21_down',
+# 'tau21_up',
+# 'toppt_a_up',
+# 'toppt_a_down',
+# 'toppt_b_up',
+# 'toppt_b_down',
+]
+
+# for k in _JECSMEAR_SOURCES.keys():
+#     for x in ['up', 'down']:
+#         possible_systs.append('jes'+k+'_'+x)
 
 
-def check_ttree(fileName, treeName='AnalysisTree'):
+dict_sourceFiles = {
+    # ### TTbar
+    'TTbar': [
+        'TTbar*',
+    ],
+    # ### Single Top
+    'ST_otherChannels': [
+        'ST_tChannel*',
+        'ST_sChannel*',
+    ],
+    'ST_tChannel': [
+        'ST_tChannel*',
+    ],
+    'ST_sChannel': [
+        'ST_sChannel*',
+    ],
+    'ST_tW_DR': [
+        'ST_tW_DR_*_dnn*',
+    ],
+    'ST_tW_DR_dnnSig': [
+        'ST_tW_DR_*_dnnSig_*',
+    ],
+    'ST_tW_DR_dnnBkg': [
+        'ST_tW_DR_*_dnnBkg_*',
+    ],
+    'ST_tW_DS': [
+        'ST_tW_DS_*_dnn*',
+    ],
+    'ST_tW_DS_dnnSig': [
+        'ST_tW_DS_*_dnnSig_*',
+    ],
+    'ST_tW_DS_dnnBkg': [
+        'ST_tW_DS_*_dnnBkg_*',
+    ],
+    # ### Other
+    'WJetsToLNu': [
+        'WJetsToLNu_HT*',
+    ],
+    'DYJetsToLL': [
+        'DYJetsToLL_HT*',
+    ],
+    'Diboson': [
+        'Diboson*',
+    ],
+    # 'DYJetsToLLAndDiboson': [
+    #     'DYJetsToLL_HT*',
+    #     'Diboson*',
+    # ],
+    'VJetsAndVV': [
+        'WJetsToLNu_HT*',
+        'DYJetsToLL_HT*',
+        'Diboson*',
+    ],
+    'QCD': [
+        'QCD_Mu*',
+        'QCD_bcToE*',
+        'QCD_EM*',
+    ],
+    # # 'nonQCD': [
+    # #     'TTbar*__AllMergeScenarios',
+    # #     'ST*__AllMergeScenarios',
+    # #     'WJetsToLNu_HT*',
+    # #     'DYJetsToLL_HT*',
+    # #     'Diboson*',
+    # # ],
+    'DATA': [
+        'DATA*',
+    ],
+}
 
-    file = TFile.Open(fileName, 'READ')
-    tree = file.Get(treeName)
-    entries = tree.GetEntriesFast()
+fileNamePrefix = 'uhh2.AnalysisModuleRunner.'
 
-    return entries > 0
-
-
-all_channels = ['ele', 'muo']
-# years = ['2016', '2017', '2018']
-all_years = ['UL16preVFP', 'UL16postVFP', 'UL17', 'UL18']
-
-if not sys.argv[1:]: sys.exit('No arguments provided. Exit.')
 parser = argparse.ArgumentParser()
-parser.add_argument('--all', action='store_true')
-parser.add_argument('-c', '--channels', choices=all_channels, nargs='*', default=[])
-parser.add_argument('-y', '--years', choices=all_years, nargs='*', default=[])
-parser.add_argument('-s', '--systematic', default="nominal")
-parser.add_argument('--runii', action='store_true', help='Do not hadd individual mainsels but hadd full Run 2. If channel not given, will hadd both channels into one')
+parser.add_argument('-y', '--years', choices=years, nargs='+', default=years)
+parser.add_argument('-c', '--channels', choices=channels, nargs='+', default=channels)
+parser.add_argument('-s', '--systs', choices=possible_systs, nargs='+', default=['nominal'])
+parser.add_argument('--all', action='store_true', help='Instead of defining the syst directories via --syst, you can hadd all of them in one go.')
+parser.add_argument('-t', '--targets', choices=dict_sourceFiles.keys(), nargs='+', default=dict_sourceFiles.keys(), help='E. g., if you choose "TTbar__FullyMerged", then only this target root file will be created.')
+parser.add_argument('-f', '--force', action='store_true', help='''Use hadd's -f option. Force overwriting of output files.''')
+parser.add_argument('--run2', action='store_true')
 args = parser.parse_args(sys.argv[1:])
 
-if args.all == True:
-    if len(args.channels) or len(args.years):
-        sys.exit('Do not use "--all" option jointly with other options.')
-    args.channels = all_channels
-    args.years = all_years
+if args.run2:
+    args.years = ['run2']
+    args.channels = ['both']
 
-doRun2BothChannels = False
-if args.runii == True:
-    args.years = all_years
-    if not len(args.channels) or len(args.channels) == len(all_channels):
-        doRun2BothChannels = True
-        args.channels = all_channels
+if not args.all:
+    args_systs = args.systs
+else:
+    args_systs = possible_systs
+print args_systs
 
+# sys.exit()
 
-list_of_all_hadd_commands = list()
-list_of_all_hadd_dirs = list()
-list_of_all_log_dirs = list()
+mainselOutputDir = os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2/HighPtSingleTop/output/Analysis/mainsel')
 
-dict_of_target_files = dict()
+hadd_tasks = list() # pairs of command_string, logFilePath (see below)
 
-for channel in args.channels:
+for year in args.years:
+    for channel in args.channels:
+        for syst in args_systs:
+            if syst=='nominal':
+                nominal=True
+            else:
+                nominal=False
+            # outputDir = os.path.join(mainselOutputDir, '{UL16preVFP,UL16postVFP,UL17,UL18}' if year=='run2' else year, '{ele,muo}' if channel=='both' else channel, ('' if nominal else 'syst_')+syst)
+            haddDir = os.path.join(mainselOutputDir, year, channel, ('' if nominal else 'syst_')+syst, 'hadded')
+            # haddDir = os.path.join(outputDir, 'hadded')
+            logDir = os.path.join(haddDir, 'log')
+            os.system('mkdir -p '+logDir)
+            # print haddDir
+            # print outputDir
 
-    dict_of_target_files[channel] = dict()
+            for key in dict_sourceFiles.keys():
+                if not key in args.targets:
+                    continue
+                if key=='DATA':
+                    data=True
+                else:
+                    data=False
+                if key=='nonQCD' and not nominal:
+                    continue
+                if not nominal and data: continue
+                fileNamePrefix_ = fileNamePrefix+('DATA.' if data else 'MC.')
+                targetFilePath = os.path.join(haddDir, fileNamePrefix_+key+'.root')
+                # print targetFilePath
+                sourceFilePaths = np.array([]) # list of all input root files to be hadded.
+                for pattern in dict_sourceFiles[key]:
+                    if year=='run2':
+                        for year_ in years:
+                            if channel=='both':
+                                for channel_ in channels:
+                                    outputDir = os.path.join(mainselOutputDir, year_, channel_, ('' if nominal else 'syst_')+syst)
+                                    sourceFilePaths = np.append(sourceFilePaths, glob.glob(os.path.join(outputDir, fileNamePrefix_+pattern+'_'+year_+'.root')))
+                            else:
+                                outputDir = os.path.join(mainselOutputDir, year_, channel, ('' if nominal else 'syst_')+syst)
+                                sourceFilePaths = np.append(sourceFilePaths, glob.glob(os.path.join(outputDir, fileNamePrefix_+pattern+'_'+year_+'.root')))
+                    else:
+                        if channel=='both':
+                            for channel_ in channels:
+                                outputDir = os.path.join(mainselOutputDir, year, channel_, ('' if nominal else 'syst_')+syst)
+                                sourceFilePaths = np.append(sourceFilePaths, glob.glob(os.path.join(outputDir, fileNamePrefix_+pattern+'_'+year+'.root')))
+                        else:
+                            outputDir = os.path.join(mainselOutputDir, year, channel, ('' if nominal else 'syst_')+syst)
+                            sourceFilePaths = np.append(sourceFilePaths, glob.glob(os.path.join(outputDir, fileNamePrefix_+pattern+'_'+year+'.root')))
+                sourceFilePaths.flatten()
+                # print str(len(sourceFilePaths))
+                # print sourceFilePaths
+                if len(sourceFilePaths) == 0:
+                    continue
 
-    for year in args.years:
+                # In the following few lines, we sort the root files which are to be hadded by the number of events stored in their analysis trees
+                # (there is a bug in hadd that would lead to not correctly added trees if the first file in the list has no events; in case that all trees are empty, we have nothing to fear)
+                numbersOfEntries = np.array([])
+                for rootFileName in sourceFilePaths:
+                    rootFile = root.TFile.Open(rootFileName, 'READ')
+                    numbersOfEntries = np.append(numbersOfEntries, rootFile.Get('AnalysisTree').GetEntries())
+                numbersOfEntries.flatten()
+                # print numbersOfEntries
+                sourceFilePaths = sourceFilePaths[np.argsort(-numbersOfEntries)]
+                # print sourceFilePaths
 
-        dict_of_target_files[channel][year] = dict()
+                command_string = 'nice -n 10 hadd '
+                if args.force:
+                    command_string += '-f '
+                command_string += targetFilePath+' '+' '.join([x for x in sourceFilePaths])
+                logFilePath = os.path.join(logDir, 'log.'+key+'.txt')
+                # print command_string
+                hadd_tasks.append([command_string, logFilePath])
 
-        # syst_name = 'nominal'
-        syst_name = args.systematic
-
-        # configDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/config/config_mainsel_'+year+'_'+channel+'/'
-        outputDir = os.environ.get('CMSSW_BASE')+'/src/UHH2/HighPtSingleTop/output/Analysis/mainsel/'+year+'/'+channel+'/'+syst_name+'/'
-        haddDir = outputDir+'hadded/'
-        logDir = haddDir+'log/'
-        list_of_all_hadd_dirs.append(haddDir)
-        list_of_all_log_dirs.append(logDir)
-        prefix = 'uhh2.AnalysisModuleRunner.'
-
-        # decays = ['Had', 'Ele', 'Muo', 'Tau']
-        # topdecays = ['TopTo'+x for x in decays]
-        # wdecays = ['WTo'+x for x in decays]
-        # bothdecays = list()
-        # for t in topdecays:
-        #     for w in wdecays:
-        #         bothdecays.append(t+'_'+w)
-        # signaldecays = list()
-        # bkgdecays = list()
-        # for b in bothdecays:
-        #     if channel == 'ele' and 'ToHad' in b and 'ToEle' in b:
-        #         signaldecays.append(b)
-        #     elif channel == 'muo' and 'ToHad' in b and 'ToMuo' in b:
-        #         signaldecays.append(b)
-        #     else:
-        #         bkgdecays.append(b)
-        # signaldecays = ['Sig']
-        # bkgdecays = ['Bkg']
-        signaldecays_dnn = ['dnnSig']
-        bkgdecays_dnn = ['dnnBkg']
-        signaldecays_true = ['trueSig']
-        bkgdecays_true = ['trueBkg']
-
-
-        rootFiles = dict()
-
-        rootFiles['DATA'] = dict()
-        rootFiles['DATA']['sourceFiles'] = glob.glob(outputDir+prefix+'DATA.DATA*.root')
-        rootFiles['DATA']['targetFile'] = 'DATA.DATA.root'
-
-        rootFiles['QCD'] = dict()
-        rootFiles['QCD']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.QCD*.root')
-        rootFiles['QCD']['targetFile'] = 'MC.QCD.root'
-
-        rootFiles['Diboson'] = dict()
-        rootFiles['Diboson']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.Diboson*.root')
-        rootFiles['Diboson']['targetFile'] = 'MC.Diboson.root'
-
-        rootFiles['DYJets'] = dict()
-        rootFiles['DYJets']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.DYJets*.root')
-        rootFiles['DYJets']['targetFile'] = 'MC.DYJets.root'
-
-        # rootFiles['WJetsLight'] = dict()
-        # rootFiles['WJetsLight']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.WJetsLight*.root')
-        # rootFiles['WJetsLight']['targetFile'] = 'MC.WJetsLight.root'
-        #
-        # rootFiles['WJetsHeavy'] = dict()
-        # rootFiles['WJetsHeavy']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.WJetsHeavy*.root')
-        # rootFiles['WJetsHeavy']['targetFile'] = 'MC.WJetsHeavy.root'
-
-        rootFiles['WJets'] = dict()
-        rootFiles['WJets']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.WJets*.root')
-        rootFiles['WJets']['targetFile'] = 'MC.WJets.root'
-
-        rootFiles['DYJetsAndVV'] = dict()
-        rootFiles['DYJetsAndVV']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.DYJets*.root') + glob.glob(outputDir+prefix+'MC.Diboson*.root')
-        rootFiles['DYJetsAndVV']['targetFile'] = 'MC.DYJetsAndVV.root'
-
-        rootFiles['VJetsAndVV'] = dict()
-        rootFiles['VJetsAndVV']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.WJets*.root') + glob.glob(outputDir+prefix+'MC.DYJets*.root') + glob.glob(outputDir+prefix+'MC.Diboson*.root')
-        rootFiles['VJetsAndVV']['targetFile'] = 'MC.VJetsAndVV.root'
-
-        rootFiles['TTbar'] = dict()
-        rootFiles['TTbar']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.TTbar*.root')
-        rootFiles['TTbar']['targetFile'] = 'MC.TTbar.root'
-
-        rootFiles['ST_otherChannels'] = dict()
-        rootFiles['ST_otherChannels']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tChannel*.root') + glob.glob(outputDir+prefix+'MC.ST_sChannel*.root')
-        rootFiles['ST_otherChannels']['targetFile'] = 'MC.ST_otherChannels.root'
-
-        rootFiles['ST_tChannel'] = dict()
-        rootFiles['ST_tChannel']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tChannel*.root')
-        rootFiles['ST_tChannel']['targetFile'] = 'MC.ST_tChannel.root'
-
-        rootFiles['ST_sChannel'] = dict()
-        rootFiles['ST_sChannel']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_sChannel*.root')
-        rootFiles['ST_sChannel']['targetFile'] = 'MC.ST_sChannel.root'
-
-        rootFiles['ST_tW_DR'] = dict()
-        rootFiles['ST_tW_DR']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DR_*_true*.root')
-        rootFiles['ST_tW_DR']['targetFile'] = 'MC.ST_tW_DR.root'
-
-        rootFiles['ST_tW_DR_dnnSig'] = dict()
-        temp = [outputDir+prefix+'MC.ST_tW_DR*'+x+'_*.root' for x in signaldecays_dnn]
-        temp2 = list()
-        for t in temp:
-            temp2 = temp2 + glob.glob(t)
-        rootFiles['ST_tW_DR_dnnSig']['sourceFiles'] = temp2
-        rootFiles['ST_tW_DR_dnnSig']['targetFile'] = 'MC.ST_tW_DR_dnnSig.root'
-
-        rootFiles['ST_tW_DR_dnnBkg'] = dict()
-        temp = [outputDir+prefix+'MC.ST_tW_DR*'+x+'_*.root' for x in bkgdecays_dnn]
-        temp2 = list()
-        for t in temp:
-            temp2 = temp2 + glob.glob(t)
-        rootFiles['ST_tW_DR_dnnBkg']['sourceFiles'] = temp2
-        rootFiles['ST_tW_DR_dnnBkg']['targetFile'] = 'MC.ST_tW_DR_dnnBkg.root'
-
-        rootFiles['ST_tW_DS'] = dict()
-        rootFiles['ST_tW_DS']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DS_*_true*.root')
-        rootFiles['ST_tW_DS']['targetFile'] = 'MC.ST_tW_DS.root'
-
-        rootFiles['ST_tW_DS_dnnSig'] = dict()
-        temp = [outputDir+prefix+'MC.ST_tW_DS*'+x+'_*.root' for x in signaldecays_dnn]
-        temp2 = list()
-        for t in temp:
-            temp2 = temp2 + glob.glob(t)
-        rootFiles['ST_tW_DS_dnnSig']['sourceFiles'] = temp2
-        rootFiles['ST_tW_DS_dnnSig']['targetFile'] = 'MC.ST_tW_DS_dnnSig.root'
-
-        rootFiles['ST_tW_DS_dnnBkg'] = dict()
-        temp = [outputDir+prefix+'MC.ST_tW_DS*'+x+'_*.root' for x in bkgdecays_dnn]
-        temp2 = list()
-        for t in temp:
-            temp2 = temp2 + glob.glob(t)
-        rootFiles['ST_tW_DS_dnnBkg']['sourceFiles'] = temp2
-        rootFiles['ST_tW_DS_dnnBkg']['targetFile'] = 'MC.ST_tW_DS_dnnBkg.root'
-
-
-
-
-
-
-        rootFiles['ST_tW_DR_trueSig'] = dict()
-        temp = [outputDir+prefix+'MC.ST_tW_DR*'+x+'_*.root' for x in signaldecays_true]
-        temp2 = list()
-        for t in temp:
-            temp2 = temp2 + glob.glob(t)
-        rootFiles['ST_tW_DR_trueSig']['sourceFiles'] = temp2
-        rootFiles['ST_tW_DR_trueSig']['targetFile'] = 'MC.ST_tW_DR_trueSig.root'
-
-        rootFiles['ST_tW_DR_trueBkg'] = dict()
-        temp = [outputDir+prefix+'MC.ST_tW_DR*'+x+'_*.root' for x in bkgdecays_true]
-        temp2 = list()
-        for t in temp:
-            temp2 = temp2 + glob.glob(t)
-        rootFiles['ST_tW_DR_trueBkg']['sourceFiles'] = temp2
-        rootFiles['ST_tW_DR_trueBkg']['targetFile'] = 'MC.ST_tW_DR_trueBkg.root'
-
-        rootFiles['ST_tW_DS_trueSig'] = dict()
-        temp = [outputDir+prefix+'MC.ST_tW_DS*'+x+'_*.root' for x in signaldecays_true]
-        temp2 = list()
-        for t in temp:
-            temp2 = temp2 + glob.glob(t)
-        rootFiles['ST_tW_DS_trueSig']['sourceFiles'] = temp2
-        rootFiles['ST_tW_DS_trueSig']['targetFile'] = 'MC.ST_tW_DS_trueSig.root'
-
-        rootFiles['ST_tW_DS_trueBkg'] = dict()
-        temp = [outputDir+prefix+'MC.ST_tW_DS*'+x+'_*.root' for x in bkgdecays_true]
-        temp2 = list()
-        for t in temp:
-            temp2 = temp2 + glob.glob(t)
-        rootFiles['ST_tW_DS_trueBkg']['sourceFiles'] = temp2
-        rootFiles['ST_tW_DS_trueBkg']['targetFile'] = 'MC.ST_tW_DS_trueBkg.root'
-
-
-
-
-
-
-
-
-
-        # rootFiles['ST_tW_DR_NoFullyHadronic'] = dict()
-        # rootFiles['ST_tW_DR_NoFullyHadronic']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DR_NoFullyHadronic*.root')
-        # rootFiles['ST_tW_DR_NoFullyHadronic']['targetFile'] = 'MC.ST_tW_DR_NoFullyHadronic.root'
-        #
-        # rootFiles['ST_tW_DR_NoFullyHadronic_dnnSig'] = dict()
-        # temp = [outputDir+prefix+'MC.ST_tW_DR_NoFullyHadronic_'+x+'_*.root' for x in signaldecays]
-        # temp2 = list()
-        # for t in temp:
-        #     temp2 = temp2 + glob.glob(t)
-        # rootFiles['ST_tW_DR_NoFullyHadronic_dnnSig']['sourceFiles'] = temp2
-        # rootFiles['ST_tW_DR_NoFullyHadronic_dnnSig']['targetFile'] = 'MC.ST_tW_DR_NoFullyHadronic_dnnSig.root'
-        #
-        # rootFiles['ST_tW_DR_NoFullyHadronic_dnnBkg'] = dict()
-        # temp = [outputDir+prefix+'MC.ST_tW_DR_NoFullyHadronic_'+x+'_*.root' for x in bkgdecays]
-        # temp2 = list()
-        # for t in temp:
-        #     temp2 = temp2 + glob.glob(t)
-        # rootFiles['ST_tW_DR_NoFullyHadronic_dnnBkg']['sourceFiles'] = temp2
-        # rootFiles['ST_tW_DR_NoFullyHadronic_dnnBkg']['targetFile'] = 'MC.ST_tW_DR_NoFullyHadronic_dnnBkg.root'
-        #
-        # rootFiles['ST_tW_DR_inclusiveDecays'] = dict()
-        # rootFiles['ST_tW_DR_inclusiveDecays']['sourceFiles'] = glob.glob(outputDir+prefix+'MC.ST_tW_DR_inclusiveDecays*.root')
-        # rootFiles['ST_tW_DR_inclusiveDecays']['targetFile'] = 'MC.ST_tW_DR_inclusiveDecays.root'
-        #
-        # rootFiles['ST_tW_DR_inclusiveDecays_dnnSig'] = dict()
-        # temp = [outputDir+prefix+'MC.ST_tW_DR_inclusiveDecays_'+x+'_*.root' for x in signaldecays]
-        # temp2 = list()
-        # for t in temp:
-        #     temp2 = temp2 + glob.glob(t)
-        # rootFiles['ST_tW_DR_inclusiveDecays_dnnSig']['sourceFiles'] = temp2
-        # rootFiles['ST_tW_DR_inclusiveDecays_dnnSig']['targetFile'] = 'MC.ST_tW_DR_inclusiveDecays_dnnSig.root'
-        #
-        # rootFiles['ST_tW_DR_inclusiveDecays_dnnBkg'] = dict()
-        # temp = [outputDir+prefix+'MC.ST_tW_DR_inclusiveDecays_'+x+'_*.root' for x in bkgdecays]
-        # temp2 = list()
-        # for t in temp:
-        #     temp2 = temp2 + glob.glob(t)
-        # rootFiles['ST_tW_DR_inclusiveDecays_dnnBkg']['sourceFiles'] = temp2
-        # rootFiles['ST_tW_DR_inclusiveDecays_dnnBkg']['targetFile'] = 'MC.ST_tW_DR_inclusiveDecays_dnnBkg.root'
-
-
-        # Reorder sourceFiles such that the first file in the list has an AnalysisTree (if there is at least one file having an AnalysisTree).
-        # This is needed for hadd to work properly.
-        for key in rootFiles.keys():
-            rootFiles[key]['reorderedSourceFiles'] = list()
-            # rootFiles[key]['targetFile'] = haddDir+prefix+rootFiles[key]['targetFile']
-            dict_of_target_files[channel][year][key] = rootFiles[key]['targetFile']
-
-        for key in rootFiles.keys():
-            position = -1
-            for i in range(len(rootFiles[key]['sourceFiles'])):
-                if check_ttree(rootFiles[key]['sourceFiles'][i]) and position == -1:
-                    position = i
-                    rootFiles[key]['reorderedSourceFiles'].append(rootFiles[key]['sourceFiles'][i])
-                    break
-            for i in range(len(rootFiles[key]['sourceFiles'])):
-                if position != -1 and i != position:
-                    rootFiles[key]['reorderedSourceFiles'].append(rootFiles[key]['sourceFiles'][i])
-                elif position == -1:
-                    rootFiles[key]['reorderedSourceFiles'].append(rootFiles[key]['sourceFiles'][i])
-                    position = 0
-
-            command_string = 'nice -n 10 hadd -f '+haddDir+prefix+rootFiles[key]['targetFile']+' '+' '.join(rootFiles[key]['reorderedSourceFiles'])
-            hadd_logfile = logDir+'log.'+rootFiles[key]['targetFile'].replace('.root','.txt')
-            rootFiles[key]['hadd_command'] = command_string
-            rootFiles[key]['hadd_logfile'] = hadd_logfile
-            list_of_all_hadd_commands.append((command_string, hadd_logfile))
-
-
-
-# for haddDir in list_of_all_hadd_dirs:
-#     if not os.path.exists(haddDir):
-#         os.mkdir(haddDir)
-# for logDir in list_of_all_log_dirs:
-#     if not os.path.exists(logDir):
-#         os.mkdir(logDir)
-
+# print hadd_tasks
+# for i in hadd_tasks:
+#     print i
+# sys.exit()
 
 FNULL = open(os.devnull, 'w')
-processes = list()
 
+def hadd_task(args): # args = [command, logfile]
+    process = subprocess.Popen([args[0]+' > '+args[1]], shell=True, stdout=FNULL, stderr=FNULL)
+    process.wait()
 
-if args.runii == False:
-
-    for haddDir in list_of_all_hadd_dirs:
-        if not os.path.exists(haddDir):
-            os.mkdir(haddDir)
-    for logDir in list_of_all_log_dirs:
-        if not os.path.exists(logDir):
-            os.mkdir(logDir)
-
-    for haddDir in list_of_all_hadd_dirs:
-        print 'Adding into '+haddDir
-
-    for command, logfile in list_of_all_hadd_commands:
-        subprocess.Popen([command+' > '+logfile], shell=True, stdout=FNULL, stderr=FNULL)
-
-else:
-
-    mainselDir = os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2/HighPtSingleTop/output/Analysis/mainsel/')
-    run2Dir = os.path.join(mainselDir, 'run2', 'both' if doRun2BothChannels else args.channels[0], args.systematic)
-    # run2Dir = mainselDir+'run2/both/nominal/'#+channel+'/'+syst_name+'/'
-    haddDir = os.path.join(run2Dir, 'hadded')
-    print 'Adding into '+haddDir
-    # haddDir = run2Dir+'hadded/'
-    logDir = os.path.join(haddDir, 'log')
-    # logDir = haddDir+'log/'
-    prefix = 'uhh2.AnalysisModuleRunner.'
-    os.system('mkdir -p '+logDir)
-
-    list_of_run2_hadd_commands = list()
-    list_of_run2_log_files = list()
-
-    for key in dict_of_target_files[args.channels[0]][args.years[0]]:
-        # print key
-        target_file_name = dict_of_target_files[args.channels[0]][args.years[0]][key]
-        # print target_file_name
-        target_file_path = os.path.join(haddDir, prefix+target_file_name)
-        input_file_paths = os.path.join(mainselDir, '{'+','.join(args.years)+'}', '{ele,muo}' if doRun2BothChannels else args.channels[0], args.systematic, 'hadded', prefix+target_file_name)
-        command_string = 'nice -n 10 hadd '+target_file_path+' '+input_file_paths
-        # command_string = 'nice -n 10 hadd '+haddDir+prefix+target_file_name+' '+mainselDir+'UL{16preVFP,16postVFP,17,18}/{ele,muo}/nominal/hadded/'+prefix+target_file_name
-        # print command_string
-        log_file = os.path.join(logDir, 'log.'+target_file_name.replace('.root','.txt'))
-        # print command_string
-        # print log_file
-        subprocess.Popen([command_string+' > '+log_file], shell=True, stdout=FNULL, stderr=FNULL)
+p = multiprocessing.Pool(multiprocessing.cpu_count() / 2) # only use half of all CPU threads to be friendly to other users
+p.map(hadd_task, hadd_tasks)
