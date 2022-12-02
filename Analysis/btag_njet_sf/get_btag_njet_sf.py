@@ -21,13 +21,13 @@ processes = [
 'ST_tChannel',
 'ST_sChannel',
 'TTbar',
-'WJets',
-'DYJets',
+'WJetsToLNu',
+'DYJetsToLL',
 'Diboson',
 # 'QCD', # ignored because of low stat
 ]
 
-region = '3_VjetsSF' # presel wihtout division into b-tags, t-tags, or W-tags (t-tag would also indirectly cut on number of b-tags since t-tag almost ensures that there is a b-tag; thus, just look at plain presel and not into 1t, 0t1W etc. regions)
+# region = '3_VjetsSF' # presel wihtout division into b-tags, t-tags, or W-tags (t-tag would also indirectly cut on number of b-tags since t-tag almost ensures that there is a b-tag; thus, just look at plain presel and not into 1t, 0t1W etc. regions)
 # region = '4_Region_1b1t'
 
 
@@ -46,8 +46,10 @@ for channel in all_channels:
 
             inFilePath = os.path.join(inBasePath, year, channel, 'nominal/hadded/uhh2.AnalysisModuleRunner.MC.'+process+'.root')
             file = TFile.Open(inFilePath, 'READ')
-            hist_with_btag_sf = deepcopy(file.Get('3_VjetsSF_AK4/number_puppijets_central_wo_njet_sf'))
-            hist_without_btag_sf = deepcopy(file.Get('3_VjetsSF_AK4/number_puppijets_central_wo_btag_sf_wo_njet_sf'))
+            # hist_collection = '3_VjetsSF_AK4'
+            hist_collection = '2_VjetsSF_AK4'
+            hist_with_btag_sf = deepcopy(file.Get(hist_collection+'/number_puppijets_central_wo_njet_sf'))
+            hist_without_btag_sf = deepcopy(file.Get(hist_collection+'/number_puppijets_central_wo_btag_sf_wo_njet_sf'))
 
             # hist_with_btag_sf = deepcopy(file.Get(region+'_AK4/number_puppijets'))
             # hist_without_btag_sf = deepcopy(file.Get(region+'_AK4/number_puppijets_central'))

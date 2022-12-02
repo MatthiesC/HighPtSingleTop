@@ -99,11 +99,18 @@ bool WTag::operator()(const TopJet & jet, const Event & event) const {
           else if(year == "UL18") x = 0.9;
           else runtime_error((string)"WTag::operator()(): Year '"+year+"' not implemented");
           break;
-        case WTag::wp::WP_CUSTOM : // BkgEff0p030, derived privately
+        case WTag::wp::WP_CUSTOMPT200 : // BkgEff0p030, derived privately
           if(year == "UL16preVFP") x = 0.871;
           else if(year == "UL16postVFP") x = 0.868;
           else if(year == "UL17") x = 0.868;
           else if(year == "UL18") x = 0.864;
+          else runtime_error((string)"WTag::operator()(): Year '"+year+"' not implemented");
+          break;
+        case WTag::wp::WP_CUSTOMPT400 : // BkgEff0p030, derived privately
+          if(year == "UL16preVFP") x = 0.737;
+          else if(year == "UL16postVFP") x = 0.729;
+          else if(year == "UL17") x = 0.746;
+          else if(year == "UL18") x = 0.734;
           else runtime_error((string)"WTag::operator()(): Year '"+year+"' not implemented");
           break;
         // Taken from https://indico.cern.ch/event/1152827/contributions/4840404/attachments/2428856/4162159/ParticleNet_SFs_ULNanoV9_JMAR_25April2022_PK.pdf

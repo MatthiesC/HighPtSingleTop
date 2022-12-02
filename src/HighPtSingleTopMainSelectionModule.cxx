@@ -13,6 +13,7 @@
 #include "UHH2/common/include/NSelections.h"
 #include "UHH2/common/include/Utils.h"
 #include "UHH2/common/include/CleaningModules.h"
+#include "UHH2/common/include/PSWeights.h"
 
 #include "UHH2/HighPtSingleTop/include/AnalysisRegions.h"
 #include "UHH2/HighPtSingleTop/include/Constants.h"
@@ -53,6 +54,7 @@ private:
   unsigned long long i_event = 0;
   const Channel fChannel;
   const Event::Handle<ERegion> fHandle_Region;
+  const bool apply_TopPtReweighting;
 
   /*
   Kinematic variables:
@@ -105,17 +107,33 @@ private:
   unique_ptr<AnalysisModule> genleveldef;
 
   const Muon::Selector muonIDselector_lowpt = Muon::Selector::CutBasedIdTight;
-  const Muon::Selector muonISOselector_lowpt = Muon::Selector::PFIsoTight;
+  // const Muon::Selector muonISOselector_lowpt = Muon::Selector::PFIsoTight;
+  const Muon::Selector muonISOselector_lowpt = Muon::Selector::PFIsoVeryTight;
   const MuonId muonID_lowpt = AndId<Muon>(MuonID(muonIDselector_lowpt), MuonID(muonISOselector_lowpt), PtEtaCut(muon_lowpt_pt_min, muon_eta_max));
   const Muon::Selector muonIDselector_highpt = Muon::Selector::CutBasedIdGlobalHighPt;
-  const Muon::Selector muonISOselector_highpt = Muon::Selector::TkIsoLoose;
+  // const Muon::Selector muonISOselector_highpt = Muon::Selector::TkIsoLoose;
+  const Muon::Selector muonISOselector_highpt = Muon::Selector::PFIsoVeryTight;
   const MuonId muonID_highpt = AndId<Muon>(MuonID(muonIDselector_highpt), MuonID(muonISOselector_highpt), PtEtaCut(muon_highpt_pt_min, muon_eta_max));
 
+  // https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonSelection#Particle_Flow_isolation
+  // Event::Handle<int> fHandle_muoISO_factorized; // not yet implemented
+
   // can be increased from wp90 to wp80 later...
-  const Electron::tag electronIDtag_lowpt = Electron::tag::mvaEleID_Fall17_iso_V2_wp90;
+  // const Electron::tag electronIDtag_lowpt = Electron::tag::mvaEleID_Fall17_iso_V2_wp90;
+  const Electron::tag electronIDtag_lowpt = Electron::tag::mvaEleID_Fall17_iso_V2_wp80;
   const ElectronId electronID_lowpt = AndId<Electron>(ElectronTagID(electronIDtag_lowpt), PtEtaCut(electron_lowpt_pt_min, electron_eta_max));
-  const Electron::tag electronIDtag_highpt = Electron::tag::mvaEleID_Fall17_iso_V2_wp90;
+  // const Electron::tag electronIDtag_highpt = Electron::tag::mvaEleID_Fall17_iso_V2_wp90;
+  const Electron::tag electronIDtag_highpt = Electron::tag::mvaEleID_Fall17_iso_V2_wp80;
   const ElectronId electronID_highpt = AndId<Electron>(ElectronTagID(electronIDtag_highpt), PtEtaCut(electron_highpt_pt_min, electron_eta_max));
+
+  Event::Handle<int> fHandle_eleID_factorized;
+  // keys need to be prime numbers!
+  const std::map<int, ElectronTagID> eleTagID_map = {
+    {2, ElectronTagID(Electron::tag::mvaEleID_Fall17_noIso_V2_wp90)},
+    {3, ElectronTagID(Electron::tag::mvaEleID_Fall17_iso_V2_wp90)},
+    {5, ElectronTagID(Electron::tag::mvaEleID_Fall17_noIso_V2_wp80)},
+    {7, ElectronTagID(Electron::tag::mvaEleID_Fall17_iso_V2_wp80)},
+  };
 
   unique_ptr<Selection> slct_muon_lowpt;
   unique_ptr<Selection> slct_muon_highpt;
@@ -211,7 +229,8 @@ private:
 HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context & ctx):
   debug(string2bool(ctx.get("debug"))),
   fChannel(extract_channel(ctx)),
-  fHandle_Region(ctx.get_handle<ERegion>(kHandleName_Region))
+  fHandle_Region(ctx.get_handle<ERegion>(kHandleName_Region)),
+  apply_TopPtReweighting(string2bool(ctx.get("apply_TopPtReweighting")))
   // fHandle_Region_heavyTags(ctx.get_handle<ERegion_heavyTags>(kHandleName_Region_heavyTags))
 {
   ctx.undeclare_all_event_output(); // throw away all output trees (jet collections etc.) which are not needed in further steps of the analysis
@@ -240,6 +259,9 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
   slct_tW_Sig_DNN.reset(new btw::TWSignalSelection_DNN(ctx));
   genleveldef.reset(new btw::GenLevelDefinitions(ctx));
 
+  // fHandle_muoISO_factorized = ctx.declare_event_output<int>("btw_muoISO_factorized");
+  fHandle_eleID_factorized = ctx.declare_event_output<int>("btw_eleID_factorized");
+
   slct_muon_lowpt.reset(new NMuonSelection(1, 1, muonID_lowpt));
   slct_muon_highpt.reset(new NMuonSelection(1, 1, muonID_highpt));
   slct_elec_lowpt.reset(new NElectronSelection(1, 1, electronID_lowpt));
@@ -248,8 +270,8 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
   sf_muon_id_highpt.reset(new ltt::MuonIdScaleFactors(ctx, muonIDselector_highpt));
   sf_muon_id_lowpt.reset(new ltt::MuonIdScaleFactors(ctx, muonIDselector_lowpt));
   sf_muon_id_dummy.reset(new ltt::MuonIdScaleFactors(ctx, boost::none, boost::none, boost::none, boost::none, true));
-  sf_muon_iso_highpt.reset(new ltt::MuonIsoScaleFactors(ctx, muonISOselector_highpt, muonIDselector_highpt));
-  sf_muon_iso_lowpt.reset(new ltt::MuonIsoScaleFactors(ctx, muonISOselector_lowpt, muonIDselector_lowpt));
+  // sf_muon_iso_highpt.reset(new ltt::MuonIsoScaleFactors(ctx, muonISOselector_highpt, muonIDselector_highpt)); // since using PFIsoVeryTight: throws intentional error: no SF implemented for given combo of ID + ISO
+  // sf_muon_iso_lowpt.reset(new ltt::MuonIsoScaleFactors(ctx, muonISOselector_lowpt, muonIDselector_lowpt)); // since using PFIsoVeryTight: throws intentional error: no SF implemented for given combo of ID + ISO
   sf_muon_iso_dummy.reset(new ltt::MuonIsoScaleFactors(ctx, boost::none, boost::none, boost::none, boost::none, boost::none, true));
   sf_elec_id_highpt.reset(new ltt::ElectronIdScaleFactors(ctx, electronIDtag_highpt));
   sf_elec_id_lowpt.reset(new ltt::ElectronIdScaleFactors(ctx, electronIDtag_lowpt));
@@ -259,7 +281,10 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
 
   primlep.reset(new PrimaryLepton(ctx));
   scale_variation.reset(new MCScaleVariation(ctx));
-  ps_variation.reset(new ltt::PartonShowerVariation(ctx));
+  // ps_variation.reset(new ltt::PartonShowerVariation(ctx));
+  bool has_ps_weights = true;
+  if(dataset_version.find("QCD") == 0) has_ps_weights = false;
+  ps_variation.reset(new PSWeights(ctx, true, !has_ps_weights));
   sf_pileup.reset(new MCPileupReweight(ctx, ctx.get("SystDirection_Pileup", "nominal")));
   sf_prefire.reset(new ltt::PrefiringWeights(ctx));
   weight_trickery.reset(new ltt::WeightTrickery(ctx, kHandleName_SingleTopGen_tWch, false));
@@ -308,11 +333,11 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
   slct_trigger_highpt.reset(new ltt::MyTriggerSelection(ctx, false));
   slct_trigger_lowpt.reset(new ltt::MyTriggerSelection(ctx, true));
 
-  sf_muon_trigger_highpt.reset(new ltt::MuonTriggerScaleFactors(ctx, true));
-  sf_muon_trigger_lowpt.reset(new ltt::MuonTriggerScaleFactors(ctx, false));
+  sf_muon_trigger_highpt.reset(new ltt::MuonTriggerScaleFactors(ctx, true, false)); // 3rd arg: id/iso check disabled for the sake of using the PFIsoVeryTight
+  sf_muon_trigger_lowpt.reset(new ltt::MuonTriggerScaleFactors(ctx, false, false)); // 3rd arg: id/iso check disabled for the sake of using the PFIsoVeryTight
   sf_muon_trigger_dummy.reset(new ltt::MuonTriggerScaleFactors(ctx, boost::none, boost::none, boost::none, boost::none, boost::none, true));
 
-  fatjet_tagger.reset(new FatJetTagger(ctx, WTag::algo::ParticleNet, WTag::wp::WP_CUSTOM));
+  fatjet_tagger.reset(new FatJetTagger(ctx, WTag::algo::ParticleNet, WTag::wp::WP_CUSTOMPT400));
   setter_analysis_regions.reset(new AnalysisRegionSetter(ctx, string2bool(ctx.get("bVetoLike"))));
   classify_tW_TrueDecay.reset(new btw::TWClassification_TrueDecay(ctx));
   slct_tW_Sig_TrueDecay.reset(new btw::TWSignalSelection_TrueDecay(ctx));
@@ -323,9 +348,11 @@ HighPtSingleTopMainSelectionModule::HighPtSingleTopMainSelectionModule(Context &
   hist_trigger.reset(new ltt::AndHists(ctx, to_string(i_hist++)+"_Trigger", true, true));
   hist_trigger->add_hist(new btw::LeptonicHemisphereHists(ctx, hist_trigger->dirname()+"_LeptHemi"));
 
-  sf_toppt.reset(new ltt::TopPtReweighting(ctx, string2bool(ctx.get("apply_TopPtReweighting"))));
-  hist_topptSF.reset(new ltt::AndHists(ctx, to_string(i_hist++)+"_TopPtSF", true, true));
-  hist_topptSF->add_hist(new btw::LeptonicHemisphereHists(ctx, hist_topptSF->dirname()+"_LeptHemi"));
+  sf_toppt.reset(new ltt::TopPtReweighting(ctx, apply_TopPtReweighting));
+  if(apply_TopPtReweighting) {
+    hist_topptSF.reset(new ltt::AndHists(ctx, to_string(i_hist++)+"_TopPtSF", true, true));
+    hist_topptSF->add_hist(new btw::LeptonicHemisphereHists(ctx, hist_topptSF->dirname()+"_LeptHemi"));
+  }
 
   sf_vjets.reset(new ltt::VJetsReweighting(ctx));
   hist_vjetsSF.reset(new ltt::AndHists(ctx, to_string(i_hist++)+"_VjetsSF", true, true));
@@ -415,6 +442,7 @@ bool HighPtSingleTopMainSelectionModule::process(Event & event) {
   else if(is_tW_dnnBkg && passes_tW_Sig_DNN) return false;
 
   bool lowpt(false);
+  int eleID_factorized = 1; // dummy value for eleID_factorized
   if(passes_reco_sel) {
     if(fChannel == Channel::isMuo) {
       const Muon *muon = &event.muons->at(0);
@@ -425,7 +453,8 @@ bool HighPtSingleTopMainSelectionModule::process(Event & event) {
         }
         if(passes_reco_sel) {
           sf_muon_id_lowpt->process(event);
-          sf_muon_iso_lowpt->process(event);
+          // sf_muon_iso_lowpt->process(event);
+          sf_muon_iso_dummy->process(event); // PFIsoVeryTight does not have official SFs
         }
         lowpt = true;
       }
@@ -436,7 +465,8 @@ bool HighPtSingleTopMainSelectionModule::process(Event & event) {
         }
         if(passes_reco_sel) {
           sf_muon_id_highpt->process(event);
-          sf_muon_iso_highpt->process(event);
+          // sf_muon_iso_highpt->process(event);
+          sf_muon_iso_dummy->process(event); // PFIsoVeryTight does not have official SFs
         }
         lowpt = false;
       }
@@ -475,8 +505,15 @@ bool HighPtSingleTopMainSelectionModule::process(Event & event) {
       }
       sf_muon_id_dummy->process(event);
       sf_muon_iso_dummy->process(event);
+
+      // check for other eleIDs, for each ID add a prime factor:
+      for(const auto & eleTagID : eleTagID_map) {
+        if((eleTagID.second)(*electron, event)) eleID_factorized *= eleTagID.first;
+      }
     }
   }
+  event.set(fHandle_eleID_factorized, eleID_factorized);
+
   if(!passes_reco_sel) {
     sf_muon_id_dummy->process(event);
     sf_muon_iso_dummy->process(event);
@@ -583,7 +620,9 @@ bool HighPtSingleTopMainSelectionModule::process(Event & event) {
 
   if(debug) cout << "Apply top-pt reweighting for ttbar events" << endl;
   sf_toppt->process(event);
-  if(passes_reco_sel) hist_topptSF->fill(event);
+  if(passes_reco_sel) {
+    if(apply_TopPtReweighting) hist_topptSF->fill(event);
+  }
 
   if(debug) cout << "Apply (N)NLO QCD/EWK corrections to V+jets samples" << endl;
   sf_vjets->process(event);

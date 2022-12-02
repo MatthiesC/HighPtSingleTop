@@ -55,7 +55,7 @@ class WTag {
 public:
   enum algo {ParticleNet};
   // enum wp {WP_LOOSE, WP_MEDIUM, WP_TIGHT};
-  enum wp {WP_DUMMY, WP_CUSTOM, WP_BkgEff0p050, WP_BkgEff0p010, WP_BkgEff0p005};
+  enum wp {WP_DUMMY, WP_CUSTOMPT200, WP_CUSTOMPT400, WP_BkgEff0p050, WP_BkgEff0p010, WP_BkgEff0p005};
   explicit WTag(const WTag::algo & algorithm, const WTag::wp & working_point);
   bool operator()(const TopJet & jet, const uhh2::Event & event) const;
 private:

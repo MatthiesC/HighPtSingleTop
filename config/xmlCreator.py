@@ -15,7 +15,10 @@ from CrossSectionHelper import MCSampleValuesHelper
 helper = MCSampleValuesHelper()
 
 sys.path.append(os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2/LegacyTopTagging/Analysis'))
-from constants import _YEARS
+from constants import _YEARS, _JECSMEAR_SOURCES
+
+sys.path.append(os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2/LegacyTopTagging/config'))
+from database import samplesDict
 
 
 def check_consistency(selection, year, channel=None):
@@ -54,10 +57,10 @@ class configContainer:
 
       # Set these values such that there are no more than 2,500 jobs per preselection. This way, you can submit two preselections in parallel to avoid going over 5,000 jobs (current user limit for NAF)
       self.yearVars['preselFileSplit'] = {
-         'UL16preVFP': '25',
-         'UL16postVFP': '25',
-         'UL17': '25',
-         'UL18': '25',
+         'UL16preVFP': '20',
+         'UL16postVFP': '20',
+         'UL17': '20',
+         'UL18': '20',
       }
 
       self.yearVars['targetLumis'] = {
@@ -224,22 +227,26 @@ class sampleEntity:
 
    '''Container to hold information about a data or MC sample, as read from CSV database'''
 
-   def __init__(self, ver, csvRow):
+   def __init__(self, ver, csvRow, extra_syst=None):
 
       if ver == '106X_v2':
          k, v, year = csvRow
+         if extra_syst:
+            db_name = v['extra_systs'][extra_syst]
+         else:
+            db_name = v['db_name']
          self.year = year
          self.channel = v.get('channel', ['ele', 'muo'])
          self.is_data = k.startswith('DATA_')
          self.nickName = k
          self.n_das = None
          self.n_pnfs = None
-         self.pnfs_sum_of_weights = helper.get_nevt(v['db_name'], '13TeV', self.year)
+         self.pnfs_sum_of_weights = helper.get_nevt(db_name, '13TeV', self.year)
          self.xs_gen = None
          self.xs_theo = None
-         self.lumi = 1. if self.is_data else helper.get_lumi(v['db_name'], '13TeV', self.year, kFactor=v.get('kfac', False), Corrections=v.get('corr', False))
+         self.lumi = 1. if self.is_data else helper.get_lumi(db_name, '13TeV', self.year, kFactor=v.get('kfac', False), Corrections=v.get('corr', False))
          self.xsection = self.pnfs_sum_of_weights / self.lumi
-         self.xmlPath = os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2/common/UHH2-datasets', helper.get_xml(v['db_name'], '13TeV', self.year))
+         self.xmlPath = os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2/common/UHH2-datasets', helper.get_xml(db_name, '13TeV', self.year))
       else:
          self.year = csvRow['year']
          self.channel = csvRow['channel']
@@ -256,8 +263,9 @@ class sampleEntity:
       if self.nickName.startswith('ST_tW'):
          self.mainsel_versions.append(self.nickName.replace('_T', '_dnnSig_T'))
          self.mainsel_versions.append(self.nickName.replace('_T', '_dnnBkg_T'))
-         self.mainsel_versions.append(self.nickName.replace('_T', '_trueSig_T'))
-         self.mainsel_versions.append(self.nickName.replace('_T', '_trueBkg_T'))
+         # self.mainsel_versions.append(self.nickName.replace('_T', '_trueSig_T'))
+         # self.mainsel_versions.append(self.nickName.replace('_T', '_trueBkg_T'))
+
       # if self.nickName.startswith('WJets'):
       #    self.mainsel_versions.append(self.nickName.replace('WJets', 'WJetsHeavy'))
       #    self.mainsel_versions.append(self.nickName.replace('WJets', 'WJetsLight'))
@@ -280,6 +288,10 @@ class systEntity:
       self.ctxName = ctxName
       self.defaultValue = defaultValue
       self.directions = directions
+      self.jecsmear_sources = ['Total']
+      if self.shortName == 'jes':
+         for k in _JECSMEAR_SOURCES.keys():
+            self.jecsmear_sources.append(k)
 
 
 class xmlCreator:
@@ -287,11 +299,13 @@ class xmlCreator:
    '''Creates XML files for SFrame'''
 
    # def __init__(self, selection: str, year: str, channel: str):
-   def __init__(self, ignore_data=False):
+   def __init__(self, ignore_data=False, extra_syst=None):
 
       self.ignore_data = ignore_data
       if self.ignore_data:
          print(colored('Caveat: Ignoring DATA', 'blue'))
+
+      self.extra_syst = extra_syst
 
       self.userName = os.environ.get('USER')
       self.uhh2Dir = os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2')+'/'
@@ -338,17 +352,17 @@ class xmlCreator:
 
    def read_database_106X_v2(self, years: list):
 
-      sys.path.append(os.path.join(os.environ.get('CMSSW_BASE'), 'src/UHH2/LegacyTopTagging/config'))
-      from database import samplesDict
       self.used_samples = OrderedDict()
       for year in years:
          self.used_samples[year] = list()
          for k, v in samplesDict.items():
             use_me = v.get('years') == None or year in v.get('years', [])
             use_me = use_me and (v.get('analysis') == None or 'tw' in v.get('analysis'))
-            # use_me = use_me and ('ST_tW' in k) # HACK
+            if self.extra_syst:
+               use_me = use_me and (v.get('extra_systs') != None and self.extra_syst in v.get('extra_systs').keys())
+            # use_me = use_me and ('DYJetsToLL_HT100to' in k) # HACK
             if use_me:
-               sample_entity = sampleEntity('106X_v2', (k, v, year,))
+               sample_entity = sampleEntity('106X_v2', (k, v, year,), self.extra_syst)
                if self.ignore_data and sample_entity.is_data: continue
                if not os.path.isfile(sample_entity.xmlPath):
                   print(colored('XML for sample  '+sample_entity.nickName+' ('+year+')  does not exist. Skipping this sample', 'red'))
@@ -366,7 +380,7 @@ class xmlCreator:
       def add_syst_entity(dict: OrderedDict, syst: systEntity):
          dict[syst.shortName] = syst
 
-      add_syst_entity(systematics, systEntity('jec', 'jecsmear_direction')) # During presel, ak4 jets (and thus, hotvr subjets) are affected. During mainsel, ak8 jets are affected.
+      add_syst_entity(systematics, systEntity('jes', 'jecsmear_direction')) # During presel, ak4 jets (and thus, hotvr subjets) are affected. During mainsel, ak8 jets are affected.
       add_syst_entity(systematics, systEntity('jer', 'jersmear_direction')) # During presel, ak4 jets (and thus, hotvr subjets) are affected. During mainsel, ak8 jets are affected.
       if selection=='mainsel':
          add_syst_entity(systematics, systEntity('mur', 'ScaleVariationMuR'))
@@ -399,9 +413,9 @@ class xmlCreator:
 
       configDir = os.path.join(self.uhh2Dir, '_'.join(['HighPtSingleTop/config/config', selection, year]))+('_'+channel if channel else '')
       os.makedirs(configDir, exist_ok=True)
-      xmlFilePath = os.path.join(configDir, '_'.join([self.xmlFileNameBase, selection, year])+('_'+channel if channel else '')+'.xml')
+      xmlFilePath = os.path.join(configDir, '_'.join([self.xmlFileNameBase, selection, year])+('_'+channel if channel else '')+('_syst_'+self.extra_syst if self.extra_syst else '')+'.xml')
       is_mainsel = selection == 'mainsel'
-      workdirName = '_'.join(['workdir', selection, year])+('_'+channel if channel else '')
+      workdirName = '_'.join(['workdir', selection, year])+('_'+channel if channel else '')+('_syst_'+self.extra_syst if self.extra_syst else '')
       systematics = xmlCreator.get_systematics(selection, year, channel)
 
       with open(xmlFilePath, 'w') as file:
@@ -411,9 +425,9 @@ class xmlCreator:
          file.write('''\n''')
          file.write('''<!ENTITY TargetLumi "'''+str(self.yearVars['targetLumis'][year])+'''">\n''')
          if is_mainsel:
-            file.write('''<!ENTITY PRESELdir "'''+os.path.join(self.outputDirBase, 'presel', year, 'nominal')+'''">\n''')
+            file.write('''<!ENTITY PRESELdir "'''+os.path.join(self.outputDirBase, 'presel', year, 'syst_'+self.extra_syst if self.extra_syst else 'nominal')+'''">\n''')
             file.write('''<!ENTITY PRESELfilename "uhh2.AnalysisModuleRunner">\n''')
-         file.write('''<!ENTITY OUTPUTdir "'''+os.path.join(self.outputDirBase, selection, year, channel if channel else '', 'nominal')+'''">\n''')
+         file.write('''<!ENTITY OUTPUTdir "'''+os.path.join(self.outputDirBase, selection, year, channel if channel else '', 'syst_'+self.extra_syst if self.extra_syst else 'nominal')+'''">\n''')
          file.write('''<!ENTITY b_Cacheable "False">\n''')
          file.write('''<!ENTITY NEVT "-1">\n''')
          file.write('''<!ENTITY YEARsuffix "_'''+year+self.yearVars['yearVersions'][year]+'''">\n''')
@@ -431,7 +445,7 @@ class xmlCreator:
          file.write('''\n''')
          file.write('''<!--\n''')
          file.write('''<ConfigParse NEventsBreak="'''+('500000' if is_mainsel else '0')+'''" FileSplit="'''+('0' if is_mainsel else self.yearVars['preselFileSplit'][year])+'''" AutoResubmit="5"/>\n''')
-         file.write('''<ConfigSGE RAM="4" DISK="3" Mail="'''+self.userMail+'''" Notification="as" Workdir="'''+workdirName+'''"/>\n''')
+         file.write('''<ConfigSGE RAM="'''+('4' if is_mainsel else '8')+'''" DISK="3" Mail="'''+self.userMail+'''" Notification="as" Workdir="'''+workdirName+'''"/>\n''')
          file.write('''-->\n''')
          file.write('''\n''')
          file.write('''<!-- OutputLevel controls which messages are printed; set to VERBOSE or DEBUG for more verbosity, to WARNING or ERROR for less -->\n''')
@@ -485,7 +499,7 @@ class xmlCreator:
             # file.write('''<Item Name="BTagCalibration_DeepJet" Value="'''+self.yearVars['deepjetSFFiles'][self.year]+'''"/>\n''')
             # file.write('''<Item Name="BTagCalibration_DeepCSV" Value="'''+self.yearVars['deepcsvSFFiles'][self.year]+'''"/>\n''')
             file.write('''\n''')
-            file.write('''<Item Name="apply_TopPtReweighting" Value="true"/>\n''')
+            file.write('''<Item Name="apply_TopPtReweighting" Value="false"/>\n''')
             file.write('''<Item Name="VJetsReweighting_do_EWK" Value="true"/>\n''')
             file.write('''<Item Name="VJetsReweighting_do_QCD_EWK" Value="false"/>\n''')
             file.write('''<Item Name="VJetsReweighting_do_QCD_NLO" Value="true"/>\n''')
@@ -496,6 +510,7 @@ class xmlCreator:
             file.write('''<Item Name="NeuralNetFile_0t1W" Value="/nfs/dust/cms/user/matthies/uhh2-106X-v2/CMSSW_10_6_28/src/UHH2/HighPtSingleTop/data/KerasDNNModels/wtag_dnn_22-05-12-02-49-32/neural_net.json"/>\n''')
          file.write('''\n''')
          file.write('''<!-- Keys for systematic uncertainties -->\n''')
+         file.write('''<Item Name="extra_syst" Value="'''+('true' if self.extra_syst else 'false')+'''"/>\n''')
          for syst in systematics.values():
             if syst.shortName == 'murmuf': continue
             file.write('''<Item Name="'''+syst.ctxName+'''" Value="'''+syst.defaultValue+'''"/>\n''')
@@ -526,8 +541,13 @@ class xmlCreator:
       self.written_xmls.setdefault(selection, OrderedDict()).setdefault(year, OrderedDict()).setdefault(channel if channel else 'all', OrderedDict())['nominal'] = dict_append
       print('Created '+xmlFilePath)
 
+      return xmlFilePath
+
 
    def write_systematics_xml(self, syst: systEntity, selection, year, channel=None):
+
+      if self.extra_syst:
+         sys.exit('Not valid to call "write_systematics_xml()" for extra systematic.')
 
       # if not self.write_xml_successful:
       #    sys.exit('xmlCreator::write_xml() not called. Danger of parsing potentially outdated XML file. Exit.')
@@ -542,12 +562,14 @@ class xmlCreator:
          with open(systXmlFilePath, 'w') as outfile:
             for line in infile:
                newline = line
+               if newline.startswith('<!ENTITY DATA_') or ( newline.startswith('<InputData') and 'Type="DATA"' in newline ):
+                  continue
                # if newline.startswith('<!ENTITY PRESELdir') or newline.startswith('<!ENTITY OUTPUTdir'):
                   # newline = newline.replace('/nominal/', '/'+'_'.join(['syst', syst.shortName, direction])+'/')
-               if newline.startswith('<!ENTITY PRESELdir') and (syst.shortName == 'jec' or syst.shortName == 'jer'):
-                  newline = newline.replace('/nominal/', '/'+'_'.join(['syst', syst.shortName, direction])+'/')
+               # if newline.startswith('<!ENTITY PRESELdir') and (syst.shortName == 'jec' or syst.shortName == 'jer'):
+               #    newline = newline.replace('/nominal/', '/'+'_'.join(['syst', syst.shortName, direction])+'/')
                if newline.startswith('<!ENTITY OUTPUTdir'):
-                  newline = newline.replace('/nominal/', '/'+'_'.join(['syst', syst.shortName, direction])+'/')
+                  newline = newline.replace('/nominal', '/'+'_'.join(['syst', syst.shortName, direction]))
                if newline.startswith('<ConfigSGE'): # this changes the workdir name
                   newline = newline.replace(dict_nominal['workdirName'], systWorkdirName)
                if syst.shortName != 'murmuf' and newline.startswith('<Item Name="'+syst.ctxName):
@@ -571,6 +593,7 @@ class xmlCreator:
 
       systematics = xmlCreator.get_systematics(selection, year, channel)
       for syst in systematics.values():
+         if not (syst.shortName.startswith('jes') or syst.shortName.startswith('jer')): continue # HACK to prevent creating XML files for other basic systematics than JES and JER variations
          self.write_systematics_xml(syst, selection, year, channel)
 
 
@@ -650,6 +673,7 @@ if __name__=='__main__':
    parser.add_argument('--all', action='store_true', help='Create XML files for all selections, years, and channels.')
    parser.add_argument('--syst', action='store_true', help='Create XML files for systematic uncertainties.')
    parser.add_argument('-i', '--ignore-data', action='store_true', help='Ignore data, only do MC.')
+   parser.add_argument('-x', '--extra-systs', action='store_true', help='Create XML files for special systematics which require different MC samples (e.g. hdamp variations).')
    parser.add_argument('-s', '--selections', choices=selections, nargs='*', default=selections)
    parser.add_argument('-y', '--years', choices=years, nargs='*', default=years)
    parser.add_argument('-c', '--channels', choices=channels, nargs='*', default=channels)
@@ -706,3 +730,30 @@ if __name__=='__main__':
       #       x.write_qcd_sideband_xml()
       #       if args.syst:
       #          x.write_all_systematics_xmls()
+
+
+   #_________________________________________________
+   # Now do the extra systematics:
+   if args.extra_systs:
+      all_extra_systs = set()
+      for k, v in samplesDict.items():
+         if v.get('extra_systs'):
+            for syst in v.get('extra_systs'):
+               all_extra_systs.add(syst)
+      all_extra_systs = list(all_extra_systs)
+      all_extra_systs = sorted(all_extra_systs)
+      print('Going to create XML files for these extra systematics (auto-extracted from database):')
+      print(all_extra_systs)
+
+      for syst in all_extra_systs:
+         xx = xmlCreator(ignore_data=args.ignore_data, extra_syst=syst)
+         xx.read_database_106X_v2(args.years)
+
+         if 'presel' in args.selections:
+            for year in args.years:
+               xx.write_xml('presel', year)
+
+         if 'mainsel' in args.selections:
+            for year in args.years:
+               for channel in args.channels:
+                  xx.write_xml('mainsel', year, channel)
