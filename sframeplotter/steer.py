@@ -114,12 +114,15 @@ for year, channel in combos:
         print 'Create new steer file:', steerFilePath
         for line in template_file:
             newline = line
+            newline = newline.replace('<<<bRatioPlot>>>', 'false' if args.shapenorm else 'true')
             newline = newline.replace('<<<fCycleName>>>', fCycleName)
             newline = newline.replace('<<<fOutputPsFile>>>', fOutputPsFile)
             newline = newline.replace('<<<fLumi>>>', str(_YEARS[year]['lumi_fb']))
             newline = newline.replace('<<<bSingleEPS>>>', 'true' if args.singleeps else 'false')
             newline = newline.replace('<<<bDrawLegend>>>', 'true' if args.legend else 'false')
             newline = newline.replace('<<<bShapeNorm>>>', 'true' if args.shapenorm else 'false')
+            if args.shapenorm and 'fSamplesToStack' in newline:
+                continue
             steerFile.write(newline)
     template_file.close()
     # Plots does not except absolute file paths to steer file, thus get relative path of steer file with working directory = sframeplotterBase
