@@ -51,6 +51,8 @@ private:
   const bool is_mc;
   const bool is_singlemuon;
   const bool is_tW;
+  const bool is_tW_incl;
+  const bool is_extra_syst;
   enum class JECVariation {
     nominal,
     jes_up,
@@ -90,6 +92,7 @@ private:
   */
 
   unique_ptr<AnalysisModule> prod_SingleTopGen_tWch;
+  uhh2::Event::Handle<ltt::SingleTopGen_tWch> fHandle_GENtW;
   unique_ptr<AnalysisModule> genleveldef;
   unique_ptr<Selection> slct_matrix;
 
@@ -176,7 +179,9 @@ HighPtSingleTopPreSelectionModule::HighPtSingleTopPreSelectionModule(Context & c
   debug(string2bool(ctx.get("debug"))),
   is_mc(ctx.get("dataset_type") == "MC"),
   is_singlemuon(!is_mc && ctx.get("dataset_version").find("SingleMuon") != string::npos),
-  is_tW(ctx.get("dataset_version").find("ST_tW") == 0)
+  is_tW(ctx.get("dataset_version").find("ST_tW") == 0),
+  is_tW_incl(is_tW && ctx.get("dataset_version").find("inclusiveDecays") != string::npos),
+  is_extra_syst(string2bool(ctx.get("extra_syst")))
 {
   unsigned int i_hist(0);
 
@@ -189,6 +194,7 @@ HighPtSingleTopPreSelectionModule::HighPtSingleTopPreSelectionModule(Context & c
   }
 
   prod_SingleTopGen_tWch.reset(new ltt::SingleTopGen_tWchProducer(ctx, kHandleName_SingleTopGen_tWch));
+  fHandle_GENtW = ctx.get_handle<ltt::SingleTopGen_tWch>(kHandleName_SingleTopGen_tWch);
   genleveldef.reset(new btw::GenLevelDefinitions(ctx));
   slct_matrix.reset(new btw::MatrixLevelSelection(ctx, "presel", ltt::Channel::notValid));
 
@@ -331,8 +337,11 @@ bool HighPtSingleTopPreSelectionModule::process(Event & event) {
   bool passes_matrix_sel(false);
   bool passes_parton_sel(false);
   bool passes_particle_sel(false);
+  SingleTopGen_tWch *GENtW = nullptr;
   if(is_tW) {
     prod_SingleTopGen_tWch->process(event);
+    GENtW = &event.get(fHandle_GENtW);
+    if(is_tW_incl && is_extra_syst && !(GENtW->IsTopHadronicDecay() && GENtW->IsAssHadronicDecay())) return false; // remove all NoFullyHadronic events from inclusiveDecays sample if using extra_syst
     genleveldef->process(event);
     passes_matrix_sel = slct_matrix->passes(event);
     passes_parton_sel = false; // FIXME
