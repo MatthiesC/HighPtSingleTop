@@ -232,8 +232,8 @@ HighPtSingleTopPreSelectionModule::HighPtSingleTopPreSelectionModule(Context & c
 
   slct_met.reset(new OrSelection());
 
-  const TopJetId hotvrID = AndId<TopJet>(JetPFID(JetPFID::WP_TIGHT_PUPPI), PtEtaCut(hotvr_pt_min, hotvr_eta_max), ltt::NoLeptonInJet("all", hotvr_dr_lep_min));
-  const TopJetId ak8ID = AndId<TopJet>(JetPFID(JetPFID::WP_TIGHT_PUPPI), PtEtaCut(ak8_pt_min, ak8_eta_max), ltt::NoLeptonInJet("all", ak8_dr_lep_min));
+  const TopJetId hotvrID = AndId<TopJet>(PtEtaCut(hotvr_pt_min, hotvr_eta_max), ltt::NoLeptonInJet("all", hotvr_dr_lep_min));
+  const TopJetId ak8ID = AndId<TopJet>(PtEtaCut(ak8_pt_min, ak8_eta_max), ltt::NoLeptonInJet("all", ak8_dr_lep_min));
 
   slct_1largejet.reset(new OrSelection());
 
